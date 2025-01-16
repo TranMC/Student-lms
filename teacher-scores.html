@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhập Điểm - Teacher Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <!-- Header giống teacher-dashboard.html -->
+    </header>
+
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <!-- Sidebar giống teacher-dashboard.html -->
+        </nav>
+
+        <main class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-edit"></i> Nhập Điểm</h3>
+                </div>
+                <div class="card-body">
+                    <form id="scoreForm" class="score-form">
+                        <div class="form-group">
+                            <label for="className">Lớp</label>
+                            <select id="className" required>
+                                <option value="">Chọn lớp</option>
+                                <option value="12A1">12A1</option>
+                                <option value="12A2">12A2</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="studentId">Học sinh</label>
+                            <select id="studentId" required>
+                                <option value="">Chọn học sinh</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="subject">Môn học</label>
+                            <select id="subject" required>
+                                <option value="">Chọn môn</option>
+                                <option value="math">Toán</option>
+                                <option value="physics">Vật lý</option>
+                                <option value="chemistry">Hóa học</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="scoreType">Loại điểm</label>
+                            <select id="scoreType" required>
+                                <option value="">Chọn loại điểm</option>
+                                <option value="15m">Kiểm tra 15 phút</option>
+                                <option value="45m">Kiểm tra 45 phút</option>
+                                <option value="final">Kiểm tra cuối kỳ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="score">Điểm số</label>
+                            <input type="number" id="score" min="0" max="10" step="0.1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="date">Ngày kiểm tra</label>
+                            <input type="date" id="date" required>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Lưu điểm
+                            </button>
+                            <button type="reset" class="btn btn-secondary">
+                                <i class="fas fa-undo"></i> Làm mới
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h3><i class="fas fa-history"></i> Lịch sử nhập điểm</h3>
+                </div>
+                <div class="table-container">
+                    <table id="scoreHistory">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Lớp</th>
+                                <th>Học sinh</th>
+                                <th>Môn học</th>
+                                <th>Loại điểm</th>
+                                <th>Điểm</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/users.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/scores.js"></script>
+</body>
+</html> 

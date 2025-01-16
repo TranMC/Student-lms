@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Học Sinh - Teacher Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <!-- Header giống teacher-dashboard.html -->
+    </header>
+
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <!-- Sidebar giống teacher-dashboard.html -->
+        </nav>
+
+        <main class="dashboard">
+            <div class="student-actions">
+                <button class="btn btn-primary" onclick="openAddStudentModal()">
+                    <i class="fas fa-plus"></i> Thêm học sinh
+                </button>
+                <div class="search-box">
+                    <input type="text" id="searchStudent" placeholder="Tìm kiếm học sinh...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <select id="classFilter">
+                    <option value="">Tất cả lớp</option>
+                    <option value="12A1">12A1</option>
+                    <option value="12A2">12A2</option>
+                </select>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-user-graduate"></i> Danh Sách Học Sinh</h3>
+                </div>
+                <div class="table-container">
+                    <table id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>Mã học sinh</th>
+                                <th>Họ và tên</th>
+                                <th>Lớp</th>
+                                <th>Điểm TB</th>
+                                <th>Xếp loại</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Thêm/Sửa Học Sinh -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Thêm Học Sinh Mới</h3>
+                <span class="close">&times;</span>
+            </div>
+            <form id="studentForm">
+                <div class="form-group">
+                    <label for="studentId">Mã học sinh</label>
+                    <input type="text" id="studentId" required>
+                </div>
+                <div class="form-group">
+                    <label for="fullName">Họ và tên</label>
+                    <input type="text" id="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="class">Lớp</label>
+                    <select id="class" required>
+                        <option value="12A1">12A1</option>
+                        <option value="12A2">12A2</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input type="tel" id="phone">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Lưu</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/users.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/students.js"></script>
+</body>
+</html> 
