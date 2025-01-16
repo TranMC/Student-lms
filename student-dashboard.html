@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Học Sinh - Student Score Management</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1><i class="fas fa-graduation-cap"></i> Hệ Thống Quản Lý Điểm</h1>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <span id="studentName"></span>
+            <button onclick="logout()" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </button>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <ul>
+                <li class="active">
+                    <a href="#dashboard"><i class="fas fa-home"></i> Trang chủ</a>
+                </li>
+                <li>
+                    <a href="#scores"><i class="fas fa-chart-line"></i> Bảng điểm</a>
+                </li>
+                <li>
+                    <a href="#schedule"><i class="fas fa-calendar-alt"></i> Lịch học</a>
+                </li>
+                <li>
+                    <a href="#profile"><i class="fas fa-user"></i> Hồ sơ</a>
+                </li>
+                <li>
+                    <a href="#notifications"><i class="fas fa-bell"></i> Thông báo</a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="dashboard">
+            <div class="welcome-section">
+                <h2>Xin chào, <span id="studentNameWelcome"></span></h2>
+                <p class="date-time" id="currentDateTime"></p>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="stats-card primary">
+                    <div class="stats-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stats-info">
+                        <h3>8.5</h3>
+                        <p>Điểm trung bình</p>
+                    </div>
+                    <div class="stats-trend up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>0.5</span>
+                    </div>
+                </div>
+                
+                <div class="stats-card success">
+                    <div class="stats-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stats-info">
+                        <h3>95%</h3>
+                        <p>Tỷ lệ hoàn thành</p>
+                    </div>
+                    <div class="stats-trend up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5%</span>
+                    </div>
+                </div>
+                
+                <div class="stats-card warning">
+                    <div class="stats-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stats-info">
+                        <h3>15</h3>
+                        <p>Ngày tới kỳ thi</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <div class="card recent-scores">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar"></i> Điểm số gần đây</h3>
+                        <button class="btn btn-text">Xem tất cả</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Môn học</th>
+                                    <th>Loại điểm</th>
+                                    <th>Điểm</th>
+                                    <th>Ngày</th>
+                                    <th>Đánh giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Toán học</td>
+                                    <td>Kiểm tra 15p</td>
+                                    <td>9.0</td>
+                                    <td>15/03/2024</td>
+                                    <td><span class="status success">Xuất sắc</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Vật lý</td>
+                                    <td>Kiểm tra 1 tiết</td>
+                                    <td>8.5</td>
+                                    <td>14/03/2024</td>
+                                    <td><span class="status success">Giỏi</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card upcoming-events">
+                    <div class="card-header">
+                        <h3><i class="fas fa-calendar"></i> Lịch kiểm tra</h3>
+                    </div>
+                    <div class="events-list">
+                        <div class="event-item">
+                            <div class="event-date">
+                                <span class="day">20</span>
+                                <span class="month">Tháng 3</span>
+                            </div>
+                            <div class="event-details">
+                                <h4>Kiểm tra Toán</h4>
+                                <p>Kiểm tra 1 tiết - 7:00 AM</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-date">
+                                <span class="day">22</span>
+                                <span class="month">Tháng 3</span>
+                            </div>
+                            <div class="event-details">
+                                <h4>Kiểm tra Văn</h4>
+                                <p>Kiểm tra giữa kỳ - 8:00 AM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card subject-progress">
+                <div class="card-header">
+                    <h3><i class="fas fa-book"></i> Tiến độ học tập</h3>
+                </div>
+                <div class="progress-grid">
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <span>Toán học</span>
+                            <span>85%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 85%; background: #1a73e8;"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <span>Văn học</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 75%; background: #34c759;"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-info">
+                            <span>Tiếng Anh</span>
+                            <span>90%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: 90%; background: #ff9500;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/users.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        const student = checkStudentAuth();
+        if (student) {
+            document.getElementById('studentName').textContent = student.fullName;
+            document.getElementById('studentNameWelcome').textContent = student.fullName;
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('vi-VN', options);
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    </script>
+</body>
+</html> 

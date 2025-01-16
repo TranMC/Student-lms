@@ -1,0 +1,148 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background-color: #1a73e8;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.cta-button {
+    padding: 0.8rem 1.5rem;
+    background-color: #1a73e8;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    margin-top: 1rem;
+    border-radius: 4px;
+}
+
+.cta-button:hover {
+    background-color: #1557b0;
+}
+
+main {
+    flex: 1;
+}
+
+.footer {
+    background-color: #f4f4f4;
+    color: #666;
+    text-align: center;
+    padding: 0.8rem;
+    position: relative;
+    margin-top: auto;
+}
+
+.nav-menu {
+    position: relative;
+    width: 80%;
+    margin-top: 1rem;
+}
+
+.nav-menu ul {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 12px;
+    margin: 0;
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.nav-menu li {
+    opacity: 0;
+    list-style: none;
+    flex: 1;
+}
+
+.nav-menu li:nth-child(1) { animation: itop 300ms 100ms linear forwards; }
+.nav-menu li:nth-child(2) { animation: itop 300ms 200ms linear forwards; }
+.nav-menu li:nth-child(3) { animation: itop 300ms 300ms linear forwards; }
+.nav-menu li:nth-child(4) { animation: itop 300ms 400ms linear forwards; }
+
+.nav-menu a {
+    color: white;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.nav-menu a:hover {
+    color: #fff;
+    background: #1557b0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes itop {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 600px) {
+    .header {
+        font-size: 1.2rem;
+    }
+    .welcome {
+        padding: 1rem;
+        text-align: center;
+    }
+    .welcome h2 {
+        font-size: 1.1rem;
+    }
+    .cta-button {
+        width: 100%;
+    }
+    .nav-menu {
+        width: 90%;
+    }
+    
+    .nav-menu ul {
+        flex-direction: column;
+        padding: 10px;
+        gap: 8px;
+    }
+    
+    .nav-menu a {
+        padding: 10px;
+        width: 100%;
+    }
+}
