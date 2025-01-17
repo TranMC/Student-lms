@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chọn vai trò đăng nhập</title>
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="login-page">
+    <div class="role-selection">
+        <div class="school-logo">
+            <h1>System</h1>
+        </div>
+        <div class="role-cards">
+            <div class="role-card" onclick="window.location.href='teacher-login.html'">
+                <div class="role-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h2>Giáo viên</h2>
+                <p>Quản lý điểm số và theo dõi học sinh</p>
+                <button class="btn btn-role">
+                    Đăng nhập với tư cách giáo viên
+                </button>
+            </div>
+            <div class="role-card" onclick="window.location.href='student-login.html'">
+                <div class="role-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h2>Học sinh</h2>
+                <p>Xem điểm số và thông tin học tập</p>
+                <button class="btn btn-role">
+                    Đăng nhập với tư cách học sinh
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

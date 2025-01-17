@@ -1,3 +1,14 @@
+/* Reset và biến màu */
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary-color: #64748b;
+    --success-color: #22c55e;
+    --error-color: #ef4444;
+    --background-gradient: linear-gradient(135deg, #2563eb, #1d4ed8);
+    --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,154 +16,243 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    color: #1f2937;
+    background-color: #f3f4f6;
+}
+
+/* Login page layout */
+.login-page {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1.5rem;
+    background: var(--background-gradient);
 }
 
-.container {
+/* Role Selection Styles */
+.role-selection {
     width: 100%;
-    padding: 20px;
+    max-width: 1200px;
+    text-align: center;
 }
 
-.login-box {
-    background: rgba(255, 255, 255, 0.95);
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
+.school-logo {
+    margin-bottom: 3rem;
+    color: white;
+}
+
+.school-logo img {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 1rem;
+}
+
+.school-logo h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.role-cards {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 1rem;
+}
+
+.role-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 2.5rem;
+    width: 350px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: var(--box-shadow);
+}
+
+.role-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.role-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.role-card h2 {
+    font-size: 1.8rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.role-card p {
+    color: var(--secondary-color);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+/* Login Form Styles */
+.login-container {
+    width: 100%;
+    max-width: 450px;
+    padding: 2rem;
+}
+
+.login-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 2.5rem;
+    box-shadow: var(--box-shadow);
 }
 
 .login-header {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 2.5rem;
+}
+
+.login-header i {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
 }
 
 .login-header h2 {
-    color: #1a73e8;
-    font-size: 28px;
-    margin-bottom: 10px;
+    font-size: 2rem;
+    color: #1f2937;
+    font-weight: 600;
 }
 
-.login-header p {
-    color: #666;
-    font-size: 14px;
+.form-group {
+    margin-bottom: 1.5rem;
 }
 
-.input-group {
-    position: relative;
-    margin-bottom: 30px;
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #4b5563;
 }
 
-.input-group input {
+.form-group input {
     width: 100%;
-    padding: 10px 0;
-    font-size: 16px;
-    color: #333;
-    border: none;
-    border-bottom: 2px solid #ddd;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
     outline: none;
-    background: transparent;
-    transition: 0.3s;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.input-group label {
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding: 10px 0;
-    font-size: 16px;
-    color: #666;
-    pointer-events: none;
-    transition: 0.3s ease;
-}
-
-.input-group input:focus ~ label,
-.input-group input:valid ~ label {
-    top: -20px;
-    font-size: 12px;
-    color: #1a73e8;
-}
-
-.input-group .highlight {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2px;
-    width: 0;
-    background: #1a73e8;
-    transition: 0.3s;
-}
-
-.input-group input:focus ~ .highlight {
-    width: 100%;
-}
-
-.remember-forgot {
-    display: flex;
-    justify-content: space-between;
+/* Button Styles */
+.btn {
+    display: inline-flex;
     align-items: center;
-    margin-bottom: 30px;
-    font-size: 14px;
-}
-
-.remember-forgot label {
-    color: #666;
-    cursor: pointer;
-}
-
-.forgot-link {
-    color: #1a73e8;
-    text-decoration: none;
-}
-
-.login-btn {
-    width: 100%;
-    padding: 12px;
-    background: #1a73e8;
-    color: #fff;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
     border: none;
-    border-radius: 25px;
-    font-size: 16px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 
-.login-btn:hover {
-    background: #1557b0;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(26, 115, 232, 0.3);
+.btn-role {
+    background-color: var(--primary-color);
+    color: white;
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
 }
 
+.btn-role:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+}
+
+/* Footer Styles */
 .login-footer {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 1.5rem;
 }
 
-.back-home {
-    color: #1a73e8;
+.login-footer a {
+    color: var(--primary-color);
     text-decoration: none;
-    font-size: 14px;
-    transition: 0.3s;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.back-home:hover {
-    color: #1557b0;
+.login-footer a:hover {
+    text-decoration: underline;
 }
 
-@media (max-width: 480px) {
-    .login-box {
-        padding: 20px;
+/* Error Message */
+.error-message {
+    background-color: var(--error-color);
+    color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    display: none;
+    animation: slideIn 0.3s ease;
+}
+
+.error-message.show {
+    display: block;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
     }
-    
-    .remember-forgot {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .school-logo h1 {
+        font-size: 2rem;
+    }
+
+    .role-card {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .login-card {
+        padding: 2rem;
+    }
+
+    .login-header h2 {
+        font-size: 1.75rem;
     }
 } 

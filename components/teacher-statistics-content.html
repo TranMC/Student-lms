@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Statistics</title>
+    <link rel="stylesheet" href="path/to/your/styles.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="statistics-filters">
+    <div class="filter-group">
+        <select id="classFilter">
+            <option value="">Tất cả lớp</option>
+            <option value="12A1">12A1</option>
+            <option value="12A2">12A2</option>
+        </select>
+        <select id="subjectFilter">
+            <option value="">Tất cả môn</option>
+            <option value="math">Toán</option>
+            <option value="physics">Vật lý</option>
+            <option value="chemistry">Hóa học</option>
+        </select>
+        <button id="filterBtn" class="btn btn-primary">
+            <i class="fas fa-filter"></i> Lọc
+        </button>
+    </div>
+</div>
+
+<div class="statistics-grid">
+    <div class="card">
+        <div class="card-header">
+            <h3>Phân Bố Điểm</h3>
+        </div>
+        <div class="card-body">
+            <canvas id="scoreDistribution"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Xu Hướng Điểm</h3>
+        </div>
+        <div class="card-body">
+            <canvas id="scoreTrend"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Tỷ Lệ Đạt/Không Đạt</h3>
+        </div>
+        <div class="card-body">
+            <canvas id="passRatio"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Thống Kê Chi Tiết</h3>
+        </div>
+        <div class="statistics-summary">
+            <div class="summary-item">
+                <h4>Điểm Trung Bình</h4>
+                <span id="averageScore">0</span>
+            </div>
+            <div class="summary-item">
+                <h4>Điểm Cao Nhất</h4>
+                <span id="highestScore">0</span>
+            </div>
+            <div class="summary-item">
+                <h4>Điểm Thấp Nhất</h4>
+                <span id="lowestScore">0</span>
+            </div>
+            <div class="summary-item">
+                <h4>Tỷ Lệ Đạt</h4>
+                <span id="passRate">0%</span>
+            </div>
+        </div>
+    </div>
+</div> 
+</body>
+</html>

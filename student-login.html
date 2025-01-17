@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - Teacher Dashboard</title>
+    <title>Đăng nhập - Học sinh</title>
+    <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -11,11 +12,10 @@
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
-                <i class="fas fa-user-tie"></i>
-                <h2>Đăng nhập Giáo viên</h2>
+                <i class="fas fa-user-graduate"></i>
+                <h2>Đăng nhập Học sinh</h2>
             </div>
-            <div id="errorMessage" class="error-message"></div>
-            <form id="loginForm" class="login-form">
+            <form id="studentLoginForm" class="login-form">
                 <div class="form-group">
                     <label for="username">Tên đăng nhập</label>
                     <input type="text" id="username" required>
@@ -29,29 +29,22 @@
                 </button>
             </form>
             <div class="login-footer">
-                <a href="student-login.html">Đăng nhập dành cho học sinh</a>
+                <a href="index.html">Quay lại trang chủ</a>
             </div>
         </div>
     </div>
 
-    <script src="js/auth.js"></script>
+    <script src="js/student-connection.js"></script>
     <script>
-        const loginForm = document.getElementById('loginForm');
-        const errorMessage = document.getElementById('errorMessage');
-
-        loginForm.addEventListener('submit', (e) => {
+        document.getElementById('studentLoginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            
-            if (teacherLogin(username, password)) {
-                window.location.href = 'teacher-dashboard.html';
+
+            if (studentConnection.loginStudent(username, password)) {
+                window.location.href = 'student-dashboard.html';
             } else {
-                errorMessage.textContent = 'Sai tên đăng nhập hoặc mật khẩu';
-                errorMessage.classList.add('show');
-                setTimeout(() => {
-                    errorMessage.classList.remove('show');
-                }, 3000);
+                alert('Sai tên đăng nhập hoặc mật khẩu');
             }
         });
     </script>

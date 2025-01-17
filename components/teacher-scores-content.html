@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<body>
+    <div class="scores-content">
+        <div class="score-actions">
+            <button class="btn btn-primary" onclick="scoreManager.openAddScoreModal()">
+                <i class="fas fa-plus"></i> Thêm điểm
+            </button>
+            <select id="classFilter">
+                <option value="">Tất cả lớp</option>
+                <option value="12A1">12A1</option>
+                <option value="12A2">12A2</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-edit"></i> Bảng Điểm</h3>
+            </div>
+            <div class="table-container">
+                <table id="scoreTable">
+                    <thead>
+                        <tr>
+                            <th>Mã học sinh</th>
+                            <th>Họ và tên</th>
+                            <th>Lớp</th>
+                            <th>Môn học</th>
+                            <th>Loại điểm</th>
+                            <th>Điểm số</th>
+                            <th>Ngày nhập</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal Thêm/Sửa Điểm -->
+        <div id="scoreModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalTitle">Thêm Điểm Mới</h3>
+                    <span class="close">&times;</span>
+                </div>
+                <form id="scoreForm">
+                    <input type="hidden" id="scoreId">
+                    <div class="form-group">
+                        <label for="studentSelect">Học sinh</label>
+                        <select id="studentSelect" required>
+                            <option value="">Chọn học sinh</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Môn học</label>
+                        <select id="subject" required>
+                            <option value="Toán">Toán</option>
+                            <option value="Văn">Văn</option>
+                            <option value="Anh">Anh</option>
+                            <option value="Lý">Lý</option>
+                            <option value="Hóa">Hóa</option>
+                            <option value="Sinh">Sinh</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="scoreType">Loại điểm</label>
+                        <select id="scoreType" required>
+                            <option value="Miệng">Miệng</option>
+                            <option value="15 phút">15 phút</option>
+                            <option value="1 tiết">1 tiết</option>
+                            <option value="Giữa kỳ">Giữa kỳ</option>
+                            <option value="Cuối kỳ">Cuối kỳ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="scoreValue">Điểm số</label>
+                        <input type="number" id="scoreValue" required min="0" max="10" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="scoreDate">Ngày nhập</label>
+                        <input type="date" id="scoreDate" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Lưu</button>
+                        <button type="button" class="btn btn-secondary" onclick="scoreManager.closeModal()">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

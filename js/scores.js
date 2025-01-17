@@ -1,116 +1,190 @@
-// Kiểm tra đăng nhập
-const teacher = checkTeacherAuth();
-
-// Khởi tạo localStorage nếu chưa có
-if (!localStorage.getItem('scores')) {
-    localStorage.setItem('scores', JSON.stringify([]));
-}
-
-// Lấy form và bảng
-const scoreForm = document.getElementById('scoreForm');
-const scoreHistory = document.getElementById('scoreHistory');
-
-// Xử lý sự kiện submit form
-scoreForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const scoreData = {
-        id: Date.now(), // Unique ID for each score
-        date: document.getElementById('date').value,
-        class: document.getElementById('className').value,
-        studentId: document.getElementById('studentId').value,
-        subject: document.getElementById('subject').value,
-        scoreType: document.getElementById('scoreType').value,
-        score: document.getElementById('score').value,
-        teacherId: teacher.username
-    };
-
-    // Lấy điểm hiện có và thêm điểm mới
-    const scores = JSON.parse(localStorage.getItem('scores'));
-    scores.push(scoreData);
-    localStorage.setItem('scores', JSON.stringify(scores));
-
-    // Cập nhật bảng
-    updateScoreTable();
-    
-    // Reset form
-    scoreForm.reset();
-    alert('Đã lưu điểm thành công!');
-});
-
-// Cập nhật bảng điểm
-function updateScoreTable() {
-    const scores = JSON.parse(localStorage.getItem('scores'));
-    const tbody = scoreHistory.querySelector('tbody');
-    tbody.innerHTML = '';
-
-    scores.filter(score => score.teacherId === teacher.username)
-         .forEach(score => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${score.date}</td>
-            <td>${score.class}</td>
-            <td>${score.studentId}</td>
-            <td>${score.subject}</td>
-            <td>${score.scoreType}</td>
-            <td>${score.score}</td>
-            <td>
-                <button onclick="editScore(${score.id})" class="btn btn-small btn-primary">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="deleteScore(${score.id})" class="btn btn-small btn-danger">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-// Xóa điểm
-function deleteScore(id) {
-    if (confirm('Bạn có chắc muốn xóa điểm này?')) {
-        const scores = JSON.parse(localStorage.getItem('scores'));
-        const newScores = scores.filter(score => score.id !== id);
-        localStorage.setItem('scores', JSON.stringify(newScores));
-        updateScoreTable();
+class ScoreManager {
+    constructor() {
+        this.initializeScores();
+        this.setupEventListeners();
+        this.loadStudentsForScoring();
+        this.loadScores();
     }
-}
 
-// Sửa điểm
-function editScore(id) {
-    const scores = JSON.parse(localStorage.getItem('scores'));
-    const score = scores.find(s => s.id === id);
-    if (score) {
-        document.getElementById('className').value = score.class;
-        document.getElementById('studentId').value = score.studentId;
-        document.getElementById('subject').value = score.subject;
-        document.getElementById('scoreType').value = score.scoreType;
-        document.getElementById('score').value = score.score;
-        document.getElementById('date').value = score.date;
-        
-        // Thêm ID vào form để biết đang sửa điểm nào
-        scoreForm.dataset.editId = id;
+    initializeScores() {
+        if (!localStorage.getItem('scores')) {
+            localStorage.setItem('scores', JSON.stringify([]));
+        }
     }
-}
 
-// Cập nhật danh sách học sinh khi chọn lớp
-document.getElementById('className').addEventListener('change', function(e) {
-    const selectedClass = e.target.value;
-    const studentSelect = document.getElementById('studentId');
-    studentSelect.innerHTML = '<option value="">Chọn học sinh</option>';
-    
-    if (selectedClass) {
+    setupEventListeners() {
         // Lọc học sinh theo lớp
-        const classStudents = users.students.filter(student => student.class === selectedClass);
-        classStudents.forEach(student => {
-            const option = document.createElement('option');
-            option.value = student.username;
-            option.textContent = student.fullName;
-            studentSelect.appendChild(option);
+        document.getElementById('classFilter')?.addEventListener('change', () => {
+            this.loadStudentsForScoring();
         });
-    }
-});
 
-// Load dữ liệu khi trang được tải
-updateScoreTable(); 
+        // Form nhập điểm
+        document.getElementById('scoreForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveScore();
+        });
+
+        // Đóng modal
+        const closeBtn = document.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeModal());
+        }
+    }
+
+    loadStudentsForScoring() {
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        const classFilter = document.getElementById('classFilter')?.value;
+        
+        const filteredStudents = classFilter 
+            ? students.filter(student => student.class === classFilter)
+            : students;
+
+        const studentSelect = document.getElementById('studentSelect');
+        if (studentSelect) {
+            studentSelect.innerHTML = `
+                <option value="">Chọn học sinh</option>
+                ${filteredStudents.map(student => `
+                    <option value="${student.studentId}">
+                        ${student.studentId} - ${student.fullName} - ${student.class}
+                    </option>
+                `).join('')}
+            `;
+        }
+    }
+
+    loadScores() {
+        const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        const tbody = document.querySelector('#scoreTable tbody');
+        if (!tbody) return;
+
+        // Sắp xếp điểm theo ngày mới nhất
+        const sortedScores = scores.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        tbody.innerHTML = sortedScores.map(score => {
+            const student = students.find(s => s.studentId === score.studentId);
+            if (!student) return ''; // Bỏ qua nếu không tìm thấy học sinh
+
+            return `
+                <tr>
+                    <td>${student.studentId}</td>
+                    <td>${student.fullName}</td>
+                    <td>${student.class}</td>
+                    <td>${score.subject}</td>
+                    <td>${score.type}</td>
+                    <td>${score.score}</td>
+                    <td>${new Date(score.date).toLocaleDateString('vi-VN')}</td>
+                    <td>
+                        <button class="btn btn-edit" onclick="scoreManager.editScore('${score.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-delete" onclick="scoreManager.deleteScore('${score.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    openAddScoreModal() {
+        document.getElementById('modalTitle').textContent = 'Thêm Điểm Mới';
+        document.getElementById('scoreForm').reset();
+        document.getElementById('scoreModal').style.display = 'block';
+        this.loadStudentsForScoring();
+    }
+
+    editScore(scoreId) {
+        const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+        const score = scores.find(s => s.id === scoreId);
+        if (!score) return;
+
+        document.getElementById('modalTitle').textContent = 'Sửa Điểm';
+        document.getElementById('scoreId').value = score.id;
+        document.getElementById('studentSelect').value = score.studentId;
+        document.getElementById('subject').value = score.subject;
+        document.getElementById('scoreType').value = score.type;
+        document.getElementById('scoreValue').value = score.score;
+        document.getElementById('scoreDate').value = score.date.split('T')[0];
+
+        document.getElementById('scoreModal').style.display = 'block';
+    }
+
+    saveScore() {
+        const scoreId = document.getElementById('scoreId')?.value || Date.now().toString();
+        const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+        const studentId = document.getElementById('studentSelect').value;
+        const scoreValue = parseFloat(document.getElementById('scoreValue').value);
+
+        // Kiểm tra học sinh có tồn tại
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        const student = students.find(s => s.studentId === studentId);
+        if (!student) {
+            alert('Học sinh không tồn tại!');
+            return;
+        }
+
+        // Validate điểm số
+        if (scoreValue < 0 || scoreValue > 10) {
+            alert('Điểm số phải từ 0 đến 10!');
+            return;
+        }
+
+        const scoreData = {
+            id: scoreId,
+            studentId: studentId,
+            studentName: student.fullName, // Thêm tên học sinh
+            class: student.class, // Thêm lớp
+            subject: document.getElementById('subject').value,
+            type: document.getElementById('scoreType').value,
+            score: scoreValue,
+            date: document.getElementById('scoreDate').value
+        };
+
+        const existingIndex = scores.findIndex(s => s.id === scoreId);
+        if (existingIndex >= 0) {
+            scores[existingIndex] = scoreData;
+        } else {
+            scores.push(scoreData);
+        }
+
+        localStorage.setItem('scores', JSON.stringify(scores));
+        this.closeModal();
+        this.loadScores();
+
+        // Cập nhật lại bảng học sinh nếu đang ở trang học sinh
+        if (window.studentManager) {
+            window.studentManager.loadStudents();
+        }
+    }
+
+    deleteScore(scoreId) {
+        if (!confirm('Bạn có chắc chắn muốn xóa điểm này?')) return;
+
+        const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+        const filteredScores = scores.filter(s => s.id !== scoreId);
+        localStorage.setItem('scores', JSON.stringify(filteredScores));
+        
+        this.loadScores();
+
+        // Cập nhật lại bảng học sinh nếu đang ở trang học sinh
+        if (window.studentManager) {
+            window.studentManager.loadStudents();
+        }
+    }
+
+    closeModal() {
+        document.getElementById('scoreModal').style.display = 'none';
+    }
+
+    validateScore(score) {
+        return score >= 0 && score <= 10;
+    }
+}
+
+// Khởi tạo quản lý điểm
+let scoreManager;
+document.addEventListener('DOMContentLoaded', () => {
+    scoreManager = new ScoreManager();
+    window.scoreManager = scoreManager;
+}); 

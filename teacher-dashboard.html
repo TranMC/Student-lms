@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Giáo Viên - Student Score Management</title>
+    <title>Teacher Dashboard</title>
+    <!-- CSS -->
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/students.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header class="header">
         <div class="header-left">
-            <h1><i class="fas fa-graduation-cap"></i> Quản Lý Điểm</h1>
+            <h1>Teacher Dashboard</h1>
         </div>
-        <div class="user-info">
-            <div class="user-avatar">
-                <i class="fas fa-user-circle"></i>
-            </div>
+        <div class="header-right">
             <span id="teacherName"></span>
-            <button onclick="logout()" class="logout-btn">
+            <button class="btn btn-logout" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i> Đăng xuất
             </button>
         </div>
@@ -26,182 +27,43 @@
     <div class="dashboard-container">
         <nav class="sidebar">
             <ul>
-                <li class="active">
+                <li data-page="dashboard">
                     <a href="#dashboard"><i class="fas fa-home"></i> Tổng quan</a>
                 </li>
-                <li>
-                    <a href="teacher-scores.html"><i class="fas fa-edit"></i> Nhập điểm</a>
+                <li data-page="scores">
+                    <a href="#scores"><i class="fas fa-edit"></i> Nhập điểm</a>
                 </li>
-                <li>
-                    <a href="teacher-statistics.html"><i class="fas fa-chart-bar"></i> Thống kê</a>
+                <li data-page="statistics">
+                    <a href="#statistics"><i class="fas fa-chart-bar"></i> Thống kê</a>
                 </li>
-                <li>
-                    <a href="teacher-students.html"><i class="fas fa-user-graduate"></i> Học sinh</a>
-                </li>
-                <li>
-                    <a href="#settings"><i class="fas fa-cog"></i> Cài đặt</a>
+                <li data-page="students">
+                    <a href="#students"><i class="fas fa-user-graduate"></i> Học sinh</a>
                 </li>
             </ul>
         </nav>
 
         <main class="dashboard">
-            <div class="welcome-section">
-                <h2>Xin chào, <span id="teacherNameWelcome"></span></h2>
-                <p class="date-time" id="currentDateTime"></p>
-            </div>
-
-            <div class="quick-actions">
-                <button class="action-btn">
-                    <i class="fas fa-plus"></i>
-                    Nhập điểm mới
-                </button>
-                <button class="action-btn">
-                    <i class="fas fa-file-export"></i>
-                    Xuất báo cáo
-                </button>
-                <button class="action-btn">
-                    <i class="fas fa-bell"></i>
-                    Thông báo
-                </button>
-            </div>
-
-            <div class="dashboard-grid">
-                <div class="stats-card primary">
-                    <div class="stats-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stats-info">
-                        <h3>150</h3>
-                        <p>Tổng số học sinh</p>
-                    </div>
-                    <div class="stats-trend up">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>5%</span>
-                    </div>
-                </div>
-                
-                <div class="stats-card success">
-                    <div class="stats-icon">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <div class="stats-info">
-                        <h3>5</h3>
-                        <p>Lớp đang dạy</p>
-                    </div>
-                    <div class="stats-trend">
-                        <span>Học kỳ 1</span>
-                    </div>
-                </div>
-                
-                <div class="stats-card warning">
-                    <div class="stats-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stats-info">
-                        <h3>85%</h3>
-                        <p>Tỷ lệ đạt</p>
-                    </div>
-                    <div class="stats-trend up">
-                        <i class="fas fa-arrow-up"></i>
-                        <span>2%</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="content-grid">
-                <div class="card recent-scores">
-                    <div class="card-header">
-                        <h3><i class="fas fa-clock"></i> Điểm số gần đây</h3>
-                        <button class="btn btn-text">Xem tất cả</button>
-                    </div>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Học sinh</th>
-                                    <th>Lớp</th>
-                                    <th>Điểm</th>
-                                    <th>Ngày</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <div class="student-info">
-                                            <span>Nguyễn Văn A</span>
-                                        </div>
-                                    </td>
-                                    <td>12A1</td>
-                                    <td>8.5</td>
-                                    <td>15/03/2024</td>
-                                    <td><span class="status success">Đạt</span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <div class="student-info">
-                                            <span>Trần Thị B</span>
-                                        </div>
-                                    </td>
-                                    <td>12A1</td>
-                                    <td>6.5</td>
-                                    <td>15/03/2024</td>
-                                    <td><span class="status warning">Trung bình</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="card upcoming-events">
-                    <div class="card-header">
-                        <h3><i class="fas fa-calendar"></i> Sự kiện sắp tới</h3>
-                    </div>
-                    <div class="events-list">
-                        <div class="event-item">
-                            <div class="event-date">
-                                <span class="day">20</span>
-                                <span class="month">Tháng 3</span>
-                            </div>
-                            <div class="event-details">
-                                <h4>Kiểm tra giữa kỳ</h4>
-                                <p>Lớp 12A1 - 7:00 AM</p>
-                            </div>
-                        </div>
-                        <div class="event-item">
-                            <div class="event-date">
-                                <span class="day">25</span>
-                                <span class="month">Tháng 3</span>
-                            </div>
-                            <div class="event-details">
-                                <h4>Họp phụ huynh</h4>
-                                <p>Tất cả các lớp - 2:00 PM</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div id="pageContent">
+                <!-- Nội dung sẽ được load động -->
             </div>
         </main>
     </div>
 
-    <script src="js/users.js"></script>
+    <!-- Scripts -->
     <script src="js/auth.js"></script>
-    <script>
-        // Kiểm tra quyền truy cập
-        const teacher = checkTeacherAuth();
-        if (teacher) {
-            document.getElementById('teacherName').textContent = teacher.fullName;
-            document.getElementById('teacherNameWelcome').textContent = teacher.fullName;
-        }
+    <script src="js/teacher-dashboard.js"></script>
+    <script src="js/students.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/scores.js"></script>
 
-        // Hiển thị ngày giờ hiện tại
-        function updateDateTime() {
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('vi-VN', options);
-        }
-        updateDateTime();
-        setInterval(updateDateTime, 1000);
+    <script>
+        // Kiểm tra đăng nhập khi tải trang
+        document.addEventListener('DOMContentLoaded', () => {
+            const teacher = checkTeacherAuth();
+            if (!teacher) {
+                window.location.href = 'login.html';
+            }
+        });
     </script>
 </body>
 </html> 
