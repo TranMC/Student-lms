@@ -1,18 +1,30 @@
 // Khởi tạo dữ liệu mẫu
 const initializeData = () => {
-    // Khởi tạo dữ liệu giáo viên mẫu nếu chưa có
+    // Khởi tạo admin nếu chưa có
+    if (!localStorage.getItem('admins')) {
+        const admins = [{
+            id: 1,
+            username: 'admin',
+            password: '1',
+            role: 'admin'
+        }];
+        localStorage.setItem('admins', JSON.stringify(admins));
+    }
+
+    // Cập nhật teachers với role
     if (!localStorage.getItem('teachers')) {
         const teachers = [{
             id: 1,
             username: 'teacher1',
             password: '123456',
-            fullName: 'Hỗn thần độn',
-            subject: 'Quỷ'
+            fullName: 'Nguyễn Văn A',
+            subject: 'Toán',
+            role: 'teacher'
         }];
         localStorage.setItem('teachers', JSON.stringify(teachers));
     }
 
-    // Khởi tạo dữ liệu học sinh mẫu nếu chưa có
+    // Cập nhật students với role
     if (!localStorage.getItem('students')) {
         const students = [
             {
@@ -22,7 +34,8 @@ const initializeData = () => {
                 username: 'student1',
                 password: '123456',
                 email: 'an@example.com',
-                phone: '0123456789'
+                phone: '0123456789',
+                role: 'student'
             },
             {
                 studentId: 'HS002',
@@ -31,7 +44,8 @@ const initializeData = () => {
                 username: 'student2',
                 password: '123456',
                 email: 'binh@example.com',
-                phone: '0123456790'
+                phone: '0123456790',
+                role: 'student'
             },
             {
                 studentId: 'HS003',
@@ -40,7 +54,8 @@ const initializeData = () => {
                 username: 'student3',
                 password: '123456',
                 email: 'cuong@example.com',
-                phone: '0123456791'
+                phone: '0123456791',
+                role: 'student'
             }
         ];
         localStorage.setItem('students', JSON.stringify(students));
@@ -86,13 +101,25 @@ const initializeData = () => {
     }
 };
 
+// Kiểm tra đăng nhập admin
+const adminLogin = (username, password) => {
+    const admins = JSON.parse(localStorage.getItem('admins') || '[]');
+    const admin = admins.find(a => a.username === username && a.password === password);
+    
+    if (admin) {
+        localStorage.setItem('currentUser', JSON.stringify({...admin, role: 'admin'}));
+        return true;
+    }
+    return false;
+};
+
 // Kiểm tra đăng nhập giáo viên
 const teacherLogin = (username, password) => {
     const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
     const teacher = teachers.find(t => t.username === username && t.password === password);
     
     if (teacher) {
-        localStorage.setItem('currentTeacher', JSON.stringify(teacher));
+        localStorage.setItem('currentUser', JSON.stringify({...teacher, role: 'teacher'}));
         return true;
     }
     return false;
@@ -104,28 +131,21 @@ const studentLogin = (username, password) => {
     const student = students.find(s => s.username === username && s.password === password);
     
     if (student) {
-        localStorage.setItem('currentStudent', JSON.stringify(student));
+        localStorage.setItem('currentUser', JSON.stringify({...student, role: 'student'}));
         return true;
     }
     return false;
 };
 
-// Kiểm tra trạng thái đăng nhập giáo viên
-const checkTeacherAuth = () => {
-    const teacherData = localStorage.getItem('currentTeacher');
-    return teacherData ? JSON.parse(teacherData) : null;
-};
-
-// Kiểm tra trạng thái đăng nhập học sinh
-const checkStudentAuth = () => {
-    const studentData = localStorage.getItem('currentStudent');
-    return studentData ? JSON.parse(studentData) : null;
+// Kiểm tra role của user hiện tại
+const getCurrentUser = () => {
+    const userData = localStorage.getItem('currentUser');
+    return userData ? JSON.parse(userData) : null;
 };
 
 // Đăng xuất
 const logout = () => {
-    localStorage.removeItem('currentTeacher');
-    localStorage.removeItem('currentStudent');
+    localStorage.removeItem('currentUser');
     window.location.href = 'login.html';
 };
 

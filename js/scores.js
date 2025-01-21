@@ -152,9 +152,9 @@ class ScoreManager {
         this.closeModal();
         this.loadScores();
 
-        // Cập nhật lại bảng học sinh nếu đang ở trang học sinh
-        if (window.studentManager) {
-            window.studentManager.loadStudents();
+        // Cập nhật tất cả các trang
+        if (window.navigationInstance) {
+            window.navigationInstance.refreshAllPages();
         }
     }
 
@@ -167,9 +167,9 @@ class ScoreManager {
         
         this.loadScores();
 
-        // Cập nhật lại bảng học sinh nếu đang ở trang học sinh
-        if (window.studentManager) {
-            window.studentManager.loadStudents();
+        // Cập nhật tất cả các trang
+        if (window.navigationInstance) {
+            window.navigationInstance.refreshAllPages();
         }
     }
 

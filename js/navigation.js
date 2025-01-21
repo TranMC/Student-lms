@@ -27,40 +27,83 @@ class Navigation {
 
             // Load nội dung trang
             const response = await fetch(`components/teacher-${page}-content.html`);
-            if (!response.ok) throw new Error('Không thể tải trang');
-            
             const content = await response.text();
             this.pageContent.innerHTML = content;
 
-            // Khởi tạo các chức năng cho trang mới
+            // Đợi DOM cập nhật
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Khởi tạo chức năng
             this.initializePageFunctions(page);
+            this.currentPage = page;
         } catch (error) {
             console.error('Error loading page:', error);
-            this.pageContent.innerHTML = '<div class="error">Không thể tải trang. Vui lòng thử lại sau.</div>';
         }
     }
 
     initializePageFunctions(page) {
-        switch(page) {
+        try {
+            // Hủy các instance cũ
+            if (window.studentManager) window.studentManager = null;
+            if (window.scoreManager) window.scoreManager = null;
+            if (window.statisticsManager) window.statisticsManager = null;
+            if (window.dashboardManager) window.dashboardManager = null;
+
+            // Khởi tạo manager mới theo trang
+            switch(page) {
+                case 'dashboard':
+                    window.dashboardManager = new TeacherDashboard();
+                    break;
+                case 'students':
+                    window.studentManager = new StudentManager();
+                    break;
+                case 'scores':
+                    window.scoreManager = new ScoreManager();
+                    break;
+                case 'statistics':
+                    if (window.StatisticsManager) {
+                        window.statisticsManager = new window.StatisticsManager();
+                    }
+                    break;
+            }
+        } catch (error) {
+            console.error('Error in initializePageFunctions:', error);
+        }
+    }
+
+    // Hàm cập nhật lại dữ liệu cho tất cả các trang
+    refreshAllPages() {
+        // Cập nhật trang hiện tại
+        switch(this.currentPage) {
             case 'dashboard':
-                new TeacherDashboard();
+                if (window.dashboardManager) {
+                    window.dashboardManager.updateStats();
+                }
                 break;
             case 'students':
-                new StudentManager();
+                if (window.studentManager) {
+                    window.studentManager.loadStudents();
+                }
                 break;
             case 'scores':
-                // Khởi tạo trang điểm
+                if (window.scoreManager) {
+                    window.scoreManager.loadScores();
+                }
                 break;
             case 'statistics':
-                // Khởi tạo trang thống kê
+                if (window.statisticsManager) {
+                    window.statisticsManager.updateStatistics();
+                }
                 break;
         }
     }
 }
 
-// Khởi tạo navigation khi trang load
+// Khởi tạo navigation và export để các module khác có thể sử dụng
+let navigationInstance;
 document.addEventListener('DOMContentLoaded', () => {
-    const navigation = new Navigation();
+    navigationInstance = new Navigation();
+    window.navigationInstance = navigationInstance;
     // Load trang mặc định
-    navigation.loadPage('dashboard');
+    navigationInstance.loadPage('dashboard');
 }); 

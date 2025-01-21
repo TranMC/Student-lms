@@ -3,55 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - Teacher Dashboard</title>
+    <title>Đăng nhập - Hệ thống quản lý điểm</title>
     <link rel="stylesheet" href="css/login.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="login-page">
+<body>
     <div class="login-container">
-        <div class="login-card">
+        <div class="login-box">
             <div class="login-header">
-                <i class="fas fa-user-tie"></i>
-                <h2>Đăng nhập Giáo viên</h2>
+                <h2><i class="fas fa-graduation-cap"></i> Đăng nhập</h2>
+                <p>Hệ thống quản lý điểm</p>
             </div>
-            <div id="errorMessage" class="error-message"></div>
-            <form id="loginForm" class="login-form">
+            <form id="loginForm">
                 <div class="form-group">
-                    <label for="username">Tên đăng nhập</label>
+                    <label for="username">
+                        <i class="fas fa-user"></i> Tên đăng nhập
+                    </label>
                     <input type="text" id="username" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Mật khẩu</label>
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Mật khẩu
+                    </label>
                     <input type="password" id="password" required>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">
+                <div class="form-group">
+                    <label for="role">
+                        <i class="fas fa-users"></i> Vai trò
+                    </label>
+                    <select id="role" required>
+                        <option value="admin">Admin</option>
+                        <option value="teacher">Giáo viên</option>
+                        <option value="student">Học sinh</option>
+                    </select>
+                </div>
+                <button type="submit">
                     <i class="fas fa-sign-in-alt"></i> Đăng nhập
                 </button>
             </form>
-            <div class="login-footer">
-                <a href="student-login.html">Đăng nhập dành cho học sinh</a>
-            </div>
         </div>
     </div>
 
     <script src="js/auth.js"></script>
     <script>
-        const loginForm = document.getElementById('loginForm');
-        const errorMessage = document.getElementById('errorMessage');
-
-        loginForm.addEventListener('submit', (e) => {
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            
-            if (teacherLogin(username, password)) {
-                window.location.href = 'teacher-dashboard.html';
+            const role = document.getElementById('role').value;
+
+            let loginSuccess = false;
+            let redirectUrl = '';
+
+            switch(role) {
+                case 'admin':
+                    loginSuccess = adminLogin(username, password);
+                    redirectUrl = 'admin-dashboard.html';
+                    break;
+                case 'teacher':
+                    loginSuccess = teacherLogin(username, password);
+                    redirectUrl = 'teacher-dashboard.html';
+                    break;
+                case 'student':
+                    loginSuccess = studentLogin(username, password);
+                    redirectUrl = 'student-dashboard.html';
+                    break;
+            }
+
+            if (loginSuccess) {
+                window.location.href = redirectUrl;
             } else {
-                errorMessage.textContent = 'Sai tên đăng nhập hoặc mật khẩu';
-                errorMessage.classList.add('show');
-                setTimeout(() => {
-                    errorMessage.classList.remove('show');
-                }, 3000);
+                alert('Sai tên đăng nhập hoặc mật khẩu!');
             }
         });
     </script>

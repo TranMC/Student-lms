@@ -173,6 +173,11 @@ class StudentManager {
         localStorage.setItem('students', JSON.stringify(students));
         this.closeModal();
         this.loadStudents();
+
+        // Cập nhật tất cả các trang
+        if (window.navigationInstance) {
+            window.navigationInstance.refreshAllPages();
+        }
     }
 
     deleteStudent(studentId) {
@@ -190,9 +195,9 @@ class StudentManager {
 
         this.loadStudents();
         
-        // Cập nhật lại bảng điểm nếu đang ở trang điểm
-        if (window.scoreManager) {
-            window.scoreManager.loadScores();
+        // Cập nhật tất cả các trang
+        if (window.navigationInstance) {
+            window.navigationInstance.refreshAllPages();
         }
     }
 

@@ -279,4 +279,223 @@ function updateSummary(stats) {
     document.getElementById('highestScore').textContent = stats.highest.toFixed(2);
     document.getElementById('lowestScore').textContent = stats.lowest.toFixed(2);
     document.getElementById('passRate').textContent = `${stats.passRate.toFixed(1)}%`;
-} 
+}
+
+// Định nghĩa class trước khi sử dụng
+window.StatisticsManager = class StatisticsManager {
+    constructor() {
+        console.log('StatisticsManager initialized');
+        // Đợi một chút để DOM được cập nhật
+        setTimeout(() => {
+            this.initializeCharts();
+            this.setupEventListeners();
+            this.updateStatistics();
+        }, 100);
+    }
+
+    setupEventListeners() {
+        const filterBtn = document.getElementById('filterBtn');
+        if (filterBtn) {
+            filterBtn.addEventListener('click', () => this.updateStatistics());
+        }
+    }
+
+    initializeCharts() {
+        try {
+            console.log('Initializing charts...');
+            
+            // Phân bố điểm
+            const distributionCtx = document.getElementById('scoreDistribution');
+            if (distributionCtx) {
+                console.log('Creating score distribution chart');
+                this.scoreDistribution = new Chart(distributionCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['0-2', '2-4', '4-6', '6-8', '8-10'],
+                        datasets: [{
+                            label: 'Số học sinh',
+                            data: [0, 0, 0, 0, 0],
+                            backgroundColor: '#3b82f6'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Xu hướng điểm
+            const trendCtx = document.getElementById('scoreTrend');
+            if (trendCtx) {
+                console.log('Creating score trend chart');
+                this.scoreTrend = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Điểm trung bình',
+                            data: [],
+                            borderColor: '#3b82f6',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Tỷ lệ đạt/không đạt
+            const ratioCtx = document.getElementById('passRatio');
+            if (ratioCtx) {
+                console.log('Creating pass ratio chart');
+                this.passRatio = new Chart(ratioCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Đạt', 'Không đạt'],
+                        datasets: [{
+                            data: [0, 0],
+                            backgroundColor: ['#22c55e', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            console.log('Charts initialized successfully');
+        } catch (error) {
+            console.error('Error initializing charts:', error);
+        }
+    }
+
+    updateStatistics() {
+        try {
+            console.log('Updating statistics...');
+            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+            const students = JSON.parse(localStorage.getItem('students') || '[]');
+
+            console.log('Found scores:', scores.length);
+            console.log('Found students:', students.length);
+
+            // Lọc điểm theo lớp và môn học
+            let filteredScores = [...scores];
+            const classFilter = document.getElementById('classFilter')?.value;
+            const subjectFilter = document.getElementById('subjectFilter')?.value;
+
+            if (classFilter) {
+                filteredScores = filteredScores.filter(score => {
+                    const student = students.find(s => s.studentId === score.studentId);
+                    return student && student.class === classFilter;
+                });
+            }
+
+            if (subjectFilter) {
+                filteredScores = filteredScores.filter(score => score.subject === subjectFilter);
+            }
+
+            console.log('Filtered scores:', filteredScores.length);
+
+            this.updateScoreDistribution(filteredScores);
+            this.updateScoreTrend(filteredScores);
+            this.updatePassRatio(filteredScores);
+            this.updateSummary(filteredScores);
+        } catch (error) {
+            console.error('Error updating statistics:', error);
+        }
+    }
+
+    updateScoreDistribution(scores) {
+        if (!this.scoreDistribution) {
+            console.error('Score distribution chart not initialized');
+            return;
+        }
+
+        const distribution = [0, 0, 0, 0, 0];
+        scores.forEach(score => {
+            const value = parseFloat(score.score);
+            if (value >= 0 && value < 2) distribution[0]++;
+            else if (value < 4) distribution[1]++;
+            else if (value < 6) distribution[2]++;
+            else if (value < 8) distribution[3]++;
+            else if (value <= 10) distribution[4]++;
+        });
+
+        this.scoreDistribution.data.datasets[0].data = distribution;
+        this.scoreDistribution.update();
+        console.log('Score distribution updated:', distribution);
+    }
+
+    updateScoreTrend(scores) {
+        if (!this.scoreTrend) {
+            console.error('Score trend chart not initialized');
+            return;
+        }
+
+        const sortedScores = scores.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const dailyAverages = {};
+
+        sortedScores.forEach(score => {
+            const date = score.date.split('T')[0];
+            if (!dailyAverages[date]) {
+                dailyAverages[date] = { sum: 0, count: 0 };
+            }
+            dailyAverages[date].sum += parseFloat(score.score);
+            dailyAverages[date].count++;
+        });
+
+        const labels = Object.keys(dailyAverages);
+        const data = labels.map(date => 
+            (dailyAverages[date].sum / dailyAverages[date].count).toFixed(1)
+        );
+
+        this.scoreTrend.data.labels = labels;
+        this.scoreTrend.data.datasets[0].data = data;
+        this.scoreTrend.update();
+        console.log('Score trend updated:', data);
+    }
+
+    updatePassRatio(scores) {
+        if (!this.passRatio) {
+            console.error('Pass ratio chart not initialized');
+            return;
+        }
+
+        const passCount = scores.filter(score => parseFloat(score.score) >= 5).length;
+        const failCount = scores.length - passCount;
+
+        this.passRatio.data.datasets[0].data = [passCount, failCount];
+        this.passRatio.update();
+        console.log('Pass ratio updated:', [passCount, failCount]);
+    }
+
+    updateSummary(scores) {
+        try {
+            const average = scores.length > 0 
+                ? (scores.reduce((sum, score) => sum + parseFloat(score.score), 0) / scores.length).toFixed(1)
+                : 0;
+
+            const scoreValues = scores.map(score => parseFloat(score.score));
+            const highest = scores.length > 0 ? Math.max(...scoreValues) : 0;
+            const lowest = scores.length > 0 ? Math.min(...scoreValues) : 0;
+            const passCount = scores.filter(score => parseFloat(score.score) >= 5).length;
+            const passRate = scores.length > 0 ? ((passCount / scores.length) * 100).toFixed(1) : 0;
+
+            document.getElementById('averageScore').textContent = average;
+            document.getElementById('highestScore').textContent = highest.toFixed(1);
+            document.getElementById('lowestScore').textContent = lowest.toFixed(1);
+            document.getElementById('passRate').textContent = `${passRate}%`;
+
+            console.log('Summary updated:', { average, highest, lowest, passRate });
+        } catch (error) {
+            console.error('Error updating summary:', error);
+        }
+    }
+}
+
+// Không tự động khởi tạo ở đây nữa
+console.log('StatisticsManager defined'); 

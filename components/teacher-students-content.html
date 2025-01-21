@@ -10,23 +10,15 @@
 <body>
     <div class="student-content">
         <div class="student-actions">
-            <button class="btn btn-primary" onclick="studentManager.openAddStudentModal()">
-                <i class="fas fa-plus"></i> Thêm học sinh
-            </button>
             <div class="search-box">
                 <input type="text" id="searchStudent" placeholder="Tìm kiếm học sinh...">
                 <i class="fas fa-search"></i>
             </div>
-            <select id="classFilter">
-                <option value="">Tất cả lớp</option>
-                <option value="12A1">12A1</option>
-                <option value="12A2">12A2</option>
-            </select>
         </div>
 
         <div class="card">
             <div class="card-header">
-                <h3><i class="fas fa-user-graduate"></i> Danh Sách Học Sinh</h3>
+                <h3><i class="fas fa-user-graduate"></i> Danh sách học sinh</h3>
             </div>
             <div class="table-container">
                 <table id="studentTable">
@@ -35,62 +27,12 @@
                             <th>Mã học sinh</th>
                             <th>Họ và tên</th>
                             <th>Lớp</th>
-                            <th>Điểm TB</th>
-                            <th>Xếp loại</th>
-                            <th>Thao tác</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                    </tbody>
+                    <tbody></tbody>
                 </table>
-            </div>
-        </div>
-
-        <!-- Modal Thêm/Sửa Học Sinh -->
-        <div id="studentModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="modalTitle">Thêm Học Sinh Mới</h3>
-                    <span class="close">&times;</span>
-                </div>
-                <form id="studentForm">
-                    <div class="form-group">
-                        <label for="studentId">Mã học sinh</label>
-                        <input type="text" id="studentId" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="fullName">Họ và tên</label>
-                        <input type="text" id="fullName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="class">Lớp</label>
-                        <select id="class" required>
-                            <option value="12A1">12A1</option>
-                            <option value="12A2">12A2</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="username">Tên đăng nhập</label>
-                        <input type="text" id="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Mật khẩu</label>
-                        <input type="password" id="password" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="phone">Số điện thoại</label>
-                        <input type="tel" id="phone">
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Lưu</button>
-                        <button type="button" class="btn btn-secondary" onclick="studentManager.closeModal()">Hủy</button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>

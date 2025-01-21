@@ -1,0 +1,74 @@
+<div class="student-management">
+    <div class="actions-bar">
+        <button id="addStudentBtn" class="btn-primary">
+            <i class="fas fa-plus"></i> Thêm học sinh
+        </button>
+        <div class="search-box">
+            <input type="text" id="searchStudent" placeholder="Tìm kiếm học sinh...">
+            <i class="fas fa-search"></i>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-user-graduate"></i> Danh sách học sinh</h3>
+        </div>
+        <div class="table-container">
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>Mã học sinh</th>
+                        <th>Họ và tên</th>
+                        <th>Lớp</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal thêm/sửa học sinh -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Thông tin học sinh</h3>
+                <span class="close" onclick="adminDashboard.closeModal('studentModal')">&times;</span>
+            </div>
+            <form id="studentForm">
+                <input type="hidden" name="studentId">
+                <div class="form-group">
+                    <label>Họ và tên</label>
+                    <input type="text" name="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label>Lớp</label>
+                    <select name="class" required>
+                        <option value="12A1">12A1</option>
+                        <option value="12A2">12A2</option>
+                        <option value="12A3">12A3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <input type="tel" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu</label>
+                    <input type="password" name="password" required>
+                </div>
+                <button type="submit" class="btn-primary">Lưu</button>
+            </form>
+        </div>
+    </div>
+</div> 
