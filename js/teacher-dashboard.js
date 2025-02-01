@@ -6,7 +6,6 @@ class TeacherDashboard {
     async initializeDashboard() {
         try {
             const data = await DataService.fetchDashboardData();
-            console.log('Initialized Dashboard Data:', data); // Debug
             this.updateDashboardView(data);
             
             // Cập nhật thời gian
@@ -23,23 +22,15 @@ class TeacherDashboard {
     }
 
     updateDashboardView(data) {
-        if (!data) return;
-
         // Cập nhật tên giáo viên
         const welcomeElement = document.getElementById('teacherNameWelcome');
         const headerElement = document.getElementById('teacherName');
         
-        console.log('Teacher Data:', data.teacher); // Debug
-        if (welcomeElement && data.teacher) {
-            welcomeElement.textContent = `Xin chào, ${data.teacher.fullName}!`;
-        }
-        if (headerElement && data.teacher) {
-            headerElement.textContent = data.teacher.fullName;
-        }
+        if (welcomeElement) welcomeElement.textContent = data.teacher.fullName;
+        if (headerElement) headerElement.textContent = data.teacher.fullName;
 
         // Cập nhật thống kê
         const { statistics } = data;
-        console.log('Statistics Data:', statistics); // Debug
         const totalStudentsElement = document.getElementById('totalStudents');
         const averageElement = document.getElementById('averageScore');
         const passRateElement = document.getElementById('passRate');

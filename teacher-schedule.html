@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch dạy học của Giáo viên</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/teacher-schedule.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <h1>Lịch dạy học</h1>
+        </div>
+        <div class="header-right">
+            <span id="teacherName"></span>
+            <button class="btn btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </button>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <ul>
+                <li data-page="dashboard">
+                    <a href="teacher-dashboard.html"><i class="fas fa-home"></i> Trang chủ</a>
+                </li>
+                <li data-page="schedule" class="active">
+                    <a href="teacher-schedule.html"><i class="fas fa-calendar-alt"></i> Lịch dạy học</a>
+                </li>
+                <!-- Bạn có thể thêm menu khác nếu cần -->
+            </ul>
+        </nav>
+
+        <main class="dashboard">
+            <div class="welcome-section">
+                <h2>Xin chào, <span id="teacherNameWelcome"></span></h2>
+            </div>
+
+            <section class="schedule-section">
+                <h3>Lịch dạy học hôm nay</h3>
+                <div id="teacherScheduleList" class="schedule-list">
+                    <!-- Danh sách lịch dạy học sẽ được hiển thị tại đây -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Load các file JS cần thiết -->
+    <script src="js/auth.js"></script>
+    <script src="js/data-service.js"></script>
+    <script src="js/teacher-schedule.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html> 

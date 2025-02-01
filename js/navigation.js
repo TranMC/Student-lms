@@ -26,7 +26,17 @@ class Navigation {
             });
 
             // Load nội dung trang
-            const response = await fetch(`components/teacher-${page}-content.html`);
+            let filePath = '';
+            switch(page) {
+                case 'schedule':
+                    filePath = 'components/teacher-schedule-content.html';
+                    break;
+                // ... các case khác ...
+                default:
+                    filePath = `components/teacher-${page}-content.html`;
+            }
+
+            const response = await fetch(filePath);
             const content = await response.text();
             this.pageContent.innerHTML = content;
 
@@ -36,6 +46,17 @@ class Navigation {
             // Khởi tạo chức năng
             this.initializePageFunctions(page);
             this.currentPage = page;
+
+            // Nếu đang ở trang schedule thì load script
+            if (page === 'schedule') {
+                // Load DataService trước nếu chưa được load
+                if (!window.DataService) {
+                    await this.loadScript('js/data-service.js');
+                }
+                // Sau đó mới load TeacherSchedule
+                await this.loadScript('js/teacher-schedule.js');
+                new TeacherSchedule();
+            }
         } catch (error) {
             console.error('Error loading page:', error);
         }
@@ -97,6 +118,17 @@ class Navigation {
                 break;
         }
     }
+
+    // Hàm helper để load script
+    async loadScript(src) {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.body.appendChild(script);
+        });
+    }
 }
 
 // Khởi tạo navigation và export để các module khác có thể sử dụng
@@ -106,4 +138,29 @@ document.addEventListener('DOMContentLoaded', () => {
     window.navigationInstance = navigationInstance;
     // Load trang mặc định
     navigationInstance.loadPage('dashboard');
-}); 
+});
+
+function loadPageContent(page) {
+    let filePath = '';
+    switch(page) {
+        case 'schedule':
+            filePath = 'components/teacher-schedule-content.html';
+            break;
+        // ... các case khác ...
+    }
+
+    fetch(filePath)
+        .then(response => response.text())
+        .then(content => {
+            document.getElementById('pageContent').innerHTML = content;
+            
+            if (page === 'schedule') {
+                const script = document.createElement('script');
+                script.src = 'js/teacher-schedule.js';
+                document.body.appendChild(script);
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi tải nội dung:', error);
+        });
+} 
