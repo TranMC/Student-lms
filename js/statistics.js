@@ -498,4 +498,163 @@ window.StatisticsManager = class StatisticsManager {
 }
 
 // Không tự động khởi tạo ở đây nữa
-console.log('StatisticsManager defined'); 
+console.log('StatisticsManager defined');
+
+function initializeStatistics() {
+    // Lắng nghe sự kiện cập nhật dữ liệu
+    document.addEventListener('dashboard-data-updated', (event) => {
+        updateStatisticsView(event.detail);
+    });
+    
+    // Lấy dữ liệu ban đầu
+    const data = DataService.getDashboardData();
+    if (data) {
+        updateStatisticsView(data);
+    }
+}
+
+function updateStatisticsView(data) {
+    // Cập nhật giao diện thống kê với dữ liệu mới
+    // ... code cập nhật biểu đồ và bảng thống kê
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Kiểm tra thông tin giáo viên trong sessionStorage
+        const teacherData = sessionStorage.getItem('teacherData');
+        if (!teacherData) {
+            window.location.href = 'teacher-login.html';
+            return;
+        }
+        // Lấy dữ liệu dashboard từ DataService
+        const data = await DataService.fetchDashboardData();
+        console.log("Data loaded for statistics:", data);
+        
+        // Cập nhật nội dung thống kê
+        updateStatisticsView(data.statistics);
+        
+        // Tạo biểu đồ thống kê với dữ liệu
+        initializeCharts(data);
+    } catch (error) {
+        console.error("Lỗi khi tải dữ liệu thống kê:", error);
+    }
+});
+
+function updateStatisticsView(statistics) {
+    if (!statistics) return;
+    const totalStudentsElement = document.getElementById('totalStudents');
+    const averageElement = document.getElementById('averageScore');
+    const passRateElement = document.getElementById('passRate');
+
+    if (totalStudentsElement) {
+        totalStudentsElement.textContent = statistics.totalStudents;
+    }
+    if (averageElement) {
+        averageElement.textContent = statistics.averageScore;
+    }
+    if (passRateElement) {
+        passRateElement.textContent = `${statistics.passRate}%`;
+    }
+}
+
+function initializeCharts(data) {
+    // Lấy danh sách điểm từ data, nếu không có thì dùng mảng rỗng
+    const scores = data.scores || [];
+
+    // ---------------------------
+    // Biểu đồ phân bố điểm
+    // ---------------------------
+    const distributionCtx = document.getElementById('scoreDistribution');
+    const distribution = Array(10).fill(0);
+    scores.forEach(s => {
+        const scoreValue = parseFloat(s.score);
+        if (!isNaN(scoreValue)) {
+            const idx = Math.min(Math.floor(scoreValue), 9);
+            distribution[idx]++;
+        }
+    });
+    if (distributionCtx) {
+        new Chart(distributionCtx, {
+            type: 'bar',
+            data: {
+                labels: distribution.map((_, i) => `${i}-${i+1}`),
+                datasets: [{
+                    label: 'Phân bố điểm',
+                    data: distribution,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+    // ---------------------------
+    // Biểu đồ xu hướng điểm theo ngày
+    // ---------------------------
+    const trendCtx = document.getElementById('scoreTrend');
+    const scoresByDate = {};
+    scores.forEach(s => {
+        const date = s.date;
+        const scoreValue = parseFloat(s.score);
+        if (!isNaN(scoreValue)) {
+            if (!scoresByDate[date]) scoresByDate[date] = [];
+            scoresByDate[date].push(scoreValue);
+        }
+    });
+    const trendDates = Object.keys(scoresByDate).sort();
+    const trendAverages = trendDates.map(date => {
+        const list = scoresByDate[date];
+        return (list.reduce((sum, val) => sum + val, 0) / list.length).toFixed(1);
+    });
+    if (trendCtx) {
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: trendDates,
+                datasets: [{
+                    label: 'Xu hướng điểm',
+                    data: trendAverages,
+                    fill: false,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    tension: 0.1
+                }]
+            },
+            options: {}
+        });
+    }
+
+    // ---------------------------
+    // Biểu đồ tỷ lệ đạt/không đạt
+    // ---------------------------
+    const passRatioCtx = document.getElementById('passRatioChart'); // Đảm bảo có thẻ canvas có ID này trong HTML
+    const validScores = scores.filter(s => !isNaN(parseFloat(s.score)));
+    const passCount = validScores.filter(s => parseFloat(s.score) >= 5).length;
+    const failCount = validScores.length - passCount;
+    if (passRatioCtx) {
+        new Chart(passRatioCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Đạt', 'Không đạt'],
+                datasets: [{
+                    data: [passCount, failCount],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 99, 132, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {}
+        });
+    }
+} 

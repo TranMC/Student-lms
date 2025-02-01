@@ -150,4 +150,5 @@ const logout = () => {
 };
 
 // Khởi tạo dữ liệu khi tải trang
-document.addEventListener('DOMContentLoaded', initializeData); 
+document.addEventListener('DOMContentLoaded', initializeData);
+

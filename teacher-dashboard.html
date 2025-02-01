@@ -51,6 +51,7 @@
 
     <!-- Scripts - Thay đổi thứ tự load -->
     <script src="js/auth.js"></script>
+    <script src="js/data-service.js"></script>
     <script src="js/statistics.js"></script>
     <script src="js/students.js"></script>
     <script src="js/scores.js"></script>
@@ -63,6 +64,7 @@
             if (!teacher) {
                 window.location.href = 'login.html';
             }
+            initializeDashboardData();
         });
     </script>
 </body>

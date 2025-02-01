@@ -1,35 +1,58 @@
 class TeacherDashboard {
     constructor() {
-        this.teacher = checkTeacherAuth();
-        if (this.teacher) {
-            this.initializeDashboard();
+        this.initializeDashboard();
+    }
+
+    async initializeDashboard() {
+        try {
+            const data = await DataService.fetchDashboardData();
+            console.log('Initialized Dashboard Data:', data); // Debug
+            this.updateDashboardView(data);
+            
+            // Cập nhật thời gian
+            this.updateDateTime();
+            setInterval(() => this.updateDateTime(), 60000);
+            
+            // Lắng nghe sự kiện cập nhật
+            document.addEventListener('dashboard-data-updated', (event) => {
+                this.updateDashboardView(event.detail);
+            });
+        } catch (error) {
+            console.error('Lỗi khởi tạo dashboard:', error);
         }
     }
 
-    initializeDashboard() {
-        // Hiển thị tên giáo viên
-        this.updateTeacherName();
-        
-        // Cập nhật thời gian
-        this.updateDateTime();
-        setInterval(() => this.updateDateTime(), 60000);
-        
-        // Cập nhật thống kê
-        this.updateStats();
-        
-        // Cập nhật lịch dạy
-        this.updateSchedule();
-        
-        // Cập nhật điểm gần đây
-        this.updateRecentScores();
-    }
+    updateDashboardView(data) {
+        if (!data) return;
 
-    updateTeacherName() {
+        // Cập nhật tên giáo viên
         const welcomeElement = document.getElementById('teacherNameWelcome');
         const headerElement = document.getElementById('teacherName');
         
-        if (welcomeElement) welcomeElement.textContent = this.teacher.fullName;
-        if (headerElement) headerElement.textContent = this.teacher.fullName;
+        console.log('Teacher Data:', data.teacher); // Debug
+        if (welcomeElement && data.teacher) {
+            welcomeElement.textContent = `Xin chào, ${data.teacher.fullName}!`;
+        }
+        if (headerElement && data.teacher) {
+            headerElement.textContent = data.teacher.fullName;
+        }
+
+        // Cập nhật thống kê
+        const { statistics } = data;
+        console.log('Statistics Data:', statistics); // Debug
+        const totalStudentsElement = document.getElementById('totalStudents');
+        const averageElement = document.getElementById('averageScore');
+        const passRateElement = document.getElementById('passRate');
+
+        if (totalStudentsElement) totalStudentsElement.textContent = statistics.totalStudents;
+        if (averageElement) averageElement.textContent = statistics.averageScore;
+        if (passRateElement) passRateElement.textContent = `${statistics.passRate}%`;
+
+        // Cập nhật điểm gần đây
+        this.updateRecentScores(data.recentScores);
+        
+        // Cập nhật lịch dạy
+        this.updateSchedule(data.schedule);
     }
 
     updateDateTime() {
@@ -48,57 +71,9 @@ class TeacherDashboard {
         }
     }
 
-    updateStats() {
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-
-        // Cập nhật số học sinh
-        const totalStudentsElement = document.getElementById('totalStudents');
-        if (totalStudentsElement) {
-            totalStudentsElement.textContent = students.length;
-        }
-
-        if (scores.length > 0) {
-            // Tính điểm trung bình
-            const average = scores.reduce((sum, score) => sum + parseFloat(score.score), 0) / scores.length;
-            const averageElement = document.getElementById('averageScore');
-            if (averageElement) {
-                averageElement.textContent = average.toFixed(1);
-            }
-
-            // Tính tỷ lệ đạt
-            const passCount = scores.filter(score => parseFloat(score.score) >= 5).length;
-            const passRate = (passCount / scores.length) * 100;
-            const passRateElement = document.getElementById('passRate');
-            if (passRateElement) {
-                passRateElement.textContent = `${passRate.toFixed(1)}%`;
-            }
-        }
-    }
-
-    updateSchedule() {
-        const scheduleContainer = document.getElementById('todaySchedule');
-        if (scheduleContainer) {
-            const schedule = this.getTeacherSchedule();
-            scheduleContainer.innerHTML = schedule.map(item => `
-                <div class="schedule-item">
-                    <div class="schedule-time">${item.time}</div>
-                    <div class="schedule-info">
-                        <div class="schedule-class">${item.class}</div>
-                        <div class="schedule-subject">${item.subject}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-    }
-
-    updateRecentScores() {
+    updateRecentScores(scores) {
         const recentScoresContainer = document.getElementById('recentScores');
         if (recentScoresContainer) {
-            const scores = JSON.parse(localStorage.getItem('scores') || '[]')
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 5);
-
             recentScoresContainer.innerHTML = scores.map(score => `
                 <div class="score-item">
                     <div class="score-info">
@@ -113,13 +88,19 @@ class TeacherDashboard {
         }
     }
 
-    getTeacherSchedule() {
-        // Mẫu lịch dạy - có thể thay bằng dữ liệu thực từ API/DB
-        return [
-            { time: '07:00 - 08:30', class: '12A1', subject: 'Toán' },
-            { time: '08:45 - 10:15', class: '12A2', subject: 'Vật lý' },
-            { time: '10:30 - 12:00', class: '12A1', subject: 'Hóa học' }
-        ];
+    updateSchedule(schedule) {
+        const scheduleContainer = document.getElementById('todaySchedule');
+        if (scheduleContainer) {
+            scheduleContainer.innerHTML = schedule.map(item => `
+                <div class="schedule-item">
+                    <div class="schedule-time">${item.time}</div>
+                    <div class="schedule-info">
+                        <div class="schedule-class">${item.class}</div>
+                        <div class="schedule-subject">${item.subject}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
     }
 }
 
