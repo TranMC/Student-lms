@@ -5,6 +5,31 @@ class TeacherDashboard {
 
     async initializeDashboard() {
         try {
+            // Debug: Kiểm tra dữ liệu trong localStorage
+            const teacherData = localStorage.getItem('teacher');
+            console.log('Raw teacher data:', teacherData);
+
+            if (teacherData) {
+                const teacher = JSON.parse(teacherData);
+                console.log('Parsed teacher data:', teacher);
+
+                // Nếu teacher là mảng, lấy phần tử đầu tiên
+                const teacherInfo = Array.isArray(teacher) ? teacher[0] : teacher;
+                console.log('Teacher info to use:', teacherInfo);
+
+                const welcomeElement = document.getElementById('teacherNameWelcome');
+                const headerElement = document.getElementById('teacherName');
+                
+                if (welcomeElement) {
+                    welcomeElement.textContent = teacherInfo.fullName || 'Giáo viên';
+                }
+                if (headerElement) {
+                    headerElement.textContent = teacherInfo.fullName || 'Giáo viên';
+                }
+            } else {
+                console.log('No teacher data found in localStorage');
+            }
+
             const data = await DataService.fetchDashboardData();
             this.updateDashboardView(data);
             
@@ -18,6 +43,7 @@ class TeacherDashboard {
             });
         } catch (error) {
             console.error('Lỗi khởi tạo dashboard:', error);
+            console.error('Error details:', error.message);
         }
     }
 

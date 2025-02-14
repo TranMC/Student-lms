@@ -56,6 +56,16 @@ const initializeData = () => {
                 email: 'cuong@example.com',
                 phone: '0123456791',
                 role: 'student'
+            },
+            {
+                studentId: 'TEST',
+                fullName: 'Tester',
+                class: 'Test',
+                username: 'test',
+                password: '1',
+                email: 'Test@example.com',
+                phone: 'test',
+                role: 'student'
             }
         ];
         localStorage.setItem('students', JSON.stringify(students));

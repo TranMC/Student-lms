@@ -1,6 +1,10 @@
 // Service để quản lý dữ liệu tập trung
-const DataService = {
-    dashboardData: null,
+class DataService {
+    constructor() {
+        // Khởi tạo nếu cần
+    }
+
+    dashboardData = null;
     
     async fetchDashboardData() {
         try {
@@ -16,9 +20,9 @@ const DataService = {
             // Lấy dữ liệu học sinh và điểm số từ localStorage
             const students = JSON.parse(localStorage.getItem('students') || '[]');
             const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-            
+
             // Tính toán thống kê
-            const statistics = this.calculateStatistics(students, scores);
+            const statistics = this.calculateStatistics(scores);
             
             this.dashboardData = {
                 teacher,
@@ -42,28 +46,32 @@ const DataService = {
                 schedule: []
             };
         }
-    },
+    }
     
-    calculateStatistics(students, scores) {
-        const totalStudents = students.length;
-        let averageScore = 0;
-        let passRate = 0;
-        
-        if (scores && scores.length > 0) {
-            const validScores = scores.filter(score => !isNaN(parseFloat(score.score)));
-            if (validScores.length > 0) {
-                averageScore = validScores.reduce((sum, score) => sum + parseFloat(score.score), 0) / validScores.length;
-                const passCount = validScores.filter(score => parseFloat(score.score) >= 5).length;
-                passRate = (passCount / validScores.length) * 100;
-            }
-        }
-        
-        return {
-            totalStudents,
-            averageScore: averageScore.toFixed(1),
-            passRate: passRate.toFixed(1)
+    calculateStatistics(scores) {
+        if (!scores.length) return {
+            average: 0,
+            ranking: 'Chưa có điểm',
+            passedSubjects: '0/0'
         };
-    },
+
+        const average = scores.reduce((sum, score) => sum + parseFloat(score.score), 0) / scores.length;
+        const passedCount = scores.filter(score => parseFloat(score.score) >= 5).length;
+
+        return {
+            average: average.toFixed(1),
+            ranking: this.getRanking(average),
+            passedSubjects: `${passedCount}/${scores.length}`
+        };
+    };
+    
+    getRanking(average) {
+        if (average >= 8.5) return 'Xuất sắc';
+        if (average >= 7.0) return 'Giỏi';
+        if (average >= 6.5) return 'Khá';
+        if (average >= 5.0) return 'Trung bình';
+        return 'Yếu';
+    };
     
     getRecentScores(scores, students) {
         return scores
@@ -76,7 +84,7 @@ const DataService = {
             })
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 5);
-    },
+    };
     
     getTeacherSchedule() {
         return [
@@ -84,11 +92,11 @@ const DataService = {
             { time: '08:45 - 10:15', class: '12A2', subject: 'Vật lý' },
             { time: '10:30 - 12:00', class: '12A1', subject: 'Hóa học' }
         ];
-    },
+    };
     
     getDashboardData() {
         return this.dashboardData;
-    },
+    };
     
     // Cập nhật dữ liệu dashboard và thống kê
     updateData(newData) {
@@ -97,5 +105,35 @@ const DataService = {
         document.dispatchEvent(new CustomEvent('dashboard-data-updated', {
             detail: newData
         }));
+    };
+
+    async getStudentData(studentId) {
+        try {
+            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+            const studentScores = scores.filter(score => score.studentId === studentId);
+            
+            return {
+                scores: studentScores,
+                statistics: this.calculateStatistics(studentScores),
+                schedule: this.getStudentSchedule(studentId)
+            };
+        } catch (error) {
+            console.error('Lỗi khi lấy dữ liệu học sinh:', error);
+            throw error;
+        }
+    };
+
+    getStudentSchedule(studentId) {
+        // Giả lập dữ liệu lịch học
+        return [
+            {
+                day: 'Thứ 2',
+                subjects: [
+                    { time: '07:00 - 08:30', name: 'Toán', room: 'A101' },
+                    { time: '08:45 - 10:15', name: 'Văn', room: 'A102' }
+                ]
+            },
+            // Thêm các ngày khác...
+        ];
     }
-}; 
+} 

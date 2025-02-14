@@ -1,0 +1,54 @@
+<link rel="stylesheet" href="css/student-dashboard.css">
+<div class="scores-container">
+    <div class="filters-section">
+        <div class="filter-group">
+            <select id="subjectFilter" class="form-select">
+                <option value="">Tất cả môn học</option>
+                <option value="Toán">Toán học</option>
+                <option value="Văn">Ngữ văn</option>
+                <option value="Anh">Tiếng Anh</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <select id="scoreTypeFilter" class="form-select">
+                <option value="">Tất cả loại điểm</option>
+                <option value="15p">Kiểm tra 15 phút</option>
+                <option value="1t">Kiểm tra 1 tiết</option>
+                <option value="gk">Giữa kỳ</option>
+                <option value="ck">Cuối kỳ</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="scores-summary">
+        <div class="summary-card">
+            <h3>Điểm trung bình</h3>
+            <div class="summary-value" id="averageScore">0.0</div>
+        </div>
+        <div class="summary-card">
+            <h3>Xếp loại</h3>
+            <div class="summary-value" id="ranking">-</div>
+        </div>
+        <div class="summary-card">
+            <h3>Số môn đạt</h3>
+            <div class="summary-value" id="passedSubjects">0/0</div>
+        </div>
+    </div>
+
+    <div class="scores-table">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Môn học</th>
+                    <th>Loại điểm</th>
+                    <th>Điểm số</th>
+                    <th>Ngày kiểm tra</th>
+                    <th>Đánh giá</th>
+                </tr>
+            </thead>
+            <tbody id="scoresTableBody">
+                <!-- Scores will be rendered here -->
+            </tbody>
+        </table>
+    </div>
+</div> 

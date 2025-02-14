@@ -1,0 +1,230 @@
+<link rel="stylesheet" href="css/student-dashboard.css">
+<script src="js/student-profile.js"></script>
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h2 id="studentFullName"></h2>
+            <p id="studentId"></p>
+            <div class="profile-status">
+                <span class="status-badge active">
+                    <i class="fas fa-check-circle"></i> Đang học
+                </span>
+            </div>
+        </div>
+        
+        <div class="profile-info">
+            <div class="info-section">
+                <h3><i class="fas fa-info-circle"></i> Thông tin cơ bản</h3>
+                <div class="info-grid">
+                    <div class="info-group">
+                        <label>Họ và tên:</label>
+                        <span id="studentFullNameInfo"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Ngày sinh:</label>
+                        <span id="studentBirthday"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Giới tính:</label>
+                        <span id="studentGender"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Lớp:</label>
+                        <span id="studentClass"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Niên khóa:</label>
+                        <span id="studentYear"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Khối:</label>
+                        <span id="studentGrade"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3><i class="fas fa-address-card"></i> Thông tin liên hệ</h3>
+                <div class="info-grid">
+                    <div class="info-group">
+                        <label>Email:</label>
+                        <span id="studentEmail"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Số điện thoại:</label>
+                        <span id="studentPhone"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Địa chỉ:</label>
+                        <span id="studentAddress"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3><i class="fas fa-users"></i> Thông tin gia đình</h3>
+                <div class="info-grid">
+                    <div class="info-group">
+                        <label>Họ tên phụ huynh:</label>
+                        <span id="parentName"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Số điện thoại phụ huynh:</label>
+                        <span id="parentPhone"></span>
+                    </div>
+                    <div class="info-group">
+                        <label>Email phụ huynh:</label>
+                        <span id="parentEmail"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3><i class="fas fa-graduation-cap"></i> Thông tin học tập</h3>
+                <div class="academic-info">
+                    <div class="semester-stats">
+                        <div class="stat-item">
+                            <label>Điểm trung bình học kỳ I:</label>
+                            <span id="gpa1"></span>
+                        </div>
+                        <div class="stat-item">
+                            <label>Điểm trung bình học kỳ II:</label>
+                            <span id="gpa2"></span>
+                        </div>
+                        <div class="stat-item">
+                            <label>Điểm trung bình cả năm:</label>
+                            <span id="gpaYear"></span>
+                        </div>
+                        <div class="stat-item">
+                            <label>Xếp loại:</label>
+                            <span id="academicRank"></span>
+                        </div>
+                        <div class="stat-item">
+                            <label>Hạnh kiểm:</label>
+                            <span id="conductRank"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <button class="btn btn-primary" onclick="studentProfile.editProfile()">
+                <i class="fas fa-edit"></i> Cập nhật thông tin
+            </button>
+            <button class="btn btn-secondary" onclick="studentProfile.changePassword()">
+                <i class="fas fa-key"></i> Đổi mật khẩu
+            </button>
+            <button class="btn btn-info" onclick="studentProfile.printProfile()">
+                <i class="fas fa-print"></i> In hồ sơ
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Profile -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cập nhật thông tin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="editEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editEmail">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="editPhone" class="form-label">Số điện thoại</label>
+                            <input type="tel" class="form-control" id="editPhone">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editAddress" class="form-label">Địa chỉ</label>
+                        <input type="text" class="form-control" id="editAddress">
+                    </div>
+                    <hr>
+                    <h6 class="mb-3">Thông tin phụ huynh</h6>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="editParentName" class="form-label">Họ tên phụ huynh</label>
+                            <input type="text" class="form-control" id="editParentName">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="editParentPhone" class="form-label">Số điện thoại phụ huynh</label>
+                            <input type="tel" class="form-control" id="editParentPhone">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="editParentEmail" class="form-label">Email phụ huynh</label>
+                            <input type="email" class="form-control" id="editParentEmail">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="studentProfile.saveProfile()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Change Password -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Đổi mật khẩu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
+                    <input type="password" class="form-control" id="currentPassword">
+                </div>
+                <div class="mb-3">
+                    <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                    <input type="password" class="form-control" id="newPassword">
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                    <input type="password" class="form-control" id="confirmPassword">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" onclick="studentProfile.savePassword()">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="profileToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong class="me-auto">Thông báo</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            <!-- Toast message will be inserted here -->
+        </div>
+    </div>
+</div>
+
+<!-- Print Template -->
+<div id="printTemplate" style="display: none;">
+    <div class="print-profile">
+        <div class="school-info text-center">
+            <h2>TRƯỜNG THPT ABC</h2>
+            <h3>HỒ SƠ HỌC SINH</h3>
+        </div>
+    </div>
+</div> 

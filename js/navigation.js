@@ -1,133 +1,73 @@
 class Navigation {
     constructor() {
         this.currentPage = 'dashboard';
-        this.pageContent = document.getElementById('pageContent');
         this.initializeNavigation();
     }
 
     initializeNavigation() {
-        document.querySelectorAll('.sidebar li').forEach(item => {
-            item.addEventListener('click', (e) => {
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const page = item.dataset.page;
+                const page = e.currentTarget.getAttribute('href').substring(1);
                 this.loadPage(page);
             });
         });
+
+        // Load trang mặc định
+        this.loadPage('dashboard');
     }
 
     async loadPage(page) {
         try {
-            // Cập nhật active state
-            document.querySelectorAll('.sidebar li').forEach(item => {
-                item.classList.remove('active');
-                if (item.dataset.page === page) {
-                    item.classList.add('active');
-                }
-            });
-
-            // Load nội dung trang
-            let filePath = '';
-            switch(page) {
-                case 'schedule':
-                    filePath = 'components/teacher-schedule-content.html';
-                    break;
-                // ... các case khác ...
-                default:
-                    filePath = `components/teacher-${page}-content.html`;
+            console.log('Loading page:', page); // Debug log
+            const response = await fetch(`components/student-${page}-content.html`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-
-            const response = await fetch(filePath);
             const content = await response.text();
-            this.pageContent.innerHTML = content;
-
-            // Đợi DOM cập nhật
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Khởi tạo chức năng
-            this.initializePageFunctions(page);
-            this.currentPage = page;
-
-            // Nếu đang ở trang schedule thì load script
-            if (page === 'schedule') {
-                // Load DataService trước nếu chưa được load
-                if (!window.DataService) {
-                    await this.loadScript('js/data-service.js');
-                }
-                // Sau đó mới load TeacherSchedule
-                await this.loadScript('js/teacher-schedule.js');
-                new TeacherSchedule();
+            const mainContent = document.querySelector('main.dashboard');
+            if (mainContent) {
+                mainContent.innerHTML = content;
+                this.initializeComponent(page);
+                this.updateActiveLink(page);
+            } else {
+                console.error('Main content container not found');
             }
         } catch (error) {
             console.error('Error loading page:', error);
         }
     }
 
-    initializePageFunctions(page) {
-        try {
-            // Hủy các instance cũ
-            if (window.studentManager) window.studentManager = null;
-            if (window.scoreManager) window.scoreManager = null;
-            if (window.statisticsManager) window.statisticsManager = null;
-            if (window.dashboardManager) window.dashboardManager = null;
-
-            // Khởi tạo manager mới theo trang
-            switch(page) {
-                case 'dashboard':
-                    window.dashboardManager = new TeacherDashboard();
-                    break;
-                case 'students':
-                    window.studentManager = new StudentManager();
-                    break;
-                case 'scores':
-                    window.scoreManager = new ScoreManager();
-                    break;
-                case 'statistics':
-                    if (window.StatisticsManager) {
-                        window.statisticsManager = new window.StatisticsManager();
-                    }
-                    break;
-            }
-        } catch (error) {
-            console.error('Error in initializePageFunctions:', error);
-        }
-    }
-
-    // Hàm cập nhật lại dữ liệu cho tất cả các trang
-    refreshAllPages() {
-        // Cập nhật trang hiện tại
-        switch(this.currentPage) {
+    initializeComponent(page) {
+        // Khởi tạo component tương ứng
+        switch(page) {
             case 'dashboard':
-                if (window.dashboardManager) {
-                    window.dashboardManager.updateStats();
-                }
-                break;
-            case 'students':
-                if (window.studentManager) {
-                    window.studentManager.loadStudents();
-                }
+                new StudentDashboard();
                 break;
             case 'scores':
-                if (window.scoreManager) {
-                    window.scoreManager.loadScores();
-                }
+                new StudentScores();
                 break;
-            case 'statistics':
-                if (window.statisticsManager) {
-                    window.statisticsManager.updateStatistics();
-                }
+            case 'schedule':
+                new StudentSchedule();
+                break;
+            case 'profile':
+                new StudentProfile();
+                break;
+            case 'notifications':
+                new StudentNotifications();
                 break;
         }
     }
 
-    // Hàm helper để load script
-    async loadScript(src) {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.body.appendChild(script);
+    updateActiveLink(page) {
+        // Cập nhật trạng thái active cho menu
+        document.querySelectorAll('.sidebar li').forEach(li => {
+            li.classList.remove('active');
         });
+        const activeLink = document.querySelector(`.sidebar a[href="#${page}"]`);
+        if (activeLink) {
+            activeLink.parentElement.classList.add('active');
+        }
     }
 }
 

@@ -1,38 +1,18 @@
-document.getElementById('loginForm').addEventListener('submit', function(e) {
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     
-    // Kiểm tra trong danh sách giáo viên
-    const teacher = users.teachers.find(t => t.username === username && t.password === password);
-    if (teacher) {
-        // Lưu thông tin đăng nhập vào sessionStorage
-        sessionStorage.setItem('currentUser', JSON.stringify({
-            username: teacher.username,
-            role: teacher.role,
-            fullName: teacher.fullName,
-            subject: teacher.subject
-        }));
-        window.location.href = 'teacher-dashboard.html';
-        return;
-    }
+    // Lấy danh sách học sinh từ localStorage
+    const students = JSON.parse(localStorage.getItem('students') || '[]');
+    const student = students.find(s => s.username === username && s.password === password);
 
-    // Kiểm tra trong danh sách học sinh
-    const student = users.students.find(s => s.username === username && s.password === password);
     if (student) {
-        // Lưu thông tin đăng nhập vào sessionStorage
-        sessionStorage.setItem('currentUser', JSON.stringify({
-            username: student.username,
-            role: student.role,
-            fullName: student.fullName,
-            studentId: student.studentId,
-            class: student.class
-        }));
+        // Lưu thông tin học sinh vào localStorage
+        localStorage.setItem('currentStudent', JSON.stringify(student));
         window.location.href = 'student-dashboard.html';
-        return;
+    } else {
+        alert('Tên đăng nhập hoặc mật khẩu không đúng!');
     }
-
-    // Nếu không tìm thấy user
-    alert('Tên đăng nhập hoặc mật khẩu không đúng!');
 }); 
