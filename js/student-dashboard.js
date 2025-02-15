@@ -1,6 +1,15 @@
 class StudentDashboard {
     constructor() {
+        if (!checkStudentAuth()) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
         this.student = JSON.parse(localStorage.getItem('currentStudent'));
+        if (!this.student) {
+            console.error('Không tìm thấy thông tin học sinh');
+            return;
+        }
         this.init();
     }
 
@@ -36,32 +45,60 @@ class StudentDashboard {
     }
 
     loadDashboardStats() {
-        // Lấy dữ liệu từ DataService
+        if (!this.student || !this.student.studentId) {
+            console.error('Không có thông tin ID học sinh');
+            return;
+        }
+        
         const dataService = new DataService();
         const stats = dataService.getStudentStats(this.student.studentId);
         
-        // Cập nhật UI
-        document.getElementById('averageScore').textContent = stats.averageScore.toFixed(1);
-        document.getElementById('completionRate').textContent = `${stats.completionRate}%`;
-        document.getElementById('daysToExam').textContent = stats.daysToExam;
+        if (stats) {
+            const averageScoreElement = document.getElementById('averageScore');
+            const completionRateElement = document.getElementById('completionRate');
+            const daysToExamElement = document.getElementById('daysToExam');
+
+            if (averageScoreElement) {
+                averageScoreElement.textContent = stats.averageScore.toFixed(1);
+            }
+            if (completionRateElement) {
+                completionRateElement.textContent = `${stats.completionRate}%`;
+            }
+            if (daysToExamElement) {
+                daysToExamElement.textContent = stats.daysToExam;
+            }
+        }
     }
 
     loadRecentScores() {
-        const dataService = new DataService();
-        const recentScores = dataService.getRecentScores(this.student.studentId);
-        const tableBody = document.getElementById('recentScoresTable');
-        
-        if (tableBody) {
-            tableBody.innerHTML = recentScores.map(score => `
+        try {
+            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+            const studentScores = scores
+                .filter(score => score.studentId === this.student.studentId)
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+
+            const tableBody = document.getElementById('recentScoresTable');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = studentScores.map(score => `
                 <tr>
                     <td>${score.subject}</td>
                     <td>${score.type}</td>
-                    <td>${score.score}</td>
+                    <td class="score-value ${score.score >= 5 ? 'pass' : 'fail'}">${score.score.toFixed(1)}</td>
                     <td>${new Date(score.date).toLocaleDateString('vi-VN')}</td>
-                    <td>${this.getScoreRating(score.score)}</td>
+                    <td>${this.getScoreEvaluation(score.score)}</td>
                 </tr>
             `).join('');
+        } catch (error) {
+            console.error('Lỗi khi tải điểm gần đây:', error);
         }
+    }
+
+    getScoreEvaluation(score) {
+        if (score >= 8) return '<span class="badge success">Tốt</span>';
+        if (score >= 5) return '<span class="badge warning">Đạt</span>';
+        return '<span class="badge danger">Chưa đạt</span>';
     }
 
     loadUpcomingExams() {
@@ -86,22 +123,29 @@ class StudentDashboard {
     }
 
     loadSubjectProgress() {
-        const dataService = new DataService();
-        const progress = dataService.getSubjectProgress(this.student.studentId);
-        const progressGrid = document.getElementById('subjectProgress');
-        
-        if (progressGrid) {
+        try {
+            const dataService = new DataService();
+            const progress = dataService.getSubjectProgress(this.student.studentId);
+            
+            const progressGrid = document.getElementById('subjectProgress');
+            if (!progressGrid) return;
+
             progressGrid.innerHTML = progress.map(subject => `
                 <div class="progress-item">
                     <div class="subject-info">
-                        <h4>${subject.name}</h4>
-                        <p>${subject.completed}/${subject.total} bài học</p>
+                        <h4>${subject.subject}</h4>
+                        <span class="progress-text">${subject.completed}/${subject.total} cột điểm</span>
                     </div>
-                    <div class="progress-bar">
-                        <div class="progress" style="width: ${(subject.completed/subject.total)*100}%"></div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: ${subject.percentage}%"></div>
+                    </div>
+                    <div class="subject-average">
+                        TB: <span class="${subject.average >= 5 ? 'pass' : 'fail'}">${subject.average}</span>
                     </div>
                 </div>
             `).join('');
+        } catch (error) {
+            console.error('Lỗi khi tải tiến độ môn học:', error);
         }
     }
 
@@ -114,8 +158,29 @@ class StudentDashboard {
 }
 
 // Khởi tạo dashboard khi trang được load
-document.addEventListener('DOMContentLoaded', () => {
-    if (checkStudentAuth()) {
-        window.dashboardInstance = new StudentDashboard();
+document.addEventListener('DOMContentLoaded', function() {
+    // Lấy thông tin học sinh từ localStorage
+    const studentInfo = JSON.parse(localStorage.getItem('userInfo'));
+    
+    // Hiển thị tên học sinh trong header
+    if (studentInfo && studentInfo.name) {
+        document.getElementById('studentName').textContent = studentInfo.name;
+        document.getElementById('studentNameWelcome').textContent = studentInfo.name;
     }
-}); 
+    
+    // Cập nhật thời gian hiện tại
+    updateDateTime();
+});
+
+function updateDateTime() {
+    const now = new Date();
+    const dateTimeString = now.toLocaleDateString('vi-VN', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    document.getElementById('currentDateTime').textContent = dateTimeString;
+} 

@@ -62,13 +62,38 @@ class StudentSchedule {
     }
 
     updateDateTime() {
-        const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('currentDateTime').textContent = 
-            now.toLocaleDateString('vi-VN', options);
+        const dateTimeElement = document.getElementById('currentDateTime');
+        if (dateTimeElement) {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            dateTimeElement.textContent = now.toLocaleDateString('vi-VN', options);
+        }
     }
 
     initializeFilters() {
         // Thêm logic lọc theo tuần/tháng nếu cần
+    }
+
+    renderClassSlot(lesson) {
+        return `
+            <div class="class-slot">
+                <div class="class-name">
+                    ${lesson.subject}
+                </div>
+                <div class="class-time">
+                    ${lesson.startTime} - ${lesson.endTime}
+                </div>
+                <div class="class-info">
+                    <div class="class-room">
+                        <i class="fas fa-door-open"></i>
+                        Phòng: ${lesson.room}
+                    </div>
+                    <div class="class-teacher">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        GV: ${lesson.teacher}
+                    </div>
+                </div>
+            </div>
+        `;
     }
 } 

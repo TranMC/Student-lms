@@ -74,16 +74,26 @@ class DataService {
     };
     
     getRecentScores(scores, students) {
-        return scores
-            .map(score => {
-                const student = students.find(s => s.id === score.studentId || s.studentId === score.studentId);
-                return {
-                    ...score,
-                    studentName: student ? student.name || student.fullName : 'Học sinh'
-                };
-            })
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 5);
+        if (!Array.isArray(scores)) {
+            console.error('scores không phải là mảng:', scores);
+            return [];
+        }
+
+        try {
+            return scores
+                .map(score => {
+                    const student = students.find(s => s.id === score.studentId || s.studentId === score.studentId);
+                    return {
+                        ...score,
+                        studentName: student ? student.name || student.fullName : 'Học sinh'
+                    };
+                })
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+        } catch (error) {
+            console.error('Lỗi trong getRecentScores:', error);
+            return [];
+        }
     };
     
     getTeacherSchedule() {
@@ -135,5 +145,110 @@ class DataService {
             },
             // Thêm các ngày khác...
         ];
+    }
+
+    getStudentStats(studentId) {
+        try {
+            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+            const studentScores = scores.filter(score => score.studentId === studentId);
+            
+            // Tính điểm trung bình
+            const averageScore = studentScores.length > 0 
+                ? studentScores.reduce((sum, score) => sum + score.score, 0) / studentScores.length 
+                : 0;
+
+            // Tỷ lệ hoàn thành (giả định điểm >= 5 là đạt)
+            const passedScores = studentScores.filter(score => score.score >= 5);
+            const completionRate = studentScores.length > 0 
+                ? (passedScores.length / studentScores.length) * 100 
+                : 0;
+
+            // Số ngày đến kỳ thi gần nhất (giả lập)
+            const daysToExam = 30;
+
+            return {
+                averageScore,
+                completionRate,
+                daysToExam
+            };
+        } catch (error) {
+            console.error('Lỗi khi lấy thống kê học sinh:', error);
+            return {
+                averageScore: 0,
+                completionRate: 0,
+                daysToExam: 0
+            };
+        }
+    }
+
+    getUpcomingExams(studentId) {
+        try {
+            // Giả lập dữ liệu kỳ thi sắp tới
+            const mockExams = [
+                {
+                    subject: 'Toán',
+                    type: 'Giữa kỳ',
+                    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 ngày tới
+                    time: '07:30'
+                },
+                {
+                    subject: 'Văn',
+                    type: '1 tiết',
+                    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 ngày tới
+                    time: '09:30'
+                },
+                {
+                    subject: 'Anh',
+                    type: 'Cuối kỳ',
+                    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày tới
+                    time: '14:00'
+                }
+            ];
+
+            return mockExams;
+        } catch (error) {
+            console.error('Lỗi khi lấy lịch thi:', error);
+            return [];
+        }
+    }
+
+    getSubjectProgress(studentId) {
+        try {
+            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+            const studentScores = scores.filter(score => score.studentId === studentId);
+            
+            // Tạo map để theo dõi tiến độ của từng môn học
+            const subjectProgress = new Map();
+            
+            // Giả định mỗi môn học cần 4 cột điểm
+            const requiredScores = 4;
+            
+            studentScores.forEach(score => {
+                if (!subjectProgress.has(score.subject)) {
+                    subjectProgress.set(score.subject, {
+                        completed: 1,
+                        total: requiredScores,
+                        average: score.score
+                    });
+                } else {
+                    const current = subjectProgress.get(score.subject);
+                    current.completed += 1;
+                    current.average = (current.average * (current.completed - 1) + score.score) / current.completed;
+                    subjectProgress.set(score.subject, current);
+                }
+            });
+            
+            // Chuyển Map thành mảng để dễ sử dụng
+            return Array.from(subjectProgress).map(([subject, progress]) => ({
+                subject,
+                completed: progress.completed,
+                total: progress.total,
+                percentage: (progress.completed / progress.total) * 100,
+                average: progress.average.toFixed(1)
+            }));
+        } catch (error) {
+            console.error('Lỗi khi lấy tiến độ môn học:', error);
+            return [];
+        }
     }
 } 

@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="css/student-dashboard.css">
+<link rel="styelsheet" href="css/student-profile.css">
 <script src="js/student-profile.js"></script>
 <div class="profile-container">
     <div class="profile-card">
@@ -85,26 +86,32 @@
             <div class="info-section">
                 <h3><i class="fas fa-graduation-cap"></i> Thông tin học tập</h3>
                 <div class="academic-info">
-                    <div class="semester-stats">
-                        <div class="stat-item">
-                            <label>Điểm trung bình học kỳ I:</label>
-                            <span id="gpa1"></span>
+                    <div class="semester-grades">
+                        <h3>Điểm số học kỳ</h3>
+                        <div class="grades-grid">
+                            <div class="grade-card">
+                                <h4>Học kỳ 1</h4>
+                                <div class="grade-value" id="gpa1">0.0</div>
+                            </div>
+                            <div class="grade-card">
+                                <h4>Học kỳ 2</h4>
+                                <div class="grade-value" id="gpa2">0.0</div>
+                            </div>
+                            <div class="grade-card">
+                                <h4>Cả năm</h4>
+                                <div class="grade-value" id="gpaYear">0.0</div>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <label>Điểm trung bình học kỳ II:</label>
-                            <span id="gpa2"></span>
+                    </div>
+
+                    <div class="rankings">
+                        <div class="ranking-card">
+                            <h4>Xếp loại học lực</h4>
+                            <div class="ranking-value" id="academicRank">-</div>
                         </div>
-                        <div class="stat-item">
-                            <label>Điểm trung bình cả năm:</label>
-                            <span id="gpaYear"></span>
-                        </div>
-                        <div class="stat-item">
-                            <label>Xếp loại:</label>
-                            <span id="academicRank"></span>
-                        </div>
-                        <div class="stat-item">
-                            <label>Hạnh kiểm:</label>
-                            <span id="conductRank"></span>
+                        <div class="ranking-card">
+                            <h4>Hạnh kiểm</h4>
+                            <div class="ranking-value" id="conductRank">-</div>
                         </div>
                     </div>
                 </div>
@@ -127,7 +134,7 @@
 
 <!-- Modal Edit Profile -->
 <div class="modal fade" id="editProfileModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Cập nhật thông tin</h5>
@@ -135,40 +142,92 @@
             </div>
             <div class="modal-body">
                 <form id="editProfileForm">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="editEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="editEmail">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="editPhone" class="form-label">Số điện thoại</label>
-                            <input type="tel" class="form-control" id="editPhone">
-                        </div>
+                    <!-- Thông tin cá nhân -->
+                    <h4 class="section-title">Thông tin cá nhân</h4>
+                    <div class="mb-3">
+                        <label for="editFullName" class="form-label">Họ và tên</label>
+                        <input type="text" class="form-control" id="editFullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editBirthday" class="form-label">Ngày sinh</label>
+                        <input type="date" class="form-control" id="editBirthday">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editGender" class="form-label">Giới tính</label>
+                        <select class="form-control" id="editGender">
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                    </div>
+                    <!-- Thông tin liên hệ -->
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editEmail">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPhone" class="form-label">Số điện thoại</label>
+                        <input type="tel" class="form-control" id="editPhone">
                     </div>
                     <div class="mb-3">
                         <label for="editAddress" class="form-label">Địa chỉ</label>
                         <input type="text" class="form-control" id="editAddress">
                     </div>
-                    <hr>
-                    <h6 class="mb-3">Thông tin phụ huynh</h6>
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <label for="editParentName" class="form-label">Họ tên phụ huynh</label>
-                            <input type="text" class="form-control" id="editParentName">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="editParentPhone" class="form-label">Số điện thoại phụ huynh</label>
-                            <input type="tel" class="form-control" id="editParentPhone">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="editParentEmail" class="form-label">Email phụ huynh</label>
-                            <input type="email" class="form-control" id="editParentEmail">
-                        </div>
+
+                    <!-- Phụ huynh 1 -->
+                    <h4 class="section-title">Phụ huynh 1</h4>
+                    <div class="mb-3">
+                        <label for="editParent1Name" class="form-label">Họ tên phụ huynh 1</label>
+                        <input type="text" class="form-control" id="editParent1Name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editParent1Relation" class="form-label">Mối quan hệ</label>
+                        <select class="form-control" id="editParent1Relation">
+                            <option value="">Chọn mối quan hệ</option>
+                            <option value="Cha">Cha</option>
+                            <option value="Mẹ">Mẹ</option>
+                            <option value="Ông">Ông</option>
+                            <option value="Bà">Bà</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editParent1Phone" class="form-label">Số điện thoại</label>
+                        <input type="tel" class="form-control" id="editParent1Phone">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editParent1Email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editParent1Email">
+                    </div>
+
+                    <!-- Phụ huynh 2 -->
+                    <h4 class="section-title">Phụ huynh 2</h4>
+                    <div class="mb-3">
+                        <label for="editParent2Name" class="form-label">Họ tên phụ huynh 2</label>
+                        <input type="text" class="form-control" id="editParent2Name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editParent2Relation" class="form-label">Mối quan hệ</label>
+                        <select class="form-control" id="editParent2Relation">
+                            <option value="">Chọn mối quan hệ</option>
+                            <option value="Cha">Cha</option>
+                            <option value="Mẹ">Mẹ</option>
+                            <option value="Ông">Ông</option>
+                            <option value="Bà">Bà</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editParent2Phone" class="form-label">Số điện thoại</label>
+                        <input type="tel" class="form-control" id="editParent2Phone">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editParent2Email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="editParent2Email">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                 <button type="button" class="btn btn-primary" onclick="studentProfile.saveProfile()">Lưu thay đổi</button>
             </div>
         </div>
@@ -205,19 +264,8 @@
     </div>
 </div>
 
-<!-- Toast Notification -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-    <div id="profileToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-            <i class="fas fa-info-circle me-2"></i>
-            <strong class="me-auto">Thông báo</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-        </div>
-        <div class="toast-body">
-            <!-- Toast message will be inserted here -->
-        </div>
-    </div>
-</div>
+<!-- Toast Container -->
+<div id="toastContainer"></div>
 
 <!-- Print Template -->
 <div id="printTemplate" style="display: none;">

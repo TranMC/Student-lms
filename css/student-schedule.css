@@ -1,0 +1,158 @@
+.schedule-container {
+    padding: 20px;
+}
+
+.day-schedule {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.day-header {
+    color: #202124;
+    font-size: 1.5em;
+    margin: 0 0 20px 0;
+    font-weight: 500;
+}
+
+.class-list {
+    padding: 15px;
+}
+
+.class-slot {
+    display: flex;
+    gap: 4px;
+    padding: 15px 0;
+    border-bottom: 1px solid #e0e0e0;
+    align-items: baseline;
+    font-size: 0.95em;
+}
+
+.class-slot:last-child {
+    border-bottom: none;
+}
+
+.class-time {
+    color: #202124;
+    width: 120px;
+    flex-shrink: 0;
+}
+
+.class-name {
+    color: #202124;
+    margin-right: 4px;
+}
+
+.class-info, .class-teacher {
+    color: #5f6368;
+}
+
+.class-info::before {
+    content: "";
+}
+
+.class-teacher::before {
+    content: "";
+}
+
+.schedule-header {
+    margin-bottom: 20px;
+}
+
+.week-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.current-week {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 180px;
+}
+
+.week-label {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #1a73e8;
+}
+
+.week-date {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 4px;
+}
+
+.btn-week {
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    border: none;
+    background: #f0f4ff;
+    color: #1a73e8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.btn-week:hover {
+    background: #e3eaff;
+    transform: scale(1.05);
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.schedule-table th,
+.schedule-table td {
+    border: 1px solid #e0e0e0;
+    padding: 12px;
+    text-align: center;
+    position: relative;
+    height: 80px;
+}
+
+.schedule-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #2c3e50;
+    height: auto;
+}
+
+.time-header,
+.time-cell {
+    background: #f8f9fa;
+    font-weight: 500;
+    width: 120px;
+    color: #5a6c7d;
+}
+
+.class-room, .class-teacher {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .schedule-table {
+        font-size: 0.9em;
+    }
+    
+    .schedule-table th,
+    .schedule-table td {
+        padding: 8px;
+    }
+    
+    .time-header,
+    .time-cell {
+        width: 100px;
+    }
+} 

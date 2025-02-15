@@ -141,7 +141,9 @@ const studentLogin = (username, password) => {
     const student = students.find(s => s.username === username && s.password === password);
     
     if (student) {
+        // Lưu thông tin user và thông tin chi tiết học sinh riêng biệt
         localStorage.setItem('currentUser', JSON.stringify({...student, role: 'student'}));
+        localStorage.setItem('currentStudent', JSON.stringify(student));
         return true;
     }
     return false;
@@ -156,7 +158,32 @@ const getCurrentUser = () => {
 // Đăng xuất
 const logout = () => {
     localStorage.removeItem('currentUser');
+    localStorage.removeItem('currentStudent');
     window.location.href = 'login.html';
+};
+
+// Kiểm tra xác thực học sinh
+const checkStudentAuth = () => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    return currentUser && currentUser.role === 'student';
+};
+
+// Kiểm tra xác thực giáo viên
+const checkTeacherAuth = () => {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'teacher') {
+        return false;
+    }
+    return true;
+};
+
+// Kiểm tra xác thực admin
+const checkAdminAuth = () => {
+    const currentUser = getCurrentUser();
+    if (!currentUser || currentUser.role !== 'admin') {
+        return false;
+    }
+    return true;
 };
 
 // Khởi tạo dữ liệu khi tải trang
