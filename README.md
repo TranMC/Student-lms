@@ -4,7 +4,7 @@ Chào mừng bạn đến với **LMS (Hệ thống Quản lý Học tập)**! D
 # Tính năng
 - 🚀 *Hiện đang trong quá trình phát triển... Hãy chờ đợi nhé!* :v
 
-Hướng dẫn sử dụng
+**Hướng dẫn sử dụng**
 1. Tải xuống mã nguồn.
 2. Mở dự án bằng live server.
 
