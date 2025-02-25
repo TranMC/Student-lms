@@ -28,3 +28,6 @@ Chào mừng bạn đến với **LMS (Hệ thống Quản lý Học tập)**! D
 ✅ Hoàn thành cơ bản các tính năng của **Quản lý Học viên**  
 ✅ Sửa nhiều lỗi **bug**  
 
+## 25/02/2025 📅 
+- Update Admin function + UI
+- Update Student Calendar + function cũ đang lỗi
