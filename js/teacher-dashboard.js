@@ -1,12 +1,13 @@
 class TeacherDashboard {
     constructor() {
+        this.dataService = new DataService();
         this.initializeDashboard();
     }
 
     async initializeDashboard() {
         try {
             // Debug: Kiểm tra dữ liệu trong localStorage
-            const teacherData = localStorage.getItem('teacher');
+            const teacherData = localStorage.getItem('currentUser');
             console.log('Raw teacher data:', teacherData);
 
             if (teacherData) {
@@ -30,7 +31,7 @@ class TeacherDashboard {
                 console.log('No teacher data found in localStorage');
             }
 
-            const data = await DataService.fetchDashboardData();
+            const data = await this.dataService.fetchDashboardData();
             this.updateDashboardView(data);
             
             // Cập nhật thời gian
@@ -44,6 +45,9 @@ class TeacherDashboard {
         } catch (error) {
             console.error('Lỗi khởi tạo dashboard:', error);
             console.error('Error details:', error.message);
+            
+            // Sử dụng dữ liệu mẫu từ teacher-dashboard-content.html nếu có lỗi
+            this.useSampleData();
         }
     }
 
@@ -117,6 +121,24 @@ class TeacherDashboard {
                     </div>
                 </div>
             `).join('');
+        }
+    }
+
+    // Thêm phương thức để sử dụng dữ liệu mẫu khi có lỗi
+    useSampleData() {
+        console.log('Sử dụng dữ liệu mẫu từ mockData');
+        // Kiểm tra xem mockData có tồn tại không (được định nghĩa trong teacher-dashboard-content.html)
+        if (typeof mockData !== 'undefined') {
+            this.updateDashboardView({
+                teacher: mockData.teacher,
+                statistics: {
+                    totalStudents: mockData.stats.totalStudents,
+                    averageScore: '8.5',
+                    passRate: '85'
+                },
+                recentScores: [],
+                schedule: mockData.schedule ? mockData.schedule["2023-11-01"] : []
+            });
         }
     }
 }

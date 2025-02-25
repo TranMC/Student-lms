@@ -1,7 +1,24 @@
 class Navigation {
     constructor() {
         this.currentPage = 'dashboard';
+        this.userRole = this.detectUserRole(); // Xác định vai trò người dùng
         this.initializeNavigation();
+    }
+
+    // Phát hiện vai trò người dùng dựa trên URL hoặc thẻ body
+    detectUserRole() {
+        // Kiểm tra URL có chứa 'teacher' không
+        if (window.location.href.includes('teacher')) {
+            return 'teacher';
+        }
+        
+        // Kiểm tra class của body
+        if (document.body.classList.contains('teacher-view')) {
+            return 'teacher';
+        }
+        
+        // Mặc định là học sinh
+        return 'student';
     }
 
     initializeNavigation() {
@@ -27,22 +44,30 @@ class Navigation {
 
     async loadPage(page) {
         try {
-            console.log('Loading page:', page); // Debug log
+            console.log('Loading page:', page, 'for role:', this.userRole);
             
-            // Không cần xử lý đặc biệt cho trang profile nữa
-            // if (page === 'profile') {
-            //     window.location.href = 'student-profile.html';
-            //     return;
-            // }
+            // Xác định tiền tố dựa trên vai trò
+            const prefix = this.userRole === 'teacher' ? 'teacher' : 'student';
             
-            const response = await fetch(`components/student-${page}-content.html`);
+            // Tạo đường dẫn đến trang nội dung
+            const contentPath = `components/${prefix}-${page}-content.html`;
+            console.log('Fetching content from:', contentPath);
+            
+            const response = await fetch(contentPath);
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+            
             const content = await response.text();
             const mainContent = document.querySelector('main.dashboard');
+            
             if (mainContent) {
                 mainContent.innerHTML = content;
+                
+                // Kiểm tra và tải CSS nếu cần
+                this.loadRequiredCSS(prefix, page);
+                
                 this.initializeComponent(page);
                 this.updateActiveLink(page);
             } else {
@@ -53,9 +78,127 @@ class Navigation {
         }
     }
 
+    loadRequiredCSS(prefix, page) {
+        // Kiểm tra xem CSS đã được tải chưa
+        const cssId = `${prefix}-${page}-css`;
+        if (!document.getElementById(cssId)) {
+            console.log(`Tải CSS cho ${prefix}-${page}`);
+            
+            // Tạo link element để tải CSS
+            const link = document.createElement('link');
+            link.id = cssId;
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = `css/${prefix}-${page}.css`;
+            link.media = 'all';
+            
+            // Thêm thuộc tính crossorigin để tránh lỗi MIME type
+            link.crossOrigin = 'anonymous';
+            
+            // Kiểm tra tồn tại của file CSS trước khi thêm vào DOM
+            fetch(link.href, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        // File CSS tồn tại, thêm vào head
+                        document.head.appendChild(link);
+                    } else {
+                        console.warn(`CSS không tồn tại: ${link.href}`);
+                        // Tải CSS mặc định
+                        this.loadDefaultCSS(prefix);
+                    }
+                })
+                .catch(error => {
+                    console.error(`Lỗi khi kiểm tra CSS: ${error}`);
+                    // Tải CSS mặc định
+                    this.loadDefaultCSS(prefix);
+                });
+        }
+    }
+    
+    loadDefaultCSS(prefix) {
+        // Tải CSS mặc định nếu không tìm thấy CSS cụ thể
+        const defaultCssId = `${prefix}-default-css`;
+        if (!document.getElementById(defaultCssId)) {
+            const defaultLink = document.createElement('link');
+            defaultLink.id = defaultCssId;
+            defaultLink.rel = 'stylesheet';
+            defaultLink.type = 'text/css';
+            defaultLink.href = `css/${prefix}-default.css`;
+            defaultLink.crossOrigin = 'anonymous';
+            
+            // Kiểm tra tồn tại của file CSS mặc định
+            fetch(defaultLink.href, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        document.head.appendChild(defaultLink);
+                    } else {
+                        console.warn(`CSS mặc định không tồn tại: ${defaultLink.href}`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`Lỗi khi kiểm tra CSS mặc định: ${error}`);
+                });
+        }
+    }
+
     initializeComponent(page) {
-        // Khởi tạo component tương ứng
-        console.log('Khởi tạo component cho trang:', page);
+        // Khởi tạo component tương ứng dựa trên vai trò
+        console.log('Khởi tạo component cho trang:', page, 'vai trò:', this.userRole);
+        
+        if (this.userRole === 'teacher') {
+            this.initializeTeacherComponent(page);
+        } else {
+            this.initializeStudentComponent(page);
+        }
+    }
+    
+    initializeTeacherComponent(page) {
+        // Đảm bảo dữ liệu cơ bản đã được tải
+        this.ensureDataLoaded();
+        
+        switch(page) {
+            case 'dashboard':
+                if (typeof TeacherDashboard !== 'undefined') {
+                    console.log('Khởi tạo TeacherDashboard');
+                    window.dashboardInstance = new TeacherDashboard();
+                } else {
+                    console.log('TeacherDashboard class không được định nghĩa, tải script');
+                    this.loadScript('js/teacher-dashboard.js');
+                }
+                break;
+            case 'schedule':
+                if (typeof TeacherSchedule !== 'undefined') {
+                    console.log('Khởi tạo TeacherSchedule');
+                    window.scheduleInstance = new TeacherSchedule();
+                } else {
+                    console.log('TeacherSchedule class không được định nghĩa, tải script');
+                    this.loadScript('js/teacher-schedule.js');
+                }
+                break;
+            case 'students':
+                if (typeof TeacherStudents !== 'undefined') {
+                    console.log('Khởi tạo TeacherStudents');
+                    window.studentsInstance = new TeacherStudents();
+                } else {
+                    console.log('TeacherStudents class không được định nghĩa, tải script');
+                    this.loadScript('js/teacher-students.js');
+                }
+                break;
+            case 'scores':
+                if (typeof TeacherScores !== 'undefined') {
+                    console.log('Khởi tạo TeacherScores');
+                    window.scoresInstance = new TeacherScores();
+                } else {
+                    console.log('TeacherScores class không được định nghĩa, tải script');
+                    this.loadScript('js/teacher-scores.js');
+                }
+                break;
+        }
+    }
+    
+    initializeStudentComponent(page) {
+        // Đảm bảo dữ liệu cơ bản đã được tải
+        this.ensureDataLoaded();
         
         switch(page) {
             case 'dashboard':
@@ -96,16 +239,7 @@ class Navigation {
                     }
                 } else {
                     console.error('StudentProfile class is not defined - có thể script chưa được tải');
-                    // Thử tải script
-                    const script = document.createElement('script');
-                    script.src = 'js/student-profile.js';
-                    script.onload = () => {
-                        console.log('Đã tải student-profile.js, khởi tạo StudentProfile');
-                        if (typeof StudentProfile !== 'undefined') {
-                            window.studentProfile = new StudentProfile();
-                        }
-                    };
-                    document.body.appendChild(script);
+                    this.loadScript('js/student-profile.js');
                 }
                 break;
             case 'notifications':
@@ -119,16 +253,358 @@ class Navigation {
         }
     }
 
+    loadScript(scriptSrc) {
+        console.log(`Đang tải script: ${scriptSrc}`);
+        
+        // Kiểm tra xem script đã được tải chưa
+        const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
+        if (existingScript) {
+            console.log(`Script ${scriptSrc} đã được tải trước đó`);
+            return Promise.resolve();
+        }
+        
+        return fetch(scriptSrc, { method: 'HEAD' })
+            .then(response => {
+                if (response.ok) {
+                    return new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = scriptSrc;
+                        script.onload = () => {
+                            console.log(`Script ${scriptSrc} đã tải thành công`);
+                            resolve();
+                        };
+                        script.onerror = (error) => {
+                            console.error(`Lỗi khi tải script ${scriptSrc}:`, error);
+                            // Tạo class rỗng để tránh lỗi runtime
+                            this.createEmptyScriptClass(scriptSrc);
+                            resolve(); // Vẫn resolve để không làm gián đoạn quá trình tải trang
+                        };
+                        document.body.appendChild(script);
+                    });
+                } else {
+                    console.warn(`Script ${scriptSrc} không tồn tại, tạo class rỗng`);
+                    this.createEmptyScriptClass(scriptSrc);
+                    return Promise.resolve();
+                }
+            })
+            .catch(error => {
+                console.error(`Lỗi khi kiểm tra script ${scriptSrc}:`, error);
+                this.createEmptyScriptClass(scriptSrc);
+                return Promise.resolve();
+            });
+    }
+    
+    createEmptyScriptClass(scriptSrc) {
+        const className = this.getClassNameFromSrc(scriptSrc);
+        if (className && !window[className]) {
+            console.log(`Tạo class rỗng cho ${className}`);
+            
+            // Tạo class rỗng với các phương thức cơ bản
+            window[className] = class {
+                constructor() {
+                    console.warn(`Đây là class ${className} rỗng được tạo tự động vì không tìm thấy file JS`);
+                }
+            };
+            
+            // Tạo instance nếu cần thiết
+            if (className === 'TeacherScores') {
+                window.scoreManager = new window[className]();
+            } else if (className === 'TeacherStudents') {
+                window.studentsInstance = new window[className]();
+            }
+        }
+    }
+    
+    getClassNameFromSrc(scriptSrc) {
+        // Lấy tên file từ đường dẫn
+        const fileName = scriptSrc.split('/').pop().replace('.js', '');
+        
+        // Chuyển đổi kebab-case thành PascalCase
+        if (fileName === 'teacher-scores') {
+            return 'TeacherScores';
+        } else if (fileName === 'teacher-students') {
+            return 'TeacherStudents';
+        } else if (fileName === 'teacher-dashboard') {
+            return 'TeacherDashboard';
+        } else if (fileName === 'data-service') {
+            return 'DataService';
+        }
+        
+        return null;
+    }
+
     updateActiveLink(page) {
         // Cập nhật trạng thái active cho menu
         document.querySelectorAll('.sidebar li').forEach(li => {
             li.classList.remove('active');
         });
+        
+        // Xác định tiền tố dựa trên vai trò
+        const prefix = this.userRole === 'teacher' ? 'teacher' : 'student';
+        
         const activeLink = document.querySelector(`.sidebar a[href="#${page}"]`) || 
-                          document.querySelector(`.sidebar a[href="student-${page}.html"]`);
+                          document.querySelector(`.sidebar a[href="${prefix}-${page}.html"]`);
         if (activeLink) {
             activeLink.parentElement.classList.add('active');
         }
+        
+        // Lưu trang hiện tại
+        this.currentPage = page;
+    }
+
+    ensureDataLoaded() {
+        // Kiểm tra xem dữ liệu cơ bản đã được tải chưa
+        console.log('Kiểm tra dữ liệu trong localStorage');
+        
+        try {
+            // Kiểm tra dữ liệu người dùng hiện tại
+            const currentUserData = localStorage.getItem('currentUser');
+            console.log('Dữ liệu người dùng hiện tại:', currentUserData);
+            
+            if (!currentUserData) {
+                console.warn('Không tìm thấy dữ liệu người dùng hiện tại');
+                
+                // Kiểm tra vai trò và tải dữ liệu mẫu nếu cần
+                if (this.userRole === 'teacher') {
+                    console.log('Tải dữ liệu giáo viên mẫu');
+                    this.loadSampleTeacherData();
+                } else if (this.userRole === 'student') {
+                    console.log('Tải dữ liệu học sinh mẫu');
+                    this.loadSampleStudentData();
+                }
+            } else {
+                // Kiểm tra xem dữ liệu người dùng có đúng vai trò không
+                const user = JSON.parse(currentUserData);
+                console.log('Dữ liệu người dùng hiện tại:', user);
+                
+                if (user.role !== this.userRole) {
+                    console.warn(`Vai trò người dùng (${user.role}) không khớp với vai trò hiện tại (${this.userRole})`);
+                    
+                    // Tải dữ liệu mẫu phù hợp với vai trò hiện tại
+                    if (this.userRole === 'teacher') {
+                        this.loadSampleTeacherData();
+                    } else if (this.userRole === 'student') {
+                        this.loadSampleStudentData();
+                    }
+                }
+            }
+            
+            // Kiểm tra dữ liệu học sinh
+            const studentsData = localStorage.getItem('students');
+            console.log('Dữ liệu học sinh:', studentsData ? `Đã tìm thấy (${JSON.parse(studentsData).length} học sinh)` : 'Không tìm thấy');
+            
+            if (!studentsData || JSON.parse(studentsData).length === 0) {
+                console.warn('Không tìm thấy dữ liệu học sinh hoặc danh sách rỗng');
+                this.loadSampleStudentsData();
+            }
+            
+            // Kiểm tra dữ liệu điểm số
+            const scoresData = localStorage.getItem('scores');
+            console.log('Dữ liệu điểm số:', scoresData ? `Đã tìm thấy (${JSON.parse(scoresData).length} điểm)` : 'Không tìm thấy');
+            
+            if (!scoresData || JSON.parse(scoresData).length === 0) {
+                console.warn('Không tìm thấy dữ liệu điểm số hoặc danh sách rỗng');
+                this.loadSampleScoresData();
+            }
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra dữ liệu:', error);
+            
+            // Nếu có lỗi, tải lại tất cả dữ liệu mẫu
+            if (this.userRole === 'teacher') {
+                this.loadSampleTeacherData();
+            } else {
+                this.loadSampleStudentData();
+            }
+            this.loadSampleStudentsData();
+            this.loadSampleScoresData();
+        }
+    }
+    
+    loadSampleTeacherData() {
+        console.log('Tải dữ liệu giáo viên mẫu');
+        
+        // Tạo dữ liệu giáo viên mẫu nếu chưa có
+        const sampleTeacher = {
+            id: 'T001',
+            username: 'teacher',
+            password: 'password',
+            fullName: 'Nguyễn Văn Thành',
+            email: 'teacher@example.com',
+            phone: '0987654321',
+            department: 'Công nghệ thông tin',
+            role: 'teacher'
+        };
+        
+        // Lưu vào localStorage
+        localStorage.setItem('currentUser', JSON.stringify(sampleTeacher));
+        
+        // Kiểm tra và tạo danh sách giáo viên nếu chưa có
+        const teachersData = localStorage.getItem('teachers');
+        if (!teachersData) {
+            localStorage.setItem('teachers', JSON.stringify([sampleTeacher]));
+        }
+    }
+    
+    loadSampleStudentData() {
+        console.log('Tải dữ liệu học sinh mẫu');
+        
+        // Tạo dữ liệu học sinh mẫu nếu chưa có
+        const sampleStudent = {
+            id: 'S001',
+            username: 'student',
+            password: 'password',
+            fullName: 'Trần Văn Học',
+            email: 'student@example.com',
+            phone: '0123456789',
+            class: '12A1',
+            role: 'student'
+        };
+        
+        // Lưu vào localStorage
+        localStorage.setItem('currentUser', JSON.stringify(sampleStudent));
+        localStorage.setItem('currentStudent', JSON.stringify(sampleStudent));
+    }
+    
+    loadSampleStudentsData() {
+        console.log('Tải danh sách học sinh mẫu');
+        
+        // Tạo danh sách học sinh mẫu
+        const sampleStudents = [
+            {
+                id: 'S001',
+                username: 'student1',
+                password: 'password',
+                fullName: 'Trần Văn Học',
+                email: 'student1@example.com',
+                phone: '0123456789',
+                class: '12A1'
+            },
+            {
+                id: 'S002',
+                username: 'student2',
+                password: 'password',
+                fullName: 'Nguyễn Thị Hương',
+                email: 'student2@example.com',
+                phone: '0123456788',
+                class: '12A1'
+            },
+            {
+                id: 'S003',
+                username: 'student3',
+                password: 'password',
+                fullName: 'Lê Minh Tuấn',
+                email: 'student3@example.com',
+                phone: '0123456787',
+                class: '12A2'
+            }
+        ];
+        
+        // Lưu vào localStorage
+        localStorage.setItem('students', JSON.stringify(sampleStudents));
+    }
+    
+    loadSampleScoresData() {
+        console.log('Tải dữ liệu điểm số mẫu');
+        
+        // Tạo dữ liệu điểm số mẫu
+        const sampleScores = [
+            {
+                id: 'SC001',
+                studentId: 'S001',
+                subject: 'Toán',
+                score: 8.5,
+                type: 'Giữa kỳ',
+                date: '2023-10-15'
+            },
+            {
+                id: 'SC002',
+                studentId: 'S001',
+                subject: 'Văn',
+                score: 7.5,
+                type: 'Giữa kỳ',
+                date: '2023-10-16'
+            },
+            {
+                id: 'SC003',
+                studentId: 'S002',
+                subject: 'Toán',
+                score: 9.0,
+                type: 'Giữa kỳ',
+                date: '2023-10-15'
+            },
+            {
+                id: 'SC004',
+                studentId: 'S002',
+                subject: 'Văn',
+                score: 8.0,
+                type: 'Giữa kỳ',
+                date: '2023-10-16'
+            },
+            {
+                id: 'SC005',
+                studentId: 'S003',
+                subject: 'Toán',
+                score: 6.5,
+                type: 'Giữa kỳ',
+                date: '2023-10-15'
+            }
+        ];
+        
+        // Lưu vào localStorage
+        localStorage.setItem('scores', JSON.stringify(sampleScores));
+    }
+
+    loadPageContent(pageName) {
+        console.log(`Đang tải nội dung trang: ${pageName}`);
+        
+        // Xác định đường dẫn đến file HTML
+        const contentPath = `components/${pageName}-content.html`;
+        
+        // Tải nội dung HTML
+        fetch(contentPath)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Không thể tải nội dung trang ${pageName}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Cập nhật nội dung
+                const contentContainer = document.getElementById('content');
+                if (contentContainer) {
+                    contentContainer.innerHTML = html;
+                    
+                    // Tải CSS cho trang
+                    this.loadRequiredCSS(pageName);
+                    
+                    // Tải các script cụ thể cho từng trang
+                    if (pageName === 'teacher-dashboard') {
+                        this.loadScript('js/data-service.js')
+                            .then(() => this.loadScript('js/teacher-dashboard.js'));
+                    } else if (pageName === 'teacher-scores') {
+                        this.loadScript('js/teacher-scores.js');
+                    } else if (pageName === 'teacher-students') {
+                        this.loadScript('js/teacher-students.js');
+                    }
+                    
+                    console.log(`Đã tải nội dung trang ${pageName} thành công`);
+                } else {
+                    console.error('Không tìm thấy container nội dung');
+                }
+            })
+            .catch(error => {
+                console.error(`Lỗi khi tải nội dung trang ${pageName}:`, error);
+                // Hiển thị thông báo lỗi cho người dùng
+                const contentContainer = document.getElementById('content');
+                if (contentContainer) {
+                    contentContainer.innerHTML = `
+                        <div class="error-container">
+                            <h2>Không thể tải nội dung</h2>
+                            <p>Đã xảy ra lỗi khi tải trang ${pageName}. Vui lòng thử lại sau.</p>
+                        </div>
+                    `;
+                }
+            });
     }
 }
 
@@ -137,31 +613,13 @@ let navigationInstance;
 document.addEventListener('DOMContentLoaded', () => {
     navigationInstance = new Navigation();
     window.navigationInstance = navigationInstance;
-    // Load trang mặc định
-    navigationInstance.loadPage('dashboard');
 });
 
+// Hàm tiện ích để tải nội dung trang từ bên ngoài
 function loadPageContent(page) {
-    let filePath = '';
-    switch(page) {
-        case 'schedule':
-            filePath = 'components/teacher-schedule-content.html';
-            break;
-        // ... các case khác ...
+    if (window.navigationInstance) {
+        window.navigationInstance.loadPage(page);
+    } else {
+        console.error('Navigation instance not initialized');
     }
-
-    fetch(filePath)
-        .then(response => response.text())
-        .then(content => {
-            document.getElementById('pageContent').innerHTML = content;
-            
-            if (page === 'schedule') {
-                const script = document.createElement('script');
-                script.src = 'js/teacher-schedule.js';
-                document.body.appendChild(script);
-            }
-        })
-        .catch(error => {
-            console.error('Lỗi tải nội dung:', error);
-        });
 } 

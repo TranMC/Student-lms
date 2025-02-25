@@ -358,6 +358,130 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .notification-badge {
+            background-color: var(--warning-color);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            position: relative;
+            top: -8px;
+        }
+
+        .badge.urgent {
+            background-color: var(--warning-color);
+            color: white;
+        }
+
+        .badge.live {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .btn-action.join-meeting {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-action.prepare-class {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-action.view-materials {
+            background-color: #f3f4f6;
+            color: var(--text-primary);
+        }
+
+        .schedule-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 15px;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .activity-icon.submitted {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .activity-icon.question {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .activity-details {
+            flex: 1;
+        }
+
+        .activity-details h4 {
+            margin: 0 0 5px;
+            font-size: 15px;
+        }
+
+        .activity-details p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .btn-icon:hover {
+            background-color: var(--bg-light);
+        }
+
+        .current-date {
+            margin: 0 10px;
+            font-weight: 500;
+        }
+
+        .card-actions {
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -368,40 +492,37 @@
                 <p class="date-time" id="currentDateTime"></p>
             </div>
             <div class="quick-actions">
-                <button class="action-btn"><i class="fas fa-plus"></i> Thêm điểm</button>
-                <button class="action-btn"><i class="fas fa-bell"></i> Thông báo</button>
+                <button class="action-btn" onclick="window.location.href='course-management.html'">
+                    <i class="fas fa-book"></i> Quản lý khóa học
+                </button>
+                <button class="action-btn" onclick="window.location.href='student-management.html'">
+                    <i class="fas fa-user-graduate"></i> Quản lý học viên
+                </button>
+                <button class="action-btn" onclick="window.location.href='messages.html'">
+                    <i class="fas fa-envelope"></i> <span class="notification-badge" id="unreadMessages">0</span> Tin nhắn
+                </button>
             </div>
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Khóa học đang dạy</h3>
+                    <p id="totalCourses">0</p>
+                    <span class="trend up"><i class="fas fa-arrow-up"></i> <span id="newCourses">0</span> khóa mới</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
                     <i class="fas fa-user-graduate"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>Tổng số học sinh</h3>
+                    <h3>Học viên đang học</h3>
                     <p id="totalStudents">0</p>
-                    <span class="trend up"><i class="fas fa-arrow-up"></i> 5%</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>Điểm trung bình</h3>
-                    <p id="averageScore">0.0</p>
-                    <span class="trend up"><i class="fas fa-arrow-up"></i> 0.5</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>Tỷ lệ đạt</h3>
-                    <p id="passRate">0%</p>
-                    <span class="trend down"><i class="fas fa-arrow-down"></i> 2%</span>
+                    <span class="trend up"><i class="fas fa-arrow-up"></i> <span id="newStudents">0</span> học viên mới</span>
                 </div>
             </div>
             <div class="stat-card">
@@ -409,8 +530,19 @@
                     <i class="fas fa-tasks"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>Nhiệm vụ hôm nay</h3>
-                    <p id="todayTasks">0</p>
+                    <h3>Bài tập cần chấm</h3>
+                    <p id="pendingAssignments">0</p>
+                    <span class="badge urgent">Gấp: <span id="urgentAssignments">0</span> bài</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Giờ giảng dạy</h3>
+                    <p id="teachingHours">0</p>
+                    <span class="trend up"><i class="fas fa-arrow-up"></i> <span id="weeklyHours">0</span> giờ/tuần</span>
                 </div>
             </div>
         </div>
@@ -418,69 +550,29 @@
         <div class="dashboard-grid">
             <div class="card schedule-card">
                 <div class="card-header">
-                    <h3><i class="fas fa-calendar-alt"></i> Lịch dạy hôm nay</h3>
-                    <a href="#" class="view-all">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+                    <h3><i class="fas fa-calendar-alt"></i> Lịch dạy trực tuyến</h3>
+                    <div class="card-actions">
+                        <button class="btn-icon" id="prevDay">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="currentDate" class="current-date">Hôm nay</span>
+                        <button class="btn-icon" id="nextDay">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="schedule-list" id="todaySchedule">
-                    <!-- Lịch dạy sẽ được thêm bằng JavaScript -->
-                    <div class="schedule-item">
-                        <div class="schedule-time">
-                            <span class="time">07:15 - 08:00</span>
-                            <span class="badge in-progress">Đang diễn ra</span>
-                        </div>
-                        <div class="schedule-details">
-                            <h4>Toán học</h4>
-                            <p><i class="fas fa-users"></i> Lớp 12A1</p>
-                            <p><i class="fas fa-map-marker-alt"></i> Phòng 305</p>
-                        </div>
-                    </div>
-                    <div class="schedule-item">
-                        <div class="schedule-time">
-                            <span class="time">09:30 - 10:15</span>
-                            <span class="badge upcoming">Sắp tới</span>
-                        </div>
-                        <div class="schedule-details">
-                            <h4>Toán học</h4>
-                            <p><i class="fas fa-users"></i> Lớp 11A2</p>
-                            <p><i class="fas fa-map-marker-alt"></i> Phòng 203</p>
-                        </div>
-                    </div>
+                    <!-- Lịch học sẽ được thêm bằng JavaScript -->
                 </div>
             </div>
 
-            <div class="card recent-scores">
+            <div class="card activity-card">
                 <div class="card-header">
-                    <h3><i class="fas fa-history"></i> Điểm số gần đây</h3>
-                    <a href="#" class="view-all">Xem tất cả <i class="fas fa-arrow-right"></i></a>
+                    <h3><i class="fas fa-bell"></i> Hoạt động gần đây</h3>
+                    <a href="activities.html" class="view-all">Xem tất cả</a>
                 </div>
-                <div class="recent-scores-list" id="recentScores">
-                    <!-- Điểm số gần đây sẽ được thêm bằng JavaScript -->
-                    <div class="score-item">
-                        <div class="student-info">
-                            <img src="../assets/images/avatar-placeholder.png" alt="Avatar" class="student-avatar">
-                            <div>
-                                <h4>Nguyễn Văn A</h4>
-                                <p>Lớp 12A1</p>
-                            </div>
-                        </div>
-                        <div class="score-details">
-                            <p>Toán học - Kiểm tra 15 phút</p>
-                            <span class="score good">8.5</span>
-                        </div>
-                    </div>
-                    <div class="score-item">
-                        <div class="student-info">
-                            <img src="../assets/images/avatar-placeholder.png" alt="Avatar" class="student-avatar">
-                            <div>
-                                <h4>Trần Thị B</h4>
-                                <p>Lớp 11A2</p>
-                            </div>
-                        </div>
-                        <div class="score-details">
-                            <p>Toán học - Kiểm tra 1 tiết</p>
-                            <span class="score average">6.5</span>
-                        </div>
-                    </div>
+                <div class="activity-list" id="recentActivities">
+                    <!-- Hoạt động sẽ được thêm bằng JavaScript -->
                 </div>
             </div>
         </div>
@@ -488,14 +580,14 @@
         <div class="dashboard-row">
             <div class="card performance-card">
                 <div class="card-header">
-                    <h3><i class="fas fa-chart-bar"></i> Thống kê điểm số theo lớp</h3>
-                    <select class="card-select">
-                        <option>Học kỳ 1</option>
-                        <option>Học kỳ 2</option>
+                    <h3><i class="fas fa-chart-bar"></i> Thống kê khóa học</h3>
+                    <select class="card-select" id="courseSelect">
+                        <option value="all">Tất cả khóa học</option>
+                        <!-- Các khóa học sẽ được thêm bằng JavaScript -->
                     </select>
                 </div>
                 <div class="chart-container">
-                    <canvas id="classPerformanceChart"></canvas>
+                    <canvas id="coursePerformanceChart"></canvas>
                 </div>
             </div>
         </div>
@@ -504,6 +596,126 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../js/teacher-dashboard.js"></script>
     <script>
+        // Dữ liệu mẫu
+        const mockData = {
+            teacher: {
+                name: "Nguyễn Văn Thành",
+                id: "GV001",
+                department: "Công nghệ thông tin"
+            },
+            stats: {
+                totalCourses: 5,
+                newCourses: 2,
+                totalStudents: 120,
+                newStudents: 12,
+                pendingAssignments: 15,
+                urgentAssignments: 5,
+                teachingHours: 32,
+                weeklyHours: 8
+            },
+            courses: [
+                { id: "WEB101", name: "Lập trình Web cơ bản" },
+                { id: "JS201", name: "JavaScript Nâng cao" },
+                { id: "REACT101", name: "React.js Cơ bản" },
+                { id: "NODE101", name: "Node.js Cơ bản" },
+                { id: "DB101", name: "Cơ sở dữ liệu" }
+            ],
+            schedule: {
+                "2023-11-01": [
+                    {
+                        id: "SCH001",
+                        courseId: "WEB101",
+                        courseName: "Lập trình Web cơ bản",
+                        startTime: "07:30",
+                        endTime: "09:00",
+                        room: "WEB101",
+                        students: 25,
+                        status: "live" // live, upcoming, completed
+                    },
+                    {
+                        id: "SCH002",
+                        courseId: "JS201",
+                        courseName: "JavaScript Nâng cao",
+                        startTime: "10:00",
+                        endTime: "11:30",
+                        room: "JS201",
+                        students: 18,
+                        status: "upcoming"
+                    }
+                ]
+            },
+            activities: [
+                {
+                    id: "ACT001",
+                    type: "submission", // submission, question, announcement
+                    title: "Nộp bài tập mới",
+                    description: "5 học viên đã nộp bài tập \"Thiết kế giao diện\"",
+                    time: "5 phút trước",
+                    actionText: "Xem ngay",
+                    actionLink: "assignments.html?id=ASG001"
+                },
+                {
+                    id: "ACT002",
+                    type: "question",
+                    title: "Câu hỏi mới",
+                    description: "Nguyễn Văn A đã đặt câu hỏi trong khóa học JavaScript",
+                    time: "15 phút trước",
+                    actionText: "Trả lời",
+                    actionLink: "forum.html?id=Q001"
+                }
+            ],
+            performance: {
+                attendance: [85, 88, 92, 90],
+                completion: [75, 82, 80, 85]
+            },
+            messages: 3
+        };
+
+        // Kiểm tra và tải dữ liệu từ localStorage
+        function loadTeacherData() {
+            try {
+                // Kiểm tra dữ liệu giáo viên trong localStorage
+                const teacherData = localStorage.getItem('currentUser');
+                const teachersData = localStorage.getItem('teachers');
+                
+                console.log('Dữ liệu giáo viên hiện tại:', teacherData);
+                console.log('Danh sách giáo viên:', teachersData);
+                
+                if (teacherData) {
+                    const teacher = JSON.parse(teacherData);
+                    console.log('Đã tìm thấy dữ liệu giáo viên:', teacher);
+                    
+                    // Cập nhật dữ liệu mockData với thông tin từ localStorage
+                    if (teacher.role === 'teacher') {
+                        mockData.teacher.name = teacher.fullName || teacher.name || "Giáo viên";
+                        mockData.teacher.id = teacher.id || "GV001";
+                        mockData.teacher.department = teacher.department || "Chưa cập nhật";
+                    }
+                } else if (teachersData) {
+                    // Nếu không có currentUser nhưng có danh sách giáo viên, lấy giáo viên đầu tiên
+                    const teachers = JSON.parse(teachersData);
+                    if (Array.isArray(teachers) && teachers.length > 0) {
+                        console.log('Sử dụng giáo viên đầu tiên từ danh sách:', teachers[0]);
+                        mockData.teacher.name = teachers[0].fullName || teachers[0].name || "Giáo viên";
+                        mockData.teacher.id = teachers[0].id || "GV001";
+                        mockData.teacher.department = teachers[0].department || "Chưa cập nhật";
+                    }
+                }
+                
+                // Kiểm tra dữ liệu học sinh
+                const studentsData = localStorage.getItem('students');
+                if (studentsData) {
+                    const students = JSON.parse(studentsData);
+                    if (Array.isArray(students)) {
+                        console.log('Số lượng học sinh:', students.length);
+                        mockData.stats.totalStudents = students.length;
+                    }
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải dữ liệu giáo viên:', error);
+            }
+        }
+
         // Cập nhật thời gian hiện tại
         function updateDateTime() {
             const now = new Date();
@@ -518,95 +730,243 @@
             document.getElementById('currentDateTime').textContent = now.toLocaleDateString('vi-VN', options);
         }
         
-        // Khởi tạo trang
-        function initDashboard() {
-            // Cập nhật tên giáo viên
-            document.getElementById('teacherNameWelcome').textContent = 'Nguyễn Văn Thành';
+        // Hiển thị lịch học
+        function renderSchedule(date) {
+            const scheduleContainer = document.getElementById('todaySchedule');
+            scheduleContainer.innerHTML = '';
             
-            // Cập nhật thống kê
-            document.getElementById('totalStudents').textContent = '143';
-            document.getElementById('averageScore').textContent = '7.8';
-            document.getElementById('passRate').textContent = '85%';
-            document.getElementById('todayTasks').textContent = '4';
+            // Trong thực tế, bạn sẽ lấy lịch dựa trên ngày được chọn
+            // Ở đây chúng ta sử dụng dữ liệu mẫu
+            const scheduleItems = mockData.schedule["2023-11-01"];
             
-            // Cập nhật thời gian và thiết lập cập nhật mỗi phút
-            updateDateTime();
-            setInterval(updateDateTime, 60000);
-            
-            // Tạo biểu đồ thành tích lớp học
-            createClassPerformanceChart();
+            if (scheduleItems && scheduleItems.length > 0) {
+                scheduleItems.forEach(item => {
+                    const scheduleItem = document.createElement('div');
+                    scheduleItem.className = 'schedule-item';
+                    
+                    let statusBadge = '';
+                    if (item.status === 'live') {
+                        statusBadge = '<span class="badge live">Đang diễn ra</span>';
+                    } else if (item.status === 'upcoming') {
+                        statusBadge = '<span class="badge upcoming">Sắp diễn ra</span>';
+                    } else {
+                        statusBadge = '<span class="badge completed">Đã hoàn thành</span>';
+                    }
+                    
+                    let actionButtons = '';
+                    if (item.status === 'live') {
+                        actionButtons = `
+                            <button class="btn-action join-meeting" onclick="joinClass('${item.id}')">
+                                <i class="fas fa-video"></i> Vào lớp học
+                            </button>
+                        `;
+                    } else if (item.status === 'upcoming') {
+                        actionButtons = `
+                            <button class="btn-action prepare-class" onclick="prepareClass('${item.id}')">
+                                <i class="fas fa-tasks"></i> Chuẩn bị
+                            </button>
+                        `;
+                    }
+                    
+                    actionButtons += `
+                        <button class="btn-action view-materials" onclick="viewMaterials('${item.courseId}')">
+                            <i class="fas fa-book"></i> Tài liệu
+                        </button>
+                    `;
+                    
+                    scheduleItem.innerHTML = `
+                        <div class="schedule-time">
+                            <span class="time">${item.startTime} - ${item.endTime}</span>
+                            ${statusBadge}
+                        </div>
+                        <div class="schedule-details">
+                            <h4>${item.courseName}</h4>
+                            <p><i class="fas fa-users"></i> ${item.students} học viên tham gia</p>
+                            <p><i class="fas fa-video"></i> Phòng học: ${item.room}</p>
+                            <div class="schedule-actions">
+                                ${actionButtons}
+                            </div>
+                        </div>
+                    `;
+                    
+                    scheduleContainer.appendChild(scheduleItem);
+                });
+            } else {
+                scheduleContainer.innerHTML = '<div class="empty-state">Không có lịch dạy nào vào ngày này</div>';
+            }
         }
         
-        // Tạo biểu đồ thành tích
-        function createClassPerformanceChart() {
-            const ctx = document.getElementById('classPerformanceChart').getContext('2d');
+        // Hiển thị hoạt động gần đây
+        function renderActivities() {
+            const activitiesContainer = document.getElementById('recentActivities');
+            activitiesContainer.innerHTML = '';
             
-            // Dữ liệu lớp học
-            const labels = ['12A1', '12A2', '11A1', '11A2', '10A1', '10A2'];
-            const averageScores = [7.9, 8.2, 7.5, 7.0, 7.8, 8.1];
-            const passRates = [90, 95, 82, 78, 88, 92];
+            mockData.activities.forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+                
+                let iconClass = '';
+                if (activity.type === 'submission') {
+                    iconClass = 'submitted';
+                    icon = 'fa-file-alt';
+                } else if (activity.type === 'question') {
+                    iconClass = 'question';
+                    icon = 'fa-question';
+                } else {
+                    iconClass = 'announcement';
+                    icon = 'fa-bullhorn';
+                }
+                
+                activityItem.innerHTML = `
+                    <div class="activity-icon ${iconClass}">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="activity-details">
+                        <h4>${activity.title}</h4>
+                        <p>${activity.description}</p>
+                        <span class="activity-time">${activity.time}</span>
+                    </div>
+                    <button class="btn-action ${activity.type}" onclick="window.location.href='${activity.actionLink}'">
+                        ${activity.actionText}
+                    </button>
+                `;
+                
+                activitiesContainer.appendChild(activityItem);
+            });
+        }
+        
+        // Tạo biểu đồ thống kê
+        function createCoursePerformanceChart() {
+            const ctx = document.getElementById('coursePerformanceChart').getContext('2d');
             
-            const chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Điểm trung bình',
-                            data: averageScores,
-                            backgroundColor: 'rgba(67, 97, 238, 0.7)',
-                            borderColor: 'rgba(67, 97, 238, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Tỷ lệ đạt (%)',
-                            data: passRates,
-                            backgroundColor: 'rgba(76, 201, 240, 0.7)',
-                            borderColor: 'rgba(76, 201, 240, 1)',
-                            borderWidth: 1,
-                            type: 'line',
-                            yAxisID: 'y1'
-                        }
-                    ]
-                },
+            const data = {
+                labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
+                datasets: [
+                    {
+                        label: 'Tham gia lớp học',
+                        data: mockData.performance.attendance,
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        fill: true
+                    },
+                    {
+                        label: 'Hoàn thành bài tập',
+                        data: mockData.performance.completion,
+                        borderColor: 'rgba(76, 201, 240, 1)',
+                        backgroundColor: 'rgba(76, 201, 240, 0.1)',
+                        fill: true
+                    }
+                ]
+            };
+
+            const config = {
+                type: 'line',
+                data: data,
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true,
-                            max: 10,
-                            title: {
-                                display: true,
-                                text: 'Điểm trung bình'
-                            }
-                        },
-                        y1: {
-                            beginAtZero: true,
                             max: 100,
-                            position: 'right',
-                            grid: {
-                                drawOnChartArea: false
-                            },
                             title: {
                                 display: true,
-                                text: 'Tỷ lệ đạt (%)'
+                                text: 'Tỷ lệ (%)'
                             }
                         }
                     },
                     plugins: {
                         legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: false,
-                            text: 'Thống kê điểm số theo lớp'
+                            position: 'top'
                         }
                     }
                 }
+            };
+
+            new Chart(ctx, config);
+        }
+        
+        // Cập nhật danh sách khóa học
+        function updateCourseSelect() {
+            const courseSelect = document.getElementById('courseSelect');
+            
+            mockData.courses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.id;
+                option.textContent = course.name;
+                courseSelect.appendChild(option);
+            });
+            
+            // Thêm sự kiện thay đổi khóa học
+            courseSelect.addEventListener('change', function() {
+                // Trong thực tế, bạn sẽ cập nhật biểu đồ dựa trên khóa học được chọn
+                console.log('Đã chọn khóa học:', this.value);
             });
         }
         
+        // Khởi tạo trang
+        function initDashboard() {
+            // Tải dữ liệu từ localStorage trước
+            loadTeacherData();
+            
+            // Cập nhật thông tin cơ bản
+            document.getElementById('teacherNameWelcome').textContent = mockData.teacher.name;
+            document.getElementById('unreadMessages').textContent = mockData.messages;
+            
+            // Cập nhật thống kê
+            document.getElementById('totalCourses').textContent = mockData.stats.totalCourses;
+            document.getElementById('newCourses').textContent = mockData.stats.newCourses;
+            document.getElementById('totalStudents').textContent = mockData.stats.totalStudents;
+            document.getElementById('newStudents').textContent = mockData.stats.newStudents;
+            document.getElementById('pendingAssignments').textContent = mockData.stats.pendingAssignments;
+            document.getElementById('urgentAssignments').textContent = mockData.stats.urgentAssignments;
+            document.getElementById('teachingHours').textContent = mockData.stats.teachingHours;
+            document.getElementById('weeklyHours').textContent = mockData.stats.weeklyHours;
+            
+            // Cập nhật thời gian
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+            
+            // Hiển thị lịch học
+            renderSchedule(new Date());
+            
+            // Hiển thị hoạt động
+            renderActivities();
+            
+            // Cập nhật danh sách khóa học
+            updateCourseSelect();
+            
+            // Khởi tạo biểu đồ
+            createCoursePerformanceChart();
+            
+            // Thêm sự kiện cho nút điều hướng lịch
+            document.getElementById('prevDay').addEventListener('click', function() {
+                // Trong thực tế, bạn sẽ cập nhật ngày và hiển thị lịch tương ứng
+                console.log('Ngày trước');
+            });
+            
+            document.getElementById('nextDay').addEventListener('click', function() {
+                // Trong thực tế, bạn sẽ cập nhật ngày và hiển thị lịch tương ứng
+                console.log('Ngày sau');
+            });
+        }
+        
+        // Các hàm xử lý sự kiện
+        function joinClass(scheduleId) {
+            // Trong thực tế, bạn sẽ chuyển hướng đến trang lớp học trực tuyến
+            console.log('Tham gia lớp học:', scheduleId);
+        }
+        
+        function prepareClass(scheduleId) {
+            // Trong thực tế, bạn sẽ chuyển hướng đến trang chuẩn bị lớp học
+            console.log('Chuẩn bị lớp học:', scheduleId);
+        }
+        
+        function viewMaterials(courseId) {
+            // Trong thực tế, bạn sẽ chuyển hướng đến trang tài liệu khóa học
+            console.log('Xem tài liệu khóa học:', courseId);
+        }
+
         // Khởi chạy khi trang đã tải xong
         document.addEventListener('DOMContentLoaded', initDashboard);
     </script>

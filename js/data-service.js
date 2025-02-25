@@ -1,20 +1,22 @@
 // Service để quản lý dữ liệu tập trung
 class DataService {
     constructor() {
-        // Khởi tạo nếu cần
+        console.log('DataService đã được khởi tạo');
+        this.dashboardData = null;
     }
 
-    dashboardData = null;
-    
     async fetchDashboardData() {
         try {
-            // Lấy dữ liệu teacher từ sessionStorage
-            const teacherData = sessionStorage.getItem('teacherData');
+            console.log('Đang lấy dữ liệu dashboard...');
+            
+            // Lấy dữ liệu teacher từ localStorage
+            const teacherData = localStorage.getItem('currentUser');
             let teacher = teacherData ? JSON.parse(teacherData) : null;
-            if (!teacher) {
-                console.error('Không tìm thấy thông tin giáo viên trong sessionStorage.');
-                // Bạn có thể tạo dữ liệu mặc định hoặc chuyển hướng người dùng đến trang login.
-                teacher = { id: 'default', fullName: 'Giáo viên' };
+            
+            if (!teacher || teacher.role !== 'teacher') {
+                console.warn('Không tìm thấy thông tin giáo viên hợp lệ trong localStorage.');
+                // Tạo dữ liệu mặc định
+                teacher = { id: 'default', fullName: 'Giáo viên', role: 'teacher' };
             }
 
             // Lấy dữ liệu học sinh và điểm số từ localStorage
@@ -22,7 +24,7 @@ class DataService {
             const scores = JSON.parse(localStorage.getItem('scores') || '[]');
 
             // Tính toán thống kê
-            const statistics = this.calculateStatistics(scores);
+            const statistics = this.calculateStatistics(scores, students);
             
             this.dashboardData = {
                 teacher,
@@ -33,10 +35,11 @@ class DataService {
                 schedule: this.getTeacherSchedule()
             };
             
-            console.log('Dashboard Data:', this.dashboardData); // Debug
+            console.log('Dữ liệu dashboard đã được tải:', this.dashboardData);
             return this.dashboardData;
         } catch (error) {
-            console.error('Lỗi khi lấy dữ liệu:', error);
+            console.error('Lỗi khi lấy dữ liệu dashboard:', error);
+            // Trả về dữ liệu mặc định nếu có lỗi
             return {
                 teacher: { fullName: 'Giáo viên' },
                 students: [],
@@ -48,44 +51,54 @@ class DataService {
         }
     }
     
-    calculateStatistics(scores) {
-        if (!scores.length) return {
-            average: 0,
-            ranking: 'Chưa có điểm',
-            passedSubjects: '0/0'
-        };
-
-        const average = scores.reduce((sum, score) => sum + parseFloat(score.score), 0) / scores.length;
-        const passedCount = scores.filter(score => parseFloat(score.score) >= 5).length;
-
-        return {
-            average: average.toFixed(1),
-            ranking: this.getRanking(average),
-            passedSubjects: `${passedCount}/${scores.length}`
-        };
-    };
-    
-    getRanking(average) {
-        if (average >= 8.5) return 'Xuất sắc';
-        if (average >= 7.0) return 'Giỏi';
-        if (average >= 6.5) return 'Khá';
-        if (average >= 5.0) return 'Trung bình';
-        return 'Yếu';
-    };
+    calculateStatistics(scores, students) {
+        try {
+            // Tính toán các thống kê cơ bản
+            const totalStudents = students.length;
+            
+            // Tính điểm trung bình
+            let averageScore = 0;
+            if (scores.length > 0) {
+                const totalScore = scores.reduce((sum, score) => sum + parseFloat(score.score), 0);
+                averageScore = totalScore / scores.length;
+            }
+            
+            // Tính tỷ lệ đạt
+            let passRate = 0;
+            if (scores.length > 0) {
+                const passedScores = scores.filter(score => parseFloat(score.score) >= 5);
+                passRate = (passedScores.length / scores.length) * 100;
+            }
+            
+            return {
+                totalStudents,
+                averageScore: averageScore.toFixed(1),
+                passRate: passRate.toFixed(1)
+            };
+        } catch (error) {
+            console.error('Lỗi khi tính toán thống kê:', error);
+            return {
+                totalStudents: 0,
+                averageScore: '0.0',
+                passRate: '0.0'
+            };
+        }
+    }
     
     getRecentScores(scores, students) {
-        if (!Array.isArray(scores)) {
-            console.error('scores không phải là mảng:', scores);
-            return [];
-        }
-
         try {
+            if (!Array.isArray(scores) || !Array.isArray(students)) {
+                console.error('scores hoặc students không phải là mảng:', { scores, students });
+                return [];
+            }
+
+            // Lấy 5 điểm gần nhất
             return scores
                 .map(score => {
-                    const student = students.find(s => s.id === score.studentId || s.studentId === score.studentId);
+                    const student = students.find(s => s.id === score.studentId);
                     return {
                         ...score,
-                        studentName: student ? student.name || student.fullName : 'Học sinh'
+                        studentName: student ? student.fullName : 'Học sinh'
                     };
                 })
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -94,15 +107,16 @@ class DataService {
             console.error('Lỗi trong getRecentScores:', error);
             return [];
         }
-    };
+    }
     
     getTeacherSchedule() {
+        // Dữ liệu mẫu cho lịch dạy
         return [
             { time: '07:00 - 08:30', class: '12A1', subject: 'Toán' },
             { time: '08:45 - 10:15', class: '12A2', subject: 'Vật lý' },
             { time: '10:30 - 12:00', class: '12A1', subject: 'Hóa học' }
         ];
-    };
+    }
     
     getDashboardData() {
         return this.dashboardData;
@@ -275,4 +289,7 @@ class DataService {
             return [];
         }
     }
-} 
+}
+
+// Khởi tạo một instance toàn cục để sử dụng
+window.dataService = new DataService(); 
