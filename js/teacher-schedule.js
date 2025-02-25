@@ -66,19 +66,23 @@ class TeacherSchedule {
         this.updateTeacherName();
     }
 
-    updateTeacherName() {
+    async updateTeacherName() {
         const welcomeElement = document.getElementById('teacherNameWelcome');
         if (welcomeElement) {
-            // Đọc và parse dữ liệu từ localStorage
-            const teacherData = localStorage.getItem('teacher');
-            if (teacherData) {
-                const teachers = JSON.parse(teacherData);
-                if (Array.isArray(teachers) && teachers.length > 0) {
-                    welcomeElement.textContent = teachers[0].fullName;
-                    return;
+            try {
+                const response = await fetch('https://api.example.com/teacher');
+                if (response.ok) {
+                    const teachers = await response.json();
+                    if (Array.isArray(teachers) && teachers.length > 0) {
+                        welcomeElement.textContent = teachers[0].fullName;
+                        return;
+                    }
                 }
+                welcomeElement.textContent = 'Giáo viên'; // Fallback nếu không tìm thấy dữ liệu
+            } catch (error) {
+                console.error('Error fetching teacher data:', error);
+                welcomeElement.textContent = 'Giáo viên'; // Fallback nếu có lỗi
             }
-            welcomeElement.textContent = 'Giáo viên'; // Fallback nếu không tìm thấy dữ liệu
         }
     }
 

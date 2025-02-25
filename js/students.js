@@ -1,42 +1,21 @@
 class StudentManager {
     constructor() {
-        this.initializeStudents();
+        this.apiBaseUrl = 'https://api.example.com'; // Replace with your actual API base URL
         this.setupEventListeners();
         this.loadStudents();
     }
 
-    initializeStudents() {
-        if (!localStorage.getItem('students')) {
-            localStorage.setItem('students', JSON.stringify([]));
+    async loadStudents() {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/students`);
+            const students = await response.json();
+            this.renderStudents(students);
+        } catch (error) {
+            console.error('Failed to load students:', error);
         }
     }
 
-    setupEventListeners() {
-        // Tìm kiếm học sinh
-        document.getElementById('searchStudent')?.addEventListener('input', (e) => {
-            this.filterStudents(e.target.value, document.getElementById('classFilter').value);
-        });
-
-        // Lọc theo lớp
-        document.getElementById('classFilter')?.addEventListener('change', (e) => {
-            this.filterStudents(document.getElementById('searchStudent').value, e.target.value);
-        });
-
-        // Form thêm/sửa học sinh
-        document.getElementById('studentForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveStudent();
-        });
-
-        // Đóng modal
-        const closeBtn = document.querySelector('.close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => this.closeModal());
-        }
-    }
-
-    loadStudents() {
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
+    renderStudents(students) {
         const tbody = document.querySelector('#studentTable tbody');
         if (!tbody) return;
 
@@ -59,30 +38,34 @@ class StudentManager {
         `).join('');
     }
 
-    calculateAverage(studentId) {
-        const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-        const studentScores = scores.filter(score => score.studentId === studentId);
-        
-        if (studentScores.length === 0) return 0;
+    async calculateAverage(studentId) {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/students/${studentId}/scores`);
+            const scores = await response.json();
 
-        // Tính điểm theo trọng số
-        const weightedScores = studentScores.map(score => {
-            let weight = 1;
-            switch(score.type) {
-                case 'Miệng': weight = 1; break;
-                case '15 phút': weight = 1; break;
-                case '1 tiết': weight = 2; break;
-                case 'Giữa kỳ': weight = 2; break;
-                case 'Cuối kỳ': weight = 3; break;
-                default: weight = 1;
-            }
-            return { score: parseFloat(score.score), weight };
-        });
+            if (scores.length === 0) return 0;
 
-        const totalWeight = weightedScores.reduce((sum, item) => sum + item.weight, 0);
-        const weightedSum = weightedScores.reduce((sum, item) => sum + (item.score * item.weight), 0);
+            const weightedScores = scores.map(score => {
+                let weight = 1;
+                switch(score.type) {
+                    case 'Miệng': weight = 1; break;
+                    case '15 phút': weight = 1; break;
+                    case '1 tiết': weight = 2; break;
+                    case 'Giữa kỳ': weight = 2; break;
+                    case 'Cuối kỳ': weight = 3; break;
+                    default: weight = 1;
+                }
+                return { score: parseFloat(score.score), weight };
+            });
 
-        return (weightedSum / totalWeight).toFixed(1);
+            const totalWeight = weightedScores.reduce((sum, item) => sum + item.weight, 0);
+            const weightedSum = weightedScores.reduce((sum, item) => sum + (item.score * item.weight), 0);
+
+            return (weightedSum / totalWeight).toFixed(1);
+        } catch (error) {
+            console.error('Failed to calculate average:', error);
+            return 0;
+        }
     }
 
     getGradeLevel(average) {
@@ -92,65 +75,24 @@ class StudentManager {
         return 'Yếu';
     }
 
-    filterStudents(searchText, classFilter) {
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        const filtered = students.filter(student => {
-            const matchSearch = student.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
-                              student.studentId.toLowerCase().includes(searchText.toLowerCase());
-            const matchClass = !classFilter || student.class === classFilter;
-            return matchSearch && matchClass;
-        });
-
-        const tbody = document.querySelector('#studentTable tbody');
-        if (!tbody) return;
-
-        tbody.innerHTML = filtered.map(student => `
-            <tr>
-                <td>${student.studentId}</td>
-                <td>${student.fullName}</td>
-                <td>${student.class}</td>
-                <td>${this.calculateAverage(student.studentId)}</td>
-                <td>${this.getGradeLevel(this.calculateAverage(student.studentId))}</td>
-                <td>
-                    <button class="btn btn-edit" onclick="studentManager.editStudent('${student.studentId}')">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-delete" onclick="studentManager.deleteStudent('${student.studentId}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+    async filterStudents(searchText, classFilter) {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/students`);
+            const students = await response.json();
+            const filtered = students.filter(student => {
+                const matchSearch = student.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
+                                  student.studentId.toLowerCase().includes(searchText.toLowerCase());
+                const matchClass = !classFilter || student.class === classFilter;
+                return matchSearch && matchClass;
+            });
+            this.renderStudents(filtered);
+        } catch (error) {
+            console.error('Failed to filter students:', error);
+        }
     }
 
-    openAddStudentModal() {
-        document.getElementById('modalTitle').textContent = 'Thêm Học Sinh Mới';
-        document.getElementById('studentForm').reset();
-        document.getElementById('studentId').disabled = false;
-        document.getElementById('studentModal').style.display = 'block';
-    }
-
-    editStudent(studentId) {
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        const student = students.find(s => s.studentId === studentId);
-        if (!student) return;
-
-        document.getElementById('modalTitle').textContent = 'Sửa Thông Tin Học Sinh';
-        document.getElementById('studentId').value = student.studentId;
-        document.getElementById('studentId').disabled = true;
-        document.getElementById('fullName').value = student.fullName;
-        document.getElementById('class').value = student.class;
-        document.getElementById('username').value = student.username;
-        document.getElementById('email').value = student.email;
-        document.getElementById('phone').value = student.phone || '';
-        
-        document.getElementById('studentModal').style.display = 'block';
-    }
-
-    saveStudent() {
+    async saveStudent() {
         const studentId = document.getElementById('studentId').value;
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        
         const studentData = {
             studentId: studentId,
             fullName: document.getElementById('fullName').value,
@@ -161,43 +103,82 @@ class StudentManager {
             phone: document.getElementById('phone').value
         };
 
-        const existingIndex = students.findIndex(s => s.studentId === studentId);
-        if (existingIndex >= 0) {
-            // Cập nhật học sinh
-            students[existingIndex] = {...students[existingIndex], ...studentData};
-        } else {
-            // Thêm học sinh mới
-            students.push(studentData);
-        }
-
-        localStorage.setItem('students', JSON.stringify(students));
-        this.closeModal();
-        this.loadStudents();
-
-        // Cập nhật tất cả các trang
-        if (window.navigationInstance) {
-            window.navigationInstance.refreshAllPages();
+        try {
+            const method = studentId ? 'PUT' : 'POST';
+            const response = await fetch(`${this.apiBaseUrl}/students${studentId ? `/${studentId}` : ''}`, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(studentData)
+            });
+            if (!response.ok) throw new Error('Failed to save student');
+            this.closeModal();
+            this.loadStudents();
+        } catch (error) {
+            console.error('Failed to save student:', error);
         }
     }
 
-    deleteStudent(studentId) {
+    async deleteStudent(studentId) {
         if (!confirm('Bạn có chắc chắn muốn xóa học sinh này? Tất cả điểm của học sinh này cũng sẽ bị xóa.')) return;
 
-        // Xóa học sinh
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        const filteredStudents = students.filter(s => s.studentId !== studentId);
-        localStorage.setItem('students', JSON.stringify(filteredStudents));
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/students/${studentId}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('Failed to delete student');
+            this.loadStudents();
+        } catch (error) {
+            console.error('Failed to delete student:', error);
+        }
+    }
 
-        // Xóa tất cả điểm của học sinh
-        const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-        const filteredScores = scores.filter(s => s.studentId !== studentId);
-        localStorage.setItem('scores', JSON.stringify(filteredScores));
+    setupEventListeners() {
+        document.getElementById('searchStudent')?.addEventListener('input', (e) => {
+            this.filterStudents(e.target.value, document.getElementById('classFilter').value);
+        });
 
-        this.loadStudents();
-        
-        // Cập nhật tất cả các trang
-        if (window.navigationInstance) {
-            window.navigationInstance.refreshAllPages();
+        document.getElementById('classFilter')?.addEventListener('change', (e) => {
+            this.filterStudents(document.getElementById('searchStudent').value, e.target.value);
+        });
+
+        document.getElementById('studentForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveStudent();
+        });
+
+        const closeBtn = document.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeModal());
+        }
+    }
+
+    openAddStudentModal() {
+        document.getElementById('modalTitle').textContent = 'Thêm Học Sinh Mới';
+        document.getElementById('studentForm').reset();
+        document.getElementById('studentId').disabled = false;
+        document.getElementById('studentModal').style.display = 'block';
+    }
+
+    async editStudent(studentId) {
+        try {
+            const response = await fetch(`${this.apiBaseUrl}/students/${studentId}`);
+            const student = await response.json();
+            if (!student) return;
+
+            document.getElementById('modalTitle').textContent = 'Sửa Thông Tin Học Sinh';
+            document.getElementById('studentId').value = student.studentId;
+            document.getElementById('studentId').disabled = true;
+            document.getElementById('fullName').value = student.fullName;
+            document.getElementById('class').value = student.class;
+            document.getElementById('username').value = student.username;
+            document.getElementById('email').value = student.email;
+            document.getElementById('phone').value = student.phone || '';
+
+            document.getElementById('studentModal').style.display = 'block';
+        } catch (error) {
+            console.error('Failed to edit student:', error);
         }
     }
 
@@ -206,11 +187,10 @@ class StudentManager {
     }
 }
 
-// Khởi tạo quản lý học sinh
 let studentManager;
 document.addEventListener('DOMContentLoaded', () => {
     studentManager = new StudentManager();
-    window.studentManager = studentManager; // Để có thể truy cập từ onclick
+    window.studentManager = studentManager;
     window.openAddStudentModal = () => studentManager.openAddStudentModal();
     window.closeModal = () => studentManager.closeModal();
-}); 
+});

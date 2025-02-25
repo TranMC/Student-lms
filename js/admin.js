@@ -17,7 +17,7 @@ class AdminDashboard {
 
     async loadPage(page) {
         try {
-            // Cập nhật active state
+            // Update active state
             document.querySelectorAll('.sidebar li').forEach(item => {
                 item.classList.remove('active');
                 if (item.dataset.page === page) {
@@ -25,12 +25,12 @@ class AdminDashboard {
                 }
             });
 
-            // Load nội dung trang
+            // Load page content
             const response = await fetch(`components/admin-${page}-content.html`);
             const content = await response.text();
             this.pageContent.innerHTML = content;
 
-            // Khởi tạo chức năng cho trang
+            // Initialize page functions
             this.initializePageFunctions(page);
             this.currentPage = page;
         } catch (error) {
@@ -58,127 +58,361 @@ class AdminDashboard {
         }
     }
 
-    initializeDashboard() {
-        // Hiển thị thống kê tổng quan
-        const stats = this.getSystemStats();
+    async initializeDashboard() {
+        // Display system stats
+        const stats = await this.getSystemStats();
         document.getElementById('totalStudents').textContent = stats.students;
         document.getElementById('totalTeachers').textContent = stats.teachers;
         document.getElementById('totalClasses').textContent = stats.classes;
     }
 
-    initializeStudentManagement() {
-        this.loadStudents();
+    async initializeStudentManagement() {
+        await this.loadStudents();
         this.setupStudentEventListeners();
     }
 
-    loadStudents() {
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        const tbody = document.querySelector('#studentTable tbody');
-        tbody.innerHTML = students.map(student => `
-            <tr>
-                <td>${student.studentId}</td>
-                <td>${student.fullName}</td>
-                <td>${student.class}</td>
-                <td>${student.email}</td>
-                <td>${student.phone}</td>
-                <td>
-                    <button onclick="adminDashboard.editStudent('${student.studentId}')" class="btn-edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button onclick="adminDashboard.deleteStudent('${student.studentId}')" class="btn-delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+    
+
+    async loadStudents() {
+        try {
+            const response = await fetch('https://localhost:7112/Student/GetAllStudents');
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const data = await response.json();
+    
+            console.log("API response:", data); // Debug dữ liệu trả về
+    
+            const students = data.data || []; // Lấy mảng sinh viên từ data.data
+    
+            console.log("Parsed students:", students); // Kiểm tra xem có phải mảng không
+    
+            const tbody = document.querySelector('#studentTable tbody');
+            tbody.innerHTML = students.map(student => `
+                <tr>
+                
+                    
+                    <td>${student.lastName}</td>
+                    <td>${student.firstName}</td>
+                    <td>${student.email}</td>
+                    <td>${student.dateOfBirth}</td>
+                    <td>${student.phoneNumber}</td>
+                    <td>${student.address}</td>
+                    <td>${student.password}</td>
+                    <td>
+                        <button onclick="adminDashboard.openStudentModal('${student.studentId}')" class="btn-edit" data-id="${student.studentId}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="adminDashboard.deleteStudent('${student.studentId}')" class="btn-delete data-id="${student.studentId}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error("Error loading students:", error);
+        }
     }
+    
 
     setupStudentEventListeners() {
         document.getElementById('addStudentBtn')?.addEventListener('click', () => {
             this.openStudentModal();
         });
 
-        document.getElementById('studentForm')?.addEventListener('submit', (e) => {
+        document.getElementById('studentForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            this.saveStudent();
+            await this.saveStudent();
         });
     }
 
-    openStudentModal(studentId = null) {
+    async openStudentModal(studentId) {
         const modal = document.getElementById('studentModal');
         const form = document.getElementById('studentForm');
-        
+    
+        form.reset(); // Reset form trước khi điền dữ liệu mới
+    
         if (studentId) {
-            const students = JSON.parse(localStorage.getItem('students') || '[]');
-            const student = students.find(s => s.studentId === studentId);
-            if (student) {
-                Object.keys(student).forEach(key => {
-                    const input = form.querySelector(`[name="${key}"]`);
-                    if (input) input.value = student[key];
-                });
-            }
-        } else {
-            form.reset();
+            const response = await fetch(`https://localhost:7112/Student/GetStudentById?id=${studentId}`);
+            const student = await response.json();
+            
+            Object.keys(student).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) input.value = student[key];
+            });
+    
+            // Đặt ID vào input ẩn để xác định là cập nhật
+            form.querySelector("#studentId").value = studentId;
         }
-        
+    
         modal.style.display = 'block';
     }
+    
 
-    saveStudent() {
+    async saveStudent() {
         const form = document.getElementById('studentForm');
         const formData = new FormData(form);
         const studentData = Object.fromEntries(formData.entries());
-        
-        let students = JSON.parse(localStorage.getItem('students') || '[]');
-        
-        if (studentData.studentId) {
-            students = students.map(s => 
-                s.studentId === studentData.studentId ? {...s, ...studentData} : s
-            );
-        } else {
-            studentData.studentId = 'HS' + Date.now();
-            studentData.role = 'student';
-            students.push(studentData);
+    
+        // Map tên field đúng với API yêu cầu
+        const params = new URLSearchParams({
+            id: studentData.studentId || "",  // Nếu không có ID thì gửi chuỗi rỗng
+            FName: studentData.firstName,
+            LName: studentData.lastName,
+            email: studentData.email,
+            phone: studentData.phone,
+            address: studentData.address,
+            dob: studentData.dob,
+            password: studentData.password
+        });
+    
+        const isUpdating = Boolean(studentData.studentId);
+        const url = isUpdating
+            ? `https://localhost:7112/Student/UpdateStudent?${params}`
+            : `https://localhost:7112/Student/InsertStudent?${params}`;
+    
+        const method = isUpdating ? "PUT" : "POST";
+    
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            });
+    
+            if (!response.ok) throw new Error(`Failed to ${isUpdating ? "update" : "create"} student`);
+    
+            this.closeModal('studentModal');
+            await this.loadStudents();
+        } catch (error) {
+            console.error(error);
         }
-        
-        localStorage.setItem('students', JSON.stringify(students));
-        this.closeModal('studentModal');
-        this.loadStudents();
     }
-
-    deleteStudent(studentId) {
+    
+    
+    async deleteStudent(studentId) {
         if (!confirm('Bạn có chắc chắn muốn xóa học sinh này?')) return;
-        
-        let students = JSON.parse(localStorage.getItem('students') || '[]');
-        students = students.filter(s => s.studentId !== studentId);
-        localStorage.setItem('students', JSON.stringify(students));
-        
-        this.loadStudents();
+
+    try {
+        const response = await fetch(`https://localhost:7112/Student/DeleteStudent?id=${studentId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Lỗi xóa học sinh: ${response.status}`);
+        }
+
+        alert('Xóa học sinh thành công!');
+        await this.loadStudents();
+    } catch (error) {
+        console.error("Lỗi khi xóa học sinh:", error);
+        alert("Không thể xóa học sinh. Vui lòng thử lại.");
+    }
     }
 
-    initializeClassManagement() {
-        this.loadClasses();
+
+
+    async initializeTeacherManagement() {
+        await this.loadTeachers();
+        this.setupTeacherEventListeners();
+    }
+
+    
+
+    async loadTeachers() {
+        try {
+            const response = await fetch('https://localhost:7112/Teacher/GetAllTeacher');
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const data = await response.json();
+    
+            console.log("API response:", data); // Debug dữ liệu trả về
+    
+            const teachers = data.data || []; // Lấy mảng sinh viên từ data.data
+    
+            console.log("Parsed students:", teachers); // Kiểm tra xem có phải mảng không
+    
+            const tbody = document.querySelector('#teacherTable tbody');
+            tbody.innerHTML = teachers.map(teacher => `
+                <tr>
+                
+                    
+                    <td>${teacher.lastName}</td>
+                    <td>${teacher.firstName}</td>
+                    <td>${teacher.email}</td>
+                    <td>${teacher.password}</td>
+                    <td>${teacher.phoneNumber}</td>
+                    <td>${teacher.department}</td>
+                    <td>
+                        <button onclick="adminDashboard.openTeacherModal('${teacher.teacherId}')" class="btn-edit" data-id="${teacher.teacherId}">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="adminDashboard.deleteTeacher('${teacher.teacherId}')" class="btn-delete" data-id="${teacher.teacherId}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error("Error loading teachers:", error);
+        }
+    }
+    
+
+    setupTeacherEventListeners() {
+        document.getElementById('addTeacherBtn')?.addEventListener('click', () => {
+            this.openTeacherModal();
+        });
+
+        document.getElementById('teacherForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.saveTeacher();
+        });
+    }
+
+    async openTeacherModal(teacherId) {
+        const modal = document.getElementById('teacherModal');
+        const form = document.getElementById('teacherForm');
+    
+        form.reset(); // Reset form trước khi điền dữ liệu mới
+    
+        if (teacherId) {
+            const response = await fetch(`https://localhost:7112/Teacher/GetTeacherById?id=${teacherId}`);
+            const teacher = await response.json();
+            
+            Object.keys(teacher).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) input.value = teacher[key];
+            });
+    
+            // Đặt ID vào input ẩn để xác định là cập nhật
+            form.querySelector("#teacherId").value = teacherId;
+        }
+    
+        modal.style.display = 'block';
+    }
+    
+
+    async saveTeacher() {
+        const form = document.getElementById('teacherForm');
+        const formData = new FormData(form);
+        const teacherData = Object.fromEntries(formData.entries());
+    
+        // Map tên field đúng với API yêu cầu
+        const params = new URLSearchParams({
+            id: teacherData.teacherId || "",  // Nếu không có ID thì gửi chuỗi rỗng
+            FName: teacherData.firstName,
+            LName: teacherData.lastName,
+            email: teacherData.email,
+            password: teacherData.password,
+            phone: teacherData.phone,
+            
+            department: teacherData.department
+        });
+    
+        const isUpdating = Boolean(teacherData.teacherId);
+        const url = isUpdating
+            ? `https://localhost:7112/Teacher/UpdateTeacher?${params}`
+            : `https://localhost:7112/Teacher/InsertTeacher?${params}`;
+    
+        const method = isUpdating ? "PUT" : "POST";
+    
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            });
+    
+            if (!response.ok) throw new Error(`Failed to ${isUpdating ? "update" : "create"} teacher`);
+    
+            this.closeModal('teacherModal');
+            await this.loadTeachers();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    
+    
+    async deleteTeacher(teacherId) {
+        if (!confirm('Bạn có chắc chắn muốn xóa giáo viên này?')) return;
+
+    try {
+        const response = await fetch(`https://localhost:7112/Teacher/DeleteTeacher?id=${teacherId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Lỗi xóa giáo viên: ${response.status}`);
+        }
+
+        alert('Xóa giáo viên thành công!');
+        await this.loadTeachers();
+    } catch (error) {
+        console.error("Lỗi khi xóa giáo viên:", error);
+        alert("Không thể xóa giáo viên. Vui lòng thử lại.");
+    }
+    }
+
+    async initializeClassManagement() {
+        await this.loadClasses();
         this.setupClassEventListeners();
-        this.loadTeachersForSelect();
+        await this.loadTeachersForSelect();
     }
 
-    loadClasses() {
-        const classes = JSON.parse(localStorage.getItem('classes') || '[]');
-        const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        
+    async loadTeachersForSelect() {
+        const response = await fetch('https://localhost:7112/Teacher/GetAllTeacher');
+        const data = await response.json();
+        const teachers = data.data || [];
+    
+        const select = document.querySelector('select[name="teacherId"]');
+        select.innerHTML = teachers.map(t => 
+            `<option value="${t.teacherId}">${t.lastName} ${t.firstName}</option>`
+        ).join('');
+    }
+
+    async loadClasses() {
+    try {
+        const response = await fetch('https://localhost:7112/Class/GetAllClasses');
+        const data = await response.json();  
+        console.log("API Classes Response:", data); // Debug dữ liệu
+
+        const classes = data.data; // Truy cập vào danh sách lớp học
+
+        if (!Array.isArray(classes)) {
+            console.error("Lỗi: API không trả về một mảng lớp học!");
+            return;
+        }
+
+        const teachersResponse = await fetch('https://localhost:7112/Teacher/GetAllTeacher');
+        const teachersData = await teachersResponse.json();
+        const teachers = teachersData.data; // Truy cập vào danh sách giáo viên
+        console.log("API Teachers Response:", teachers); // Debug dữ liệu
+
+        if (!Array.isArray(teachers)) {
+            console.error("Lỗi: API không trả về một mảng giáo viên!");
+            return;
+        }
+
         const tbody = document.querySelector('#classTable tbody');
         tbody.innerHTML = classes.map(cls => {
-            const teacher = teachers.find(t => t.id === cls.teacherId);
-            const studentCount = students.filter(s => s.class === cls.className).length;
+            const teacher = teachers.find(t => t.teacherId === cls.teacherId);
+            const teacherName = teacher ? `${teacher.lastName} ${teacher.firstName}` : 'Chưa phân công';
             return `
                 <tr>
-                    <td>${cls.classId}</td>
+                    
                     <td>${cls.className}</td>
-                    <td>${studentCount}</td>
-                    <td>${teacher ? teacher.fullName : 'Chưa phân công'}</td>
+                    <td>${teacher ? teacherName : 'Chưa phân công'}</td>
+                    <td>${cls.schedule ? cls.schedule : 'Chưa có lịch'}</td>
                     <td>
-                        <button onclick="adminDashboard.editClass('${cls.classId}')" class="btn-edit">
+                        <button onclick="adminDashboard.openClassModal('${cls.classId}')" class="btn-edit">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button onclick="adminDashboard.deleteClass('${cls.classId}')" class="btn-delete">
@@ -188,79 +422,102 @@ class AdminDashboard {
                 </tr>
             `;
         }).join('');
+    } catch (error) {
+        console.error("Lỗi khi load danh sách lớp:", error);
     }
+}
+
 
     setupClassEventListeners() {
         document.getElementById('addClassBtn')?.addEventListener('click', () => {
             this.openClassModal();
         });
 
-        document.getElementById('classForm')?.addEventListener('submit', (e) => {
+        document.getElementById('classForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            this.saveClass();
+            await this.saveClass();
         });
     }
 
-    openClassModal(classId = null) {
+    async openClassModal(classId) {
         const modal = document.getElementById('classModal');
         const form = document.getElementById('classForm');
         
         if (classId) {
-            const classes = JSON.parse(localStorage.getItem('classes') || '[]');
-            const classData = classes.find(c => c.classId === classId);
-            if (classData) {
-                Object.keys(classData).forEach(key => {
-                    const input = form.querySelector(`[name="${key}"]`);
-                    if (input) input.value = classData[key];
-                });
-            }
+            const response = await fetch(`https://localhost:7112/Class/GetClassById?classId=${classId}`);
+            const classData = await response.json();
+            Object.keys(classData).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) input.value = classData[key];
+            });
+    
+            // Ensure classId is set in the hidden input field
+            form.querySelector('[name="classId"]').value = classId;
         } else {
             form.reset();
         }
         
         modal.style.display = 'block';
     }
-
-    saveClass() {
+    
+    async saveClass() {
         const form = document.getElementById('classForm');
         const formData = new FormData(form);
         const classData = Object.fromEntries(formData.entries());
         
-        let classes = JSON.parse(localStorage.getItem('classes') || '[]');
-        
-        if (classData.classId) {
-            classes = classes.map(c => 
-                c.classId === classData.classId ? {...c, ...classData} : c
-            );
-        } else {
-            classData.classId = 'L' + Date.now();
-            classes.push(classData);
+        const params = new URLSearchParams({
+            classId: classData.classId || "",
+            className: classData.className,
+            teacherId: classData.teacherId,
+            schedule: classData.schedule
+        })
+
+        const isUpdating = Boolean(classData.classId);
+        const url = isUpdating
+            ? `https://localhost:7112/Class/UpdateClass?${params}`
+            : `https://localhost:7112/Class/InsertClass?${params}`;
+
+        const method = isUpdating ? "PUT" : "POST";
+        try{
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (!response.ok) throw new Error(`Failed to ${isUpdating ? "update" : "create"} class`);
+            this.closeModal('classModal');
+            await this.loadClasses();
         }
-        
-        localStorage.setItem('classes', JSON.stringify(classes));
-        this.closeModal('classModal');
-        this.loadClasses();
+        catch (error) {
+            console.error(error);
+        }
     }
 
-    deleteClass(classId) {
+    async deleteClass(classId) {
         if (!confirm('Bạn có chắc chắn muốn xóa lớp học này?')) return;
         
-        let classes = JSON.parse(localStorage.getItem('classes') || '[]');
-        classes = classes.filter(c => c.classId !== classId);
-        localStorage.setItem('classes', JSON.stringify(classes));
-        
-        this.loadClasses();
+        await fetch(`https://localhost:7112/Class/DeleteClass?classID=${classId}`, { method: 'DELETE' });
+        await this.loadClasses();
     }
 
-    initializeAccountManagement() {
-        this.loadAccounts();
+    
+
+
+
+    async initializeAccountManagement() {
+        await this.loadAccounts();
         this.setupAccountEventListeners();
     }
 
-    loadAccounts() {
-        const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        const admins = JSON.parse(localStorage.getItem('admins') || '[]');
+    async loadAccounts() {
+        const teachersResponse = await fetch('https://localhost:7112/Teacher/GetAllTeacher');
+        const teachersData = await teachersResponse.json();
+        const teachers = teachersData.data || [];
+        const studentsResponse = await fetch('https://localhost:7112/Student/GetAllStudents');
+        const studentsData = await studentsResponse.json();
+        const students = studentsData.data || [];
+        const adminsResponse = await fetch('https://localhost:7112/Admin/GetAllAdmins');
+        const adminsData = await adminsResponse.json();
+        const admins = adminsData.data || [];
         
         const accounts = [
             ...admins.map(a => ({...a, type: 'Admin'})),
@@ -271,16 +528,15 @@ class AdminDashboard {
         const tbody = document.querySelector('#accountTable tbody');
         tbody.innerHTML = accounts.map(acc => `
             <tr>
-                <td>${acc.username}</td>
+                <td>${acc.email}</td>
                 <td>${acc.type}</td>
-                <td>${acc.fullName || ''}</td>
-                <td>${acc.email || ''}</td>
-                <td><span class="status-active">Hoạt động</span></td>
+                <td>${acc.lastName || ''} ${acc.firstName || ''}</td>
+       
                 <td>
-                    <button onclick="adminDashboard.resetPassword('${acc.username}')" class="btn-edit">
+                    <button onclick="adminDashboard.resetPassword('${acc.email}')" class="btn-edit">
                         <i class="fas fa-key"></i>
                     </button>
-                    <button onclick="adminDashboard.toggleAccountStatus('${acc.username}')" class="btn-warning">
+                    <button onclick="adminDashboard.toggleAccountStatus('${acc.email}')" class="btn-warning">
                         <i class="fas fa-ban"></i>
                     </button>
                 </td>
@@ -288,93 +544,30 @@ class AdminDashboard {
         `).join('');
     }
 
-    setupAccountEventListeners() {
-        document.getElementById('addAccountBtn')?.addEventListener('click', () => {
-            this.openAccountModal();
-        });
+    
+    async  getSystemStats() {
+        try {
+            const studentsResponse = await fetch('https://localhost:7112/Student/GetAllStudents');
+            const studentsData = await studentsResponse.json();
+            const students = studentsData.data || [];
+            
+            const teachersResponse = await fetch('https://localhost:7112/Teacher/GetAllTeacher');
+            const teachersData = await teachersResponse.json();
+            const teachers = teachersData.data || [];
 
-        document.getElementById('accountForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveAccount();
-        });
-    }
-
-    openAccountModal(username = null) {
-        const modal = document.getElementById('accountModal');
-        const form = document.getElementById('accountForm');
-        
-        if (username) {
-            const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
-            const account = accounts.find(a => a.username === username);
-            if (account) {
-                Object.keys(account).forEach(key => {
-                    const input = form.querySelector(`[name="${key}"]`);
-                    if (input) input.value = account[key];
-                });
-            }
-        } else {
-            form.reset();
+            const classesResponse = await fetch('https://localhost:7112/Class/GetAllClasses');
+            const classesData = await classesResponse.json();
+            const classes = classesData.data || [];
+    
+            return {
+                students: students.length,
+                teachers: teachers.length,
+                classes: classes.length
+            };
+        } catch (error) {
+            console.error("Error fetching system stats:", error);
+            return { students: 0, teachers: 0, classes: 0 };
         }
-        
-        modal.style.display = 'block';
-    }
-
-    saveAccount() {
-        const form = document.getElementById('accountForm');
-        const formData = new FormData(form);
-        const accountData = Object.fromEntries(formData.entries());
-        
-        let accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
-        
-        if (accountData.username) {
-            accounts = accounts.map(a => 
-                a.username === accountData.username ? {...a, ...accountData} : a
-            );
-        } else {
-            accountData.username = 'U' + Date.now();
-            accounts.push(accountData);
-        }
-        
-        localStorage.setItem('accounts', JSON.stringify(accounts));
-        this.closeModal('accountModal');
-        this.loadAccounts();
-    }
-
-    deleteAccount(username) {
-        if (!confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) return;
-        
-        let accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
-        accounts = accounts.filter(a => a.username !== username);
-        localStorage.setItem('accounts', JSON.stringify(accounts));
-        
-        this.loadAccounts();
-    }
-
-    resetPassword(username) {
-        const modal = document.getElementById('passwordModal');
-        document.querySelector('#passwordForm input[name="username"]').value = username;
-        modal.style.display = 'block';
-    }
-
-    toggleAccountStatus(username) {
-        let accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
-        accounts = accounts.map(a => 
-            a.username === username ? {...a, status: a.status === 'active' ? 'inactive' : 'active'} : a
-        );
-        localStorage.setItem('accounts', JSON.stringify(accounts));
-        this.loadAccounts();
-    }
-
-    getSystemStats() {
-        const students = JSON.parse(localStorage.getItem('students') || '[]');
-        const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-        const classes = [...new Set(students.map(s => s.class))];
-
-        return {
-            students: students.length,
-            teachers: teachers.length,
-            classes: classes.length
-        };
     }
 
     closeModal(modalId) {
@@ -382,9 +575,9 @@ class AdminDashboard {
     }
 }
 
-// Khởi tạo dashboard
+// Initialize dashboard
 let adminDashboard;
 document.addEventListener('DOMContentLoaded', () => {
     adminDashboard = new AdminDashboard();
     window.adminDashboard = adminDashboard;
-}); 
+});

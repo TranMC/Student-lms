@@ -17,15 +17,21 @@
             <table id="studentTable">
                 <thead>
                     <tr>
-                        <th>Mã học sinh</th>
-                        <th>Họ và tên</th>
-                        <th>Lớp</th>
+                        
+                        <th>Họ</th>
+                        <th>Tên</th>
                         <th>Email</th>
+                        <th>Ngày sinh</th>
                         <th>Số điện thoại</th>
+                        <th>Địa chỉ nhà</th>
+                        
+                        <th>Mật khẩu</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody>
+
+                </tbody>
             </table>
         </div>
     </div>
@@ -38,31 +44,37 @@
                 <span class="close" onclick="adminDashboard.closeModal('studentModal')">&times;</span>
             </div>
             <form id="studentForm">
-                <input type="hidden" name="studentId">
+                <input type="hidden" id="studentId" name="studentId">
                 <div class="form-group">
-                    <label>Họ và tên</label>
-                    <input type="text" name="fullName" required>
+                    <label>Họ </label>
+                    <input type="text" name="lastName" required>
                 </div>
+                
                 <div class="form-group">
-                    <label>Lớp</label>
-                    <select name="class" required>
-                        <option value="12A1">12A1</option>
-                        <option value="12A2">12A2</option>
-                        <option value="12A3">12A3</option>
-                    </select>
+                    <label>Tên </label>
+                    <input type="text" name="firstName" required>
                 </div>
+
                 <div class="form-group">
                     <label>Email</label>
                     <input type="email" name="email" required>
                 </div>
+
+                <div class="form-group">
+                    <label>Ngày sinh</label>
+                    <input type="date" name="dob" required>
+                </div>
+
                 <div class="form-group">
                     <label>Số điện thoại</label>
                     <input type="tel" name="phone" required>
                 </div>
+
                 <div class="form-group">
-                    <label>Tên đăng nhập</label>
-                    <input type="text" name="username" required>
+                    <label>Địa chỉ nhà </label>
+                    <input type="text" name="address" required>
                 </div>
+                
                 <div class="form-group">
                     <label>Mật khẩu</label>
                     <input type="password" name="password" required>
@@ -72,3 +84,4 @@
         </div>
     </div>
 </div> 
+

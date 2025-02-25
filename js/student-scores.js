@@ -5,8 +5,8 @@ class StudentScores {
         this.init();
     }
 
-    init() {
-        this.loadScores();
+    async init() {
+        await this.loadScores();
         this.initializeFilters();
     }
 
@@ -76,11 +76,12 @@ class StudentScores {
         }
     }
 
-    loadScores() {
+    async loadScores() {
         try {
-            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-            this.allScores = scores.filter(score => score.studentId === this.student.studentId);
-            
+            const response = await fetch('https://api.example.com/scores?studentId=' + this.student.studentId);
+            const scores = await response.json();
+            this.allScores = scores;
+
             this.renderScoresTable(this.allScores);
             this.updateStatistics(this.allScores);
             this.updateAcademicSummary(this.allScores);
@@ -221,4 +222,4 @@ class StudentScores {
 // Khởi tạo khi trang load
 document.addEventListener('DOMContentLoaded', () => {
     window.studentScores = new StudentScores();
-}); 
+});

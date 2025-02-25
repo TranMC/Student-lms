@@ -5,57 +5,51 @@ class TeacherDashboard {
 
     async initializeDashboard() {
         try {
-            // Debug: Kiểm tra dữ liệu trong localStorage
-            const teacherData = localStorage.getItem('teacher');
-            console.log('Raw teacher data:', teacherData);
+            // Fetch teacher data from API
+            const response = await fetch('/api/teacher');
+            const teacher = await response.json();
+            console.log('Fetched teacher data:', teacher);
 
-            if (teacherData) {
-                const teacher = JSON.parse(teacherData);
-                console.log('Parsed teacher data:', teacher);
+            // If teacher is an array, take the first element
+            const teacherInfo = Array.isArray(teacher) ? teacher[0] : teacher;
+            console.log('Teacher info to use:', teacherInfo);
 
-                // Nếu teacher là mảng, lấy phần tử đầu tiên
-                const teacherInfo = Array.isArray(teacher) ? teacher[0] : teacher;
-                console.log('Teacher info to use:', teacherInfo);
-
-                const welcomeElement = document.getElementById('teacherNameWelcome');
-                const headerElement = document.getElementById('teacherName');
-                
-                if (welcomeElement) {
-                    welcomeElement.textContent = teacherInfo.fullName || 'Giáo viên';
-                }
-                if (headerElement) {
-                    headerElement.textContent = teacherInfo.fullName || 'Giáo viên';
-                }
-            } else {
-                console.log('No teacher data found in localStorage');
+            const welcomeElement = document.getElementById('teacherNameWelcome');
+            const headerElement = document.getElementById('teacherName');
+            
+            if (welcomeElement) {
+                welcomeElement.textContent = teacherInfo.fullName || 'Giáo viên';
+            }
+            if (headerElement) {
+                headerElement.textContent = teacherInfo.fullName || 'Giáo viên';
             }
 
             const data = await DataService.fetchDashboardData();
             this.updateDashboardView(data);
             
-            // Cập nhật thời gian
+            // Update time
             this.updateDateTime();
             setInterval(() => this.updateDateTime(), 60000);
             
-            // Lắng nghe sự kiện cập nhật
+            // Listen for update events
             document.addEventListener('dashboard-data-updated', (event) => {
                 this.updateDashboardView(event.detail);
             });
         } catch (error) {
-            console.error('Lỗi khởi tạo dashboard:', error);
+            console.error('Error initializing dashboard:', error);
             console.error('Error details:', error.message);
         }
     }
 
     updateDashboardView(data) {
-        // Cập nhật tên giáo viên
+        // Update teacher name
         const welcomeElement = document.getElementById('teacherNameWelcome');
         const headerElement = document.getElementById('teacherName');
         
         if (welcomeElement) welcomeElement.textContent = data.teacher.fullName;
         if (headerElement) headerElement.textContent = data.teacher.fullName;
 
-        // Cập nhật thống kê
+        // Update statistics
         const { statistics } = data;
         const totalStudentsElement = document.getElementById('totalStudents');
         const averageElement = document.getElementById('averageScore');
@@ -65,10 +59,10 @@ class TeacherDashboard {
         if (averageElement) averageElement.textContent = statistics.averageScore;
         if (passRateElement) passRateElement.textContent = `${statistics.passRate}%`;
 
-        // Cập nhật điểm gần đây
+        // Update recent scores
         this.updateRecentScores(data.recentScores);
         
-        // Cập nhật lịch dạy
+        // Update schedule
         this.updateSchedule(data.schedule);
     }
 
@@ -121,7 +115,7 @@ class TeacherDashboard {
     }
 }
 
-// Khởi tạo dashboard khi trang load
+// Initialize dashboard when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     new TeacherDashboard();
-}); 
+});

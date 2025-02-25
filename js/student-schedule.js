@@ -10,20 +10,17 @@ class StudentSchedule {
         this.initializeFilters();
     }
 
-    loadSchedule() {
-        // Giả lập dữ liệu lịch học (sau này có thể lấy từ API)
-        const schedule = [
-            {
-                day: 'Thứ 2',
-                subjects: [
-                    { time: '07:00 - 08:30', name: 'Toán học', room: 'A101', teacher: 'Nguyễn Văn A' },
-                    { time: '08:45 - 10:15', name: 'Vật lý', room: 'A102', teacher: 'Trần Thị B' }
-                ]
-            },
-            // Thêm các ngày khác...
-        ];
-
-        this.renderSchedule(schedule);
+    async loadSchedule() {
+        try {
+            const response = await fetch('https://api.example.com/schedule'); // Replace with your API endpoint
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const schedule = await response.json();
+            this.renderSchedule(schedule);
+        } catch (error) {
+            console.error('Failed to load schedule:', error);
+        }
     }
 
     renderSchedule(schedule) {
@@ -96,4 +93,4 @@ class StudentSchedule {
             </div>
         `;
     }
-} 
+}

@@ -1,27 +1,39 @@
 class StudentNotifications {
     constructor() {
-        this.student = JSON.parse(localStorage.getItem('currentStudent'));
+        this.student = null; // Assuming student data will be fetched from an API as well
         this.init();
     }
 
-    init() {
-        this.loadNotifications();
+    async init() {
+        await this.loadStudentData();
+        await this.loadNotifications();
     }
 
-    loadNotifications() {
-        // Giả lập dữ liệu thông báo (sau này có thể lấy từ API)
-        const notifications = [
-            {
-                id: 1,
-                title: 'Lịch kiểm tra giữa kỳ',
-                message: 'Lịch kiểm tra giữa kỳ học kỳ 2 đã được cập nhật',
-                date: '2024-03-15',
-                isRead: false
-            },
-            // Thêm các thông báo khác...
-        ];
+    async loadStudentData() {
+        try {
+            const response = await fetch('https://api.example.com/currentStudent');
+            if (response.ok) {
+                this.student = await response.json();
+            } else {
+                console.error('Failed to load student data');
+            }
+        } catch (error) {
+            console.error('Error fetching student data:', error);
+        }
+    }
 
-        this.renderNotifications(notifications);
+    async loadNotifications() {
+        try {
+            const response = await fetch('https://api.example.com/notifications');
+            if (response.ok) {
+                const notifications = await response.json();
+                this.renderNotifications(notifications);
+            } else {
+                console.error('Failed to load notifications');
+            }
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
     }
 
     renderNotifications(notifications) {
@@ -52,8 +64,21 @@ class StudentNotifications {
         `;
     }
 
-    markAsRead(notificationId) {
-        // Cập nhật trạng thái đã đọc
-        // Sau này có thể gọi API để cập nhật
+    async markAsRead(notificationId) {
+        try {
+            const response = await fetch(`https://api.example.com/notifications/${notificationId}/markAsRead`, {
+                method: 'POST'
+            });
+            if (response.ok) {
+                // Update the UI or re-fetch notifications if needed
+                await this.loadNotifications();
+            } else {
+                console.error('Failed to mark notification as read');
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
     }
-} 
+}
+
+const studentNotifications = new StudentNotifications();

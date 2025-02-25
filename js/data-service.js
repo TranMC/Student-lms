@@ -1,25 +1,22 @@
 // Service để quản lý dữ liệu tập trung
 class DataService {
-    constructor() {
-        // Khởi tạo nếu cần
+    constructor(apiBaseUrl) {
+        this.apiBaseUrl = apiBaseUrl;
+        this.dashboardData = null;
     }
 
-    dashboardData = null;
-    
     async fetchDashboardData() {
         try {
-            // Lấy dữ liệu teacher từ sessionStorage
-            const teacherData = sessionStorage.getItem('teacherData');
-            let teacher = teacherData ? JSON.parse(teacherData) : null;
-            if (!teacher) {
-                console.error('Không tìm thấy thông tin giáo viên trong sessionStorage.');
-                // Bạn có thể tạo dữ liệu mặc định hoặc chuyển hướng người dùng đến trang login.
-                teacher = { id: 'default', fullName: 'Giáo viên' };
-            }
+            // Fetch teacher data from API
+            const teacherResponse = await fetch(`${this.apiBaseUrl}/teacher`);
+            const teacher = await teacherResponse.json();
 
-            // Lấy dữ liệu học sinh và điểm số từ localStorage
-            const students = JSON.parse(localStorage.getItem('students') || '[]');
-            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+            // Fetch students and scores data from API
+            const studentsResponse = await fetch(`${this.apiBaseUrl}/students`);
+            const students = await studentsResponse.json();
+
+            const scoresResponse = await fetch(`${this.apiBaseUrl}/scores`);
+            const scores = await scoresResponse.json();
 
             // Tính toán thống kê
             const statistics = this.calculateStatistics(scores);
@@ -119,8 +116,8 @@ class DataService {
 
     async getStudentData(studentId) {
         try {
-            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-            const studentScores = scores.filter(score => score.studentId === studentId);
+            const scoresResponse = await fetch(`${this.apiBaseUrl}/scores?studentId=${studentId}`);
+            const studentScores = await scoresResponse.json();
             
             return {
                 scores: studentScores,
@@ -147,10 +144,10 @@ class DataService {
         ];
     }
 
-    getStudentStats(studentId) {
+    async getStudentStats(studentId) {
         try {
-            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-            const studentScores = scores.filter(score => score.studentId === studentId);
+            const scoresResponse = await fetch(`${this.apiBaseUrl}/scores?studentId=${studentId}`);
+            const studentScores = await scoresResponse.json();
             
             // Tính điểm trung bình
             const averageScore = studentScores.length > 0 
@@ -181,41 +178,21 @@ class DataService {
         }
     }
 
-    getUpcomingExams(studentId) {
+    async getUpcomingExams(studentId) {
         try {
-            // Giả lập dữ liệu kỳ thi sắp tới
-            const mockExams = [
-                {
-                    subject: 'Toán',
-                    type: 'Giữa kỳ',
-                    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 ngày tới
-                    time: '07:30'
-                },
-                {
-                    subject: 'Văn',
-                    type: '1 tiết',
-                    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 ngày tới
-                    time: '09:30'
-                },
-                {
-                    subject: 'Anh',
-                    type: 'Cuối kỳ',
-                    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày tới
-                    time: '14:00'
-                }
-            ];
-
-            return mockExams;
+            const examsResponse = await fetch(`${this.apiBaseUrl}/exams?studentId=${studentId}`);
+            const exams = await examsResponse.json();
+            return exams;
         } catch (error) {
             console.error('Lỗi khi lấy lịch thi:', error);
             return [];
         }
     }
 
-    getSubjectProgress(studentId) {
+    async getSubjectProgress(studentId) {
         try {
-            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-            const studentScores = scores.filter(score => score.studentId === studentId);
+            const scoresResponse = await fetch(`${this.apiBaseUrl}/scores?studentId=${studentId}`);
+            const studentScores = await scoresResponse.json();
             
             // Tạo map để theo dõi tiến độ của từng môn học
             const subjectProgress = new Map();
@@ -251,4 +228,4 @@ class DataService {
             return [];
         }
     }
-} 
+}

@@ -16,10 +16,10 @@
             </div>
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="username">
-                        <i class="fas fa-user"></i> Tên đăng nhập
+                    <label for="emailname">
+                        <i class="fas fa-user"></i> Tên Email
                     </label>
-                    <input type="text" id="username" required>
+                    <input type="text" id="emailname" required>
                 </div>
                 <div class="form-group">
                     <label for="password">
@@ -46,36 +46,50 @@
 
     <script src="js/auth.js"></script>
     <script>
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const role = document.getElementById('role').value;
+       document.addEventListener('DOMContentLoaded', async () => {
+        console.log("Initializing data...");
+        await initializeData(); // Ensure data is loaded before login
+    });
 
-            let loginSuccess = false;
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const emailname = document.getElementById('emailname').value;
+        const password = document.getElementById('password').value;
+        const role = document.getElementById('role').value;
+
+        console.log("Login attempt:", { emailname, password, role });
+
+        // Ensure data is ready
+        await initializeData();
+
+        console.log("Data after initialization:", {
+            admins: window.admins,
+            teachers: window.teachers,
+            students: window.students
+        });
+
+        const loginSuccess = await login(emailname, password, role);
+
+        if (loginSuccess) {
             let redirectUrl = '';
 
-            switch(role) {
+            switch (role) {
                 case 'admin':
-                    loginSuccess = adminLogin(username, password);
                     redirectUrl = 'admin-dashboard.html';
                     break;
                 case 'teacher':
-                    loginSuccess = teacherLogin(username, password);
                     redirectUrl = 'teacher-dashboard.html';
                     break;
                 case 'student':
-                    loginSuccess = studentLogin(username, password);
                     redirectUrl = 'student-dashboard.html';
                     break;
             }
 
-            if (loginSuccess) {
-                window.location.href = redirectUrl;
-            } else {
-                alert('Sai tên đăng nhập hoặc mật khẩu!');
-            }
-        });
+            window.location.href = redirectUrl;
+        } else {
+            alert('Sai tên đăng nhập hoặc mật khẩu!');
+        }
+    });
     </script>
 </body>
 </html> 

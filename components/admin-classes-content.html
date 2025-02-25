@@ -17,10 +17,10 @@
             <table id="classTable">
                 <thead>
                     <tr>
-                        <th>Mã lớp</th>
+                        
                         <th>Tên lớp</th>
-                        <th>Sĩ số</th>
-                        <th>Giáo viên chủ nhiệm</th>
+                        <th>GVCN</th>
+                        <th>lịch học</th>
                         <th>Thao tác</th>
                     </tr>
                 </thead>
@@ -38,6 +38,7 @@
             </div>
             <form id="classForm">
                 <input type="hidden" name="classId">
+                <input type="hidden" name="teacherId">
                 <div class="form-group">
                     <label>Tên lớp</label>
                     <input type="text" name="className" required>
@@ -47,6 +48,10 @@
                     <select name="teacherId" required>
                         <!-- Options sẽ được thêm động từ JS -->
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>Schedule</label>
+                    <input type="text" name="schedule" required>
                 </div>
                 <button type="submit" class="btn-primary">Lưu</button>
             </form>
