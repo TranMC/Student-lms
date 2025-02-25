@@ -189,3 +189,32 @@ const checkAdminAuth = () => {
 // Khởi tạo dữ liệu khi tải trang
 document.addEventListener('DOMContentLoaded', initializeData);
 
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const role = document.getElementById('role').value;
+    const rememberMe = document.getElementById('rememberMe').checked;
+
+    if (rememberMe) {
+        localStorage.setItem('rememberedUsername', username);
+        localStorage.setItem('rememberedRole', role);
+    } else {
+        localStorage.removeItem('rememberedUsername');
+        localStorage.removeItem('rememberedRole');
+    }
+
+    let loginSuccess = false;
+    let redirectUrl = '';
+    // Logic đăng nhập hiện tại giữ nguyên...
+});
+
+// Tự động điền thông tin nếu có dữ liệu "Nhớ mật khẩu"
+document.addEventListener('DOMContentLoaded', () => {
+    const rememberedUsername = localStorage.getItem('rememberedUsername');
+    const rememberedRole = localStorage.getItem('rememberedRole');
+    if (rememberedUsername && rememberedRole) {
+        document.getElementById('username').value = rememberedUsername;
+        document.getElementById('role').value = rememberedRole;
+    }
+});
