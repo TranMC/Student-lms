@@ -556,7 +556,7 @@ class AdminDashboard {
 
     filterStudents(searchTerm) {
         if (!searchTerm) {
-            this.loadStudents();
+            loadStudentList();
             return;
         }
         
@@ -570,31 +570,12 @@ class AdminDashboard {
         );
         
         // Hiển thị danh sách đã lọc
-        const tbody = document.querySelector('#studentTable tbody');
-        if (tbody) {
-            tbody.innerHTML = filteredStudents.map(student => `
-                <tr>
-                    <td>${student.studentId}</td>
-                    <td>${student.fullName}</td>
-                    <td>${student.class}</td>
-                    <td>${student.email}</td>
-                    <td>${student.phone}</td>
-                    <td>
-                        <button onclick="adminDashboard.editStudent('${student.studentId}')" class="btn-edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="adminDashboard.deleteStudent('${student.studentId}')" class="btn-delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+        loadStudentList(filteredStudents);
     }
 
     filterTeachers(searchTerm) {
         if (!searchTerm) {
-            this.loadTeachers();
+            loadTeacherList();
             return;
         }
         
@@ -608,31 +589,12 @@ class AdminDashboard {
         );
         
         // Hiển thị danh sách đã lọc
-        const tbody = document.querySelector('#teacherTable tbody');
-        if (tbody) {
-            tbody.innerHTML = filteredTeachers.map(teacher => `
-                <tr>
-                    <td>${teacher.id}</td>
-                    <td>${teacher.fullName}</td>
-                    <td>${teacher.subject}</td>
-                    <td>${teacher.email || ''}</td>
-                    <td>${teacher.phone || ''}</td>
-                    <td>
-                        <button onclick="adminDashboard.editTeacher('${teacher.id}')" class="btn-edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button onclick="adminDashboard.deleteTeacher('${teacher.id}')" class="btn-delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+        loadTeacherList(filteredTeachers);
     }
 
     filterClasses(searchTerm) {
         if (!searchTerm) {
-            this.loadClasses();
+            loadClassList();
             return;
         }
         
@@ -650,34 +612,12 @@ class AdminDashboard {
         });
         
         // Hiển thị danh sách đã lọc
-        const tbody = document.querySelector('#classTable tbody');
-        if (tbody) {
-            tbody.innerHTML = filteredClasses.map(cls => {
-                const teacher = teachers.find(t => t.id == cls.teacherId);
-                const studentCount = students.filter(s => s.class === cls.className).length;
-                return `
-                    <tr>
-                        <td>${cls.classId}</td>
-                        <td>${cls.className}</td>
-                        <td>${studentCount}</td>
-                        <td>${teacher ? teacher.fullName : 'Chưa phân công'}</td>
-                        <td>
-                            <button onclick="adminDashboard.editClass('${cls.classId}')" class="btn-edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="adminDashboard.deleteClass('${cls.classId}')" class="btn-delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
+        loadClassList(filteredClasses);
     }
 
     filterAccounts(searchTerm) {
         if (!searchTerm) {
-            this.loadAccounts();
+            loadAccountList();
             return;
         }
         
@@ -699,26 +639,7 @@ class AdminDashboard {
         );
         
         // Hiển thị danh sách đã lọc
-        const tbody = document.querySelector('#accountTable tbody');
-        if (tbody) {
-            tbody.innerHTML = filteredAccounts.map(acc => `
-                <tr>
-                    <td>${acc.username}</td>
-                    <td>${acc.type}</td>
-                    <td>${acc.fullName || ''}</td>
-                    <td>${acc.email || ''}</td>
-                    <td><span class="status-${acc.status === 'inactive' ? 'inactive' : 'active'}">${acc.status === 'inactive' ? 'Không hoạt động' : 'Hoạt động'}</span></td>
-                    <td>
-                        <button onclick="adminDashboard.resetPassword('${acc.username}')" class="btn-edit">
-                            <i class="fas fa-key"></i>
-                        </button>
-                        <button onclick="adminDashboard.toggleAccountStatus('${acc.username}')" class="btn-warning">
-                            <i class="fas fa-ban"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+        loadAccountList(filteredAccounts);
     }
 }
 
