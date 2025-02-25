@@ -71,6 +71,31 @@ const initializeData = () => {
         localStorage.setItem('students', JSON.stringify(students));
     }
 
+    // Khởi tạo dữ liệu lớp học nếu chưa có
+    if (!localStorage.getItem('classes')) {
+        const classes = [
+            {
+                classId: 'L001',
+                className: '12A1',
+                teacherId: 1,
+                status: 'active'
+            },
+            {
+                classId: 'L002',
+                className: '12A2',
+                teacherId: 1,
+                status: 'active'
+            },
+            {
+                classId: 'L003',
+                className: '12A3',
+                teacherId: 1,
+                status: 'active'
+            }
+        ];
+        localStorage.setItem('classes', JSON.stringify(classes));
+    }
+
     // Khởi tạo dữ liệu điểm mẫu nếu chưa có
     if (!localStorage.getItem('scores')) {
         const scores = [
