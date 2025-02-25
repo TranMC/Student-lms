@@ -107,6 +107,11 @@ main {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+.nav-menu a.active {
+    background-color: #f0f4ff;
+    color: #1a73e8;
+}
+
 .hero-banner {
     background: linear-gradient(135deg, #2f71c1, #5397e5);
     color: #fff;
@@ -252,4 +257,9 @@ main {
         padding: 10px;
         width: 100%;
     }
+}
+
+/* Thêm smooth scroll cho toàn trang */
+html {
+    scroll-behavior: smooth;
 }

@@ -3,52 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tin tức - Hệ thống Quản lý Điểm</title>
+    <title>Tin tức</title>
     <link rel="stylesheet" href="css/news.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header class="header">
-        <nav class="nav-menu">
-            <ul>
-                <li><a href="home.html">Trang chủ</a></li>
-                <li><a href="login.html">Đăng nhập</a></li>
-                <li><a href="news.html" class="active">Tin tức</a></li>
-                <li><a href="notifications.html">Thông báo</a></li>
-            </ul>
-        </nav>
-    </header>
-    
-    <div class="hero-banner">
-        <div class="hero-content">
-            <h2>Tin tức & Sự kiện</h2>
-            <p>Những thông tin mới nhất từ hệ thống quản lý điểm.</p>
+    <div class="news-grid">
+        <div class="news-card">
+            <div class="news-image">
+                <img src="images/news1.jpg" alt="Tin tức 1">
+            </div>
+            <div class="news-content">
+                <h3>Lịch thi học kỳ 2 năm học 2023-2024</h3>
+                <p class="news-date">15/03/2024</p>
+                <p class="news-excerpt">Nhà trường thông báo lịch thi học kỳ 2 cho các khối lớp...</p>
+                <a href="#" class="read-more">Xem thêm</a>
+            </div>
+        </div>
+        <div class="news-card">
+            <div class="news-image">
+                <img src="images/news2.jpg" alt="Tin tức 2">
+            </div>
+            <div class="news-content">
+                <h3>Kế hoạch học tập học kỳ 2</h3>
+                <p class="news-date">10/03/2024</p>
+                <p class="news-excerpt">Thông báo về kế hoạch học tập và các hoạt động ngoại khóa...</p>
+                <a href="#" class="read-more">Xem thêm</a>
+            </div>
         </div>
     </div>
-
-    <main>
-        <section class="news-section">
-            <div class="news-grid" id="newsGrid">
-                <div class="news-card">
-                    <div class="news-image">
-                        <img src="images/news1.jpg" alt="Tin tức 1">
-                    </div>
-                    <div class="news-content">
-                        <h3>Lịch thi học kỳ 2 năm học 2023-2024</h3>
-                        <p class="news-date">15/03/2024</p>
-                        <p class="news-excerpt">Nhà trường thông báo lịch thi học kỳ 2 cho các khối lớp...</p>
-                        <a href="#" class="read-more">Xem thêm</a>
-                    </div>
-                </div>
-                <!-- More news cards -->
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 Hệ thống Quản lý Điểm. Tất cả quyền được bảo lưu.</p>
-    </footer>
-
-    <script src="js/auth.js"></script>
 </body>
 </html> 
