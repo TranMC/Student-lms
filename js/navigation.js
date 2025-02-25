@@ -8,7 +8,15 @@ class Navigation {
         document.querySelectorAll('.sidebar a').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                const page = e.currentTarget.getAttribute('href').substring(1);
+                const href = e.currentTarget.getAttribute('href');
+                
+                // Kiểm tra nếu là link trực tiếp đến file HTML
+                if (href.endsWith('.html')) {
+                    window.location.href = href;
+                    return;
+                }
+                
+                const page = href.substring(1);
                 this.loadPage(page);
             });
         });
@@ -20,6 +28,13 @@ class Navigation {
     async loadPage(page) {
         try {
             console.log('Loading page:', page); // Debug log
+            
+            // Không cần xử lý đặc biệt cho trang profile nữa
+            // if (page === 'profile') {
+            //     window.location.href = 'student-profile.html';
+            //     return;
+            // }
+            
             const response = await fetch(`components/student-${page}-content.html`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -40,21 +55,66 @@ class Navigation {
 
     initializeComponent(page) {
         // Khởi tạo component tương ứng
+        console.log('Khởi tạo component cho trang:', page);
+        
         switch(page) {
             case 'dashboard':
-                new StudentDashboard();
+                if (typeof StudentDashboard !== 'undefined') {
+                    console.log('Khởi tạo StudentDashboard');
+                    window.dashboardInstance = new StudentDashboard();
+                } else {
+                    console.error('StudentDashboard class is not defined');
+                }
                 break;
             case 'scores':
-                new StudentScores();
+                if (typeof StudentScores !== 'undefined') {
+                    console.log('Khởi tạo StudentScores');
+                    window.scoresInstance = new StudentScores();
+                } else {
+                    console.error('StudentScores class is not defined');
+                }
                 break;
             case 'schedule':
-                new StudentSchedule();
+                if (typeof StudentSchedule !== 'undefined') {
+                    console.log('Khởi tạo StudentSchedule');
+                    window.scheduleInstance = new StudentSchedule();
+                } else {
+                    console.error('StudentSchedule class is not defined');
+                }
                 break;
             case 'profile':
-                new StudentProfile();
+                console.log('Chuẩn bị khởi tạo StudentProfile');
+                if (typeof StudentProfile !== 'undefined') {
+                    console.log('Khởi tạo StudentProfile từ navigation.js');
+                    // Đảm bảo chỉ tạo một instance
+                    if (!window.studentProfile) {
+                        window.studentProfile = new StudentProfile();
+                    } else {
+                        console.log('StudentProfile đã tồn tại, tải lại dữ liệu');
+                        window.studentProfile.loadProfileData();
+                        window.studentProfile.loadAvatar();
+                    }
+                } else {
+                    console.error('StudentProfile class is not defined - có thể script chưa được tải');
+                    // Thử tải script
+                    const script = document.createElement('script');
+                    script.src = 'js/student-profile.js';
+                    script.onload = () => {
+                        console.log('Đã tải student-profile.js, khởi tạo StudentProfile');
+                        if (typeof StudentProfile !== 'undefined') {
+                            window.studentProfile = new StudentProfile();
+                        }
+                    };
+                    document.body.appendChild(script);
+                }
                 break;
             case 'notifications':
-                new StudentNotifications();
+                if (typeof StudentNotifications !== 'undefined') {
+                    console.log('Khởi tạo StudentNotifications');
+                    window.notificationsInstance = new StudentNotifications();
+                } else {
+                    console.error('StudentNotifications class is not defined');
+                }
                 break;
         }
     }
@@ -64,7 +124,8 @@ class Navigation {
         document.querySelectorAll('.sidebar li').forEach(li => {
             li.classList.remove('active');
         });
-        const activeLink = document.querySelector(`.sidebar a[href="#${page}"]`);
+        const activeLink = document.querySelector(`.sidebar a[href="#${page}"]`) || 
+                          document.querySelector(`.sidebar a[href="student-${page}.html"]`);
         if (activeLink) {
             activeLink.parentElement.classList.add('active');
         }

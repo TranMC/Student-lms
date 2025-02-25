@@ -1,12 +1,18 @@
-<link rel="stylesheet" href="css/student-dashboard.css">
-<link rel="styelsheet" href="css/student-profile.css">
-<script src="js/student-profile.js"></script>
+<div class="welcome-section">
+    <h2>Hồ sơ học sinh</h2>
+    <p class="date-time" id="currentDateTime"></p>
+</div>
+
 <div class="profile-container">
     <div class="profile-card">
         <div class="profile-header">
-            <div class="profile-avatar">
+            <div class="profile-avatar" id="profileAvatar">
+                <img id="avatarImage" src="" alt="Avatar" onerror="this.style.display='none'; document.querySelector('#profileAvatar i').style.display='block';">
                 <i class="fas fa-user-graduate"></i>
             </div>
+            <button id="changeAvatarBtn" class="btn btn-sm btn-outline-primary mt-2">
+                <i class="fas fa-camera"></i> Đổi ảnh đại diện
+            </button>
             <h2 id="studentFullName"></h2>
             <p id="studentId"></p>
             <div class="profile-status">
@@ -119,13 +125,13 @@
         </div>
 
         <div class="profile-actions">
-            <button class="btn btn-primary" onclick="studentProfile.editProfile()">
+            <button class="btn btn-primary" id="editProfileBtn">
                 <i class="fas fa-edit"></i> Cập nhật thông tin
             </button>
-            <button class="btn btn-secondary" onclick="studentProfile.changePassword()">
+            <button class="btn btn-secondary" id="changePasswordBtn">
                 <i class="fas fa-key"></i> Đổi mật khẩu
             </button>
-            <button class="btn btn-info" onclick="studentProfile.printProfile()">
+            <button class="btn btn-info" id="printProfileBtn">
                 <i class="fas fa-print"></i> In hồ sơ
             </button>
         </div>
@@ -228,7 +234,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" onclick="studentProfile.saveProfile()">Lưu thay đổi</button>
+                <button type="button" class="btn btn-primary" id="saveProfileBtn">Lưu thay đổi</button>
             </div>
         </div>
     </div>
@@ -257,8 +263,33 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" onclick="studentProfile.savePassword()">Lưu thay đổi</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="savePasswordBtn">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Change Avatar -->
+<div class="modal fade" id="changeAvatarModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Đổi ảnh đại diện</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="avatarUpload" class="form-label">Chọn ảnh từ máy tính</label>
+                    <input type="file" class="form-control" id="avatarUpload" accept="image/*">
+                </div>
+                <div class="avatar-preview-container">
+                    <img id="avatarPreview" src="" alt="Preview" style="max-width: 100%; max-height: 200px; display: none;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="saveAvatarBtn">Lưu thay đổi</button>
             </div>
         </div>
     </div>
@@ -275,4 +306,97 @@
             <h3>HỒ SƠ HỌC SINH</h3>
         </div>
     </div>
-</div> 
+</div>
+<script src="js/student-profile.js"></script>
+<script>
+    console.log('Script trong student-profile-content.html đang chạy');
+    
+    // Gắn trực tiếp sự kiện cho các nút
+    document.getElementById('editProfileBtn').onclick = function() {
+        console.log('Đã nhấp nút editProfileBtn');
+        if (window.studentProfile) {
+            window.studentProfile.editProfile();
+        } else {
+            console.error('studentProfile chưa được khởi tạo');
+            // Thử khởi tạo ngay
+            window.studentProfile = new StudentProfile();
+            window.studentProfile.editProfile();
+        }
+    };
+    
+    document.getElementById('changePasswordBtn').onclick = function() {
+        console.log('Đã nhấp nút changePasswordBtn');
+        if (window.studentProfile) {
+            window.studentProfile.changePassword();
+        } else {
+            console.error('studentProfile chưa được khởi tạo');
+            window.studentProfile = new StudentProfile();
+            window.studentProfile.changePassword();
+        }
+    };
+    
+    document.getElementById('printProfileBtn').onclick = function() {
+        console.log('Đã nhấp nút printProfileBtn');
+        if (window.studentProfile) {
+            window.studentProfile.printProfile();
+        } else {
+            console.error('studentProfile chưa được khởi tạo');
+            window.studentProfile = new StudentProfile();
+            window.studentProfile.printProfile();
+        }
+    };
+    
+    document.getElementById('changeAvatarBtn').onclick = function() {
+        console.log('Đã nhấp nút changeAvatarBtn');
+        if (window.studentProfile) {
+            window.studentProfile.changeAvatar();
+        } else {
+            console.error('studentProfile chưa được khởi tạo');
+            window.studentProfile = new StudentProfile();
+            window.studentProfile.changeAvatar();
+        }
+    };
+    
+    // Thêm sự kiện cho modal buttons
+    document.getElementById('saveProfileBtn').onclick = function() {
+        console.log('Đã nhấp nút saveProfileBtn');
+        if (window.studentProfile) {
+            window.studentProfile.saveProfile();
+        }
+    };
+    
+    document.getElementById('savePasswordBtn').onclick = function() {
+        console.log('Đã nhấp nút savePasswordBtn');
+        if (window.studentProfile) {
+            window.studentProfile.savePassword();
+        }
+    };
+    
+    document.getElementById('saveAvatarBtn').onclick = function() {
+        console.log('Đã nhấp nút saveAvatarBtn');
+        if (window.studentProfile) {
+            window.studentProfile.saveAvatar();
+        }
+    };
+    
+    // Thêm sự kiện cho upload ảnh
+    const avatarUpload = document.getElementById('avatarUpload');
+    if (avatarUpload) {
+        avatarUpload.onchange = function(e) {
+            console.log('Đã chọn file ảnh đại diện');
+            if (window.studentProfile) {
+                window.studentProfile.previewAvatar(e);
+            }
+        };
+    }
+    
+    // Đảm bảo dữ liệu được tải
+    if (window.studentProfile) {
+        console.log('Tải lại dữ liệu hồ sơ');
+        window.studentProfile.loadProfileData();
+        window.studentProfile.loadAvatar();
+    } else {
+        console.log('Khởi tạo StudentProfile từ script trong content');
+        window.studentProfile = new StudentProfile();
+    }
+</script> 

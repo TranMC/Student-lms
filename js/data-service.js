@@ -160,23 +160,40 @@ class DataService {
             // Tỷ lệ hoàn thành (giả định điểm >= 5 là đạt)
             const passedScores = studentScores.filter(score => score.score >= 5);
             const completionRate = studentScores.length > 0 
-                ? (passedScores.length / studentScores.length) * 100 
+                ? Math.round((passedScores.length / studentScores.length) * 100) 
                 : 0;
 
             // Số ngày đến kỳ thi gần nhất (giả lập)
-            const daysToExam = 30;
+            const daysToExam = 15;
+            
+            // Tính xu hướng điểm số (giả lập)
+            // Trong thực tế, bạn sẽ so sánh điểm trung bình hiện tại với kỳ trước
+            const scoreTrend = {
+                direction: 'up', // 'up' hoặc 'down'
+                value: 0.5 // Giá trị thay đổi
+            };
+            
+            // Tính xu hướng tỷ lệ hoàn thành (giả lập)
+            const completionTrend = {
+                direction: 'up',
+                value: 5
+            };
 
             return {
                 averageScore,
                 completionRate,
-                daysToExam
+                daysToExam,
+                scoreTrend,
+                completionTrend
             };
         } catch (error) {
             console.error('Lỗi khi lấy thống kê học sinh:', error);
             return {
                 averageScore: 0,
                 completionRate: 0,
-                daysToExam: 0
+                daysToExam: 0,
+                scoreTrend: { direction: 'none', value: 0 },
+                completionTrend: { direction: 'none', value: 0 }
             };
         }
     }
@@ -188,24 +205,35 @@ class DataService {
                 {
                     subject: 'Toán',
                     type: 'Giữa kỳ',
-                    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 ngày tới
-                    time: '07:30'
+                    date: '2024-05-25',
+                    time: '07:30 - 09:00',
+                    room: 'A101'
                 },
                 {
-                    subject: 'Văn',
-                    type: '1 tiết',
-                    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 ngày tới
-                    time: '09:30'
+                    subject: 'Vật lý',
+                    type: 'Thực hành',
+                    date: '2024-05-28',
+                    time: '09:30 - 11:00',
+                    room: 'B203'
                 },
                 {
-                    subject: 'Anh',
+                    subject: 'Ngữ văn',
                     type: 'Cuối kỳ',
-                    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày tới
-                    time: '14:00'
+                    date: '2024-06-05',
+                    time: '07:30 - 09:30',
+                    room: 'C305'
+                },
+                {
+                    subject: 'Tiếng Anh',
+                    type: 'Thuyết trình',
+                    date: '2024-06-10',
+                    time: '13:30 - 15:00',
+                    room: 'D401'
                 }
             ];
-
-            return mockExams;
+            
+            // Sắp xếp theo ngày gần nhất
+            return mockExams.sort((a, b) => new Date(a.date) - new Date(b.date));
         } catch (error) {
             console.error('Lỗi khi lấy lịch thi:', error);
             return [];
@@ -214,40 +242,36 @@ class DataService {
 
     getSubjectProgress(studentId) {
         try {
-            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-            const studentScores = scores.filter(score => score.studentId === studentId);
-            
-            // Tạo map để theo dõi tiến độ của từng môn học
-            const subjectProgress = new Map();
-            
-            // Giả định mỗi môn học cần 4 cột điểm
-            const requiredScores = 4;
-            
-            studentScores.forEach(score => {
-                if (!subjectProgress.has(score.subject)) {
-                    subjectProgress.set(score.subject, {
-                        completed: 1,
-                        total: requiredScores,
-                        average: score.score
-                    });
-                } else {
-                    const current = subjectProgress.get(score.subject);
-                    current.completed += 1;
-                    current.average = (current.average * (current.completed - 1) + score.score) / current.completed;
-                    subjectProgress.set(score.subject, current);
+            // Giả lập dữ liệu tiến độ học tập
+            return [
+                {
+                    name: 'Toán học',
+                    completed: 85,
+                    lastUpdate: '15/05/2024'
+                },
+                {
+                    name: 'Vật lý',
+                    completed: 72,
+                    lastUpdate: '12/05/2024'
+                },
+                {
+                    name: 'Hóa học',
+                    completed: 65,
+                    lastUpdate: '10/05/2024'
+                },
+                {
+                    name: 'Ngữ văn',
+                    completed: 90,
+                    lastUpdate: '14/05/2024'
+                },
+                {
+                    name: 'Tiếng Anh',
+                    completed: 78,
+                    lastUpdate: '13/05/2024'
                 }
-            });
-            
-            // Chuyển Map thành mảng để dễ sử dụng
-            return Array.from(subjectProgress).map(([subject, progress]) => ({
-                subject,
-                completed: progress.completed,
-                total: progress.total,
-                percentage: (progress.completed / progress.total) * 100,
-                average: progress.average.toFixed(1)
-            }));
+            ];
         } catch (error) {
-            console.error('Lỗi khi lấy tiến độ môn học:', error);
+            console.error('Lỗi khi lấy tiến độ học tập:', error);
             return [];
         }
     }

@@ -26,14 +26,32 @@ class StudentDashboard {
         const welcomeName = document.getElementById('studentNameWelcome');
         const studentName = document.getElementById('studentName');
         
-        if (this.student) {
-            if (welcomeName) {
-                welcomeName.textContent = this.student.fullName;
+        // Thử lấy thông tin từ nhiều nguồn
+        let studentInfo = this.student;
+        
+        if (!studentInfo) {
+            // Thử lấy từ currentUser
+            studentInfo = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            // Nếu không có, thử lấy từ userInfo
+            if (!studentInfo || Object.keys(studentInfo).length === 0) {
+                studentInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
             }
-            if (studentName) {
-                studentName.textContent = this.student.fullName;
+            
+            // Nếu vẫn không có, tạo dữ liệu mẫu
+            if (!studentInfo || Object.keys(studentInfo).length === 0) {
+                studentInfo = { fullName: 'Học sinh', name: 'Học sinh' };
             }
         }
+        
+        if (welcomeName) {
+            welcomeName.textContent = studentInfo.fullName || studentInfo.name || 'Học sinh';
+        }
+        if (studentName) {
+            studentName.textContent = studentInfo.fullName || studentInfo.name || 'Học sinh';
+        }
+        
+        console.log('Đã tải thông tin học sinh:', studentInfo);
     }
 
     updateDateTime() {
@@ -62,14 +80,34 @@ class StudentDashboard {
         
         if (stats) {
             const averageScoreElement = document.getElementById('averageScore');
+            const scoreTrendElement = document.getElementById('scoreTrend');
+            const scoreTrendValueElement = document.getElementById('scoreTrendValue');
             const completionRateElement = document.getElementById('completionRate');
+            const completionTrendElement = document.getElementById('completionTrend');
+            const completionTrendValueElement = document.getElementById('completionTrendValue');
             const daysToExamElement = document.getElementById('daysToExam');
 
             if (averageScoreElement) {
                 averageScoreElement.textContent = stats.averageScore.toFixed(1);
             }
+            if (scoreTrendElement && scoreTrendValueElement && stats.scoreTrend) {
+                scoreTrendElement.className = `stats-trend ${stats.scoreTrend.direction}`;
+                scoreTrendElement.innerHTML = `
+                    <i class="fas fa-arrow-${stats.scoreTrend.direction}"></i>
+                    <span>${stats.scoreTrend.value.toFixed(1)}</span>
+                `;
+                scoreTrendValueElement.textContent = stats.scoreTrend.value.toFixed(1);
+            }
             if (completionRateElement) {
                 completionRateElement.textContent = `${stats.completionRate}%`;
+            }
+            if (completionTrendElement && completionTrendValueElement && stats.completionTrend) {
+                completionTrendElement.className = `stats-trend ${stats.completionTrend.direction}`;
+                completionTrendElement.innerHTML = `
+                    <i class="fas fa-arrow-${stats.completionTrend.direction}"></i>
+                    <span>${stats.completionTrend.value}%</span>
+                `;
+                completionTrendValueElement.textContent = `${stats.completionTrend.value}%`;
             }
             if (daysToExamElement) {
                 daysToExamElement.textContent = stats.daysToExam;
@@ -109,51 +147,128 @@ class StudentDashboard {
     }
 
     loadUpcomingExams() {
+        if (!this.student || !this.student.studentId) {
+            console.error('Không có thông tin ID học sinh');
+            return;
+        }
+        
         const dataService = new DataService();
         const exams = dataService.getUpcomingExams(this.student.studentId);
-        const examsList = document.getElementById('upcomingExams');
         
-        if (examsList) {
-            examsList.innerHTML = exams.map(exam => `
-                <div class="event-item">
-                    <div class="event-date">
-                        <div class="day">${new Date(exam.date).getDate()}</div>
-                        <div class="month">${new Date(exam.date).toLocaleDateString('vi-VN', { month: 'short' })}</div>
+        const examsContainer = document.getElementById('upcomingExams');
+        if (!examsContainer) return;
+        
+        if (exams.length === 0) {
+            examsContainer.innerHTML = '<div class="no-exams">Không có kỳ thi nào sắp tới</div>';
+            return;
+        }
+        
+        let examsHTML = '';
+        
+        exams.forEach(exam => {
+            const daysLeft = this.calculateDaysLeft(exam.date);
+            const urgencyClass = this.getUrgencyClass(daysLeft);
+            
+            examsHTML += `
+                <div class="exam-item ${urgencyClass}">
+                    <div class="exam-date">
+                        <div class="exam-day">${this.formatDay(exam.date)}</div>
+                        <div class="exam-month">${this.formatMonth(exam.date)}</div>
                     </div>
-                    <div class="event-info">
-                        <h4>${exam.subject}</h4>
-                        <p>${exam.type} - ${exam.time}</p>
+                    <div class="exam-details">
+                        <div class="exam-subject">${exam.subject}</div>
+                        <div class="exam-info">
+                            <span class="exam-type">${exam.type}</span>
+                            <span class="exam-time"><i class="far fa-clock"></i> ${exam.time}</span>
+                            <span class="exam-room"><i class="fas fa-door-open"></i> ${exam.room}</span>
+                        </div>
+                    </div>
+                    <div class="exam-countdown">
+                        <span class="days-left">${daysLeft}</span>
+                        <span class="days-text">ngày</span>
                     </div>
                 </div>
-            `).join('');
-        }
+            `;
+        });
+        
+        examsContainer.innerHTML = examsHTML;
+    }
+    
+    calculateDaysLeft(dateString) {
+        const examDate = new Date(dateString);
+        const today = new Date();
+        const diffTime = examDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays > 0 ? diffDays : 0;
+    }
+    
+    getUrgencyClass(daysLeft) {
+        if (daysLeft <= 3) return 'urgent';
+        if (daysLeft <= 7) return 'soon';
+        return 'normal';
+    }
+    
+    formatDay(dateString) {
+        const date = new Date(dateString);
+        return date.getDate();
+    }
+    
+    formatMonth(dateString) {
+        const date = new Date(dateString);
+        const months = ['Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6', 'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12'];
+        return months[date.getMonth()];
     }
 
     loadSubjectProgress() {
-        try {
-            const dataService = new DataService();
-            const progress = dataService.getSubjectProgress(this.student.studentId);
+        if (!this.student || !this.student.studentId) {
+            console.error('Không có thông tin ID học sinh');
+            return;
+        }
+        
+        const dataService = new DataService();
+        const progress = dataService.getSubjectProgress(this.student.studentId);
+        
+        const progressContainer = document.getElementById('subjectProgressContainer');
+        if (!progressContainer) return;
+        
+        let progressHTML = '';
+        
+        progress.forEach(subject => {
+            const progressPercentage = subject.completed;
+            const progressClass = this.getProgressClass(progressPercentage);
             
-            const progressGrid = document.getElementById('subjectProgress');
-            if (!progressGrid) return;
-
-            progressGrid.innerHTML = progress.map(subject => `
-                <div class="progress-item">
-                    <div class="subject-info">
-                        <h4>${subject.subject}</h4>
-                        <span class="progress-text">${subject.completed}/${subject.total} cột điểm</span>
+            progressHTML += `
+                <div class="progress-item ${progressClass}">
+                    <div class="progress-header">
+                        <span class="subject-name">${subject.name}</span>
+                        <span class="progress-percentage">${progressPercentage}%</span>
                     </div>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: ${subject.percentage}%"></div>
+                        <div class="progress-bar" style="width: ${progressPercentage}%"></div>
                     </div>
-                    <div class="subject-average">
-                        TB: <span class="${subject.average >= 5 ? 'pass' : 'fail'}">${subject.average}</span>
+                    <div class="progress-details">
+                        <span class="progress-status">${this.getProgressStatus(progressPercentage)}</span>
+                        <span class="progress-date">Cập nhật: ${subject.lastUpdate}</span>
                     </div>
                 </div>
-            `).join('');
-        } catch (error) {
-            console.error('Lỗi khi tải tiến độ môn học:', error);
-        }
+            `;
+        });
+        
+        progressContainer.innerHTML = progressHTML;
+    }
+    
+    getProgressClass(percentage) {
+        if (percentage < 30) return 'progress-low';
+        if (percentage < 70) return 'progress-medium';
+        if (percentage < 90) return 'progress-high';
+        return 'progress-excellent';
+    }
+    
+    getProgressStatus(percentage) {
+        if (percentage < 30) return 'Cần cải thiện';
+        if (percentage < 70) return 'Đang tiến triển';
+        if (percentage < 90) return 'Tốt';
+        return 'Xuất sắc';
     }
 
     getScoreRating(score) {
@@ -162,10 +277,28 @@ class StudentDashboard {
         if (score >= 5.0) return 'Trung bình';
         return 'Yếu';
     }
+    
+    // Phương thức để chuyển đến trang hồ sơ
+    viewProfile() {
+        if (window.navigationInstance) {
+            window.navigationInstance.loadPage('profile');
+        } else {
+            console.error('Navigation instance not found');
+            // Fallback: chuyển hướng trực tiếp đến trang hồ sơ
+            window.location.href = 'student-profile.html';
+        }
+    }
 }
+
+// Biến toàn cục để lưu trữ instance của dashboard
+let dashboardInstance;
 
 // Khởi tạo dashboard khi trang được load
 document.addEventListener('DOMContentLoaded', function() {
+    // Khởi tạo dashboard và lưu vào biến toàn cục
+    dashboardInstance = new StudentDashboard();
+    window.dashboardInstance = dashboardInstance;
+    
     // Lấy thông tin học sinh từ localStorage
     const studentInfo = JSON.parse(localStorage.getItem('userInfo'));
     

@@ -214,32 +214,56 @@ const checkAdminAuth = () => {
 // Khởi tạo dữ liệu khi tải trang
 document.addEventListener('DOMContentLoaded', initializeData);
 
-document.getElementById('loginForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const role = document.getElementById('role').value;
-    const rememberMe = document.getElementById('rememberMe').checked;
+// Thêm sự kiện cho form đăng nhập nếu đang ở trang login
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
 
-    if (rememberMe) {
-        localStorage.setItem('rememberedUsername', username);
-        localStorage.setItem('rememberedRole', role);
-    } else {
-        localStorage.removeItem('rememberedUsername');
-        localStorage.removeItem('rememberedRole');
+            if (rememberMe) {
+                localStorage.setItem('rememberedUsername', username);
+                localStorage.setItem('rememberedRole', role);
+            } else {
+                localStorage.removeItem('rememberedUsername');
+                localStorage.removeItem('rememberedRole');
+            }
+
+            let loginSuccess = false;
+            let redirectUrl = '';
+            
+            // Kiểm tra đăng nhập theo role
+            if (role === 'admin') {
+                loginSuccess = adminLogin(username, password);
+                redirectUrl = 'admin-dashboard.html';
+            } else if (role === 'teacher') {
+                loginSuccess = teacherLogin(username, password);
+                redirectUrl = 'teacher-dashboard.html';
+            } else if (role === 'student') {
+                loginSuccess = studentLogin(username, password);
+                redirectUrl = 'student-dashboard.html';
+            }
+
+            if (loginSuccess) {
+                window.location.href = redirectUrl;
+            } else {
+                alert('Tên đăng nhập hoặc mật khẩu không đúng!');
+            }
+        });
     }
 
-    let loginSuccess = false;
-    let redirectUrl = '';
-    // Logic đăng nhập hiện tại giữ nguyên...
-});
-
-// Tự động điền thông tin nếu có dữ liệu "Nhớ mật khẩu"
-document.addEventListener('DOMContentLoaded', () => {
+    // Tự động điền thông tin nếu có dữ liệu "Nhớ mật khẩu"
     const rememberedUsername = localStorage.getItem('rememberedUsername');
     const rememberedRole = localStorage.getItem('rememberedRole');
-    if (rememberedUsername && rememberedRole) {
-        document.getElementById('username').value = rememberedUsername;
-        document.getElementById('role').value = rememberedRole;
+    const usernameField = document.getElementById('username');
+    const roleField = document.getElementById('role');
+    
+    if (rememberedUsername && rememberedRole && usernameField && roleField) {
+        usernameField.value = rememberedUsername;
+        roleField.value = rememberedRole;
     }
 });
