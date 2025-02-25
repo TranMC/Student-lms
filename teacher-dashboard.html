@@ -3,160 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Học Sinh - Giao Diện Giáo Viên</title>
-    <script src="js/css-preload.js"></script>
-    <link rel="stylesheet" href="css/teacher-default.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/teacher-dashboard.css">
+    <title>Bảng Điều Khiển Giáo Viên</title>
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* CSS cơ bản để tránh lệch layout khi tải lần đầu */
-        .loading-indicator {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 300px;
-            color: #4a6da7;
-            font-size: 1.2rem;
-        }
-        
-        .loading-indicator i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .dashboard-container {
-            display: flex;
-            min-height: calc(100vh - 64px);
-        }
-        
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            margin-left: 250px;
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 80px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header class="header">
-        <div class="header-left">
-            <div class="header-title">Hệ Thống Quản Lý Học Sinh</div>
-        </div>
-        <div class="header-right">
-            <div class="user-info">
-                <i class="fas fa-user-circle"></i>
-                <span id="teacherName" class="user-name">Giáo viên</span>
-            </div>
-            <button id="logoutBtn" class="btn-logout" onclick="logout()">
-                <span>Đăng xuất</span>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="logo-container">
+            <button class="menu-trigger" id="menuToggle">
+                <i class="fas fa-bars"></i>
             </button>
+            <i class="fas fa-graduation-cap fa-2x"></i>
+            <span>Hệ Thống Quản Lý Giáo Viên</span>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-dropdown">
+                <div class="user-avatar">T</div>
+                <span class="user-name" id="teacherNameWelcome">Giáo viên</span>
+                <i class="fas fa-chevron-down"></i>
+                
+                <div class="dropdown-menu">
+                    <a href="#" data-target="profile">
+                        <i class="fas fa-user"></i> Hồ sơ cá nhân
+                    </a>
+                    <a href="#" data-target="settings">
+                        <i class="fas fa-cog"></i> Cài đặt
+                    </a>
+                    <button id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </div>
+            </div>
+            <div class="datetime" id="currentDateTime"></div>
         </div>
     </header>
-
+    
+    <!-- Dashboard Container -->
     <div class="dashboard-container">
-        <nav class="sidebar">
-            <ul class="sidebar-menu">
-                <li class="sidebar-item">
-                    <a href="#dashboard" class="sidebar-link active" data-page="teacher-dashboard-content">
-                        <i class="fas fa-home"></i>
-                        <span>Trang chủ</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#students" class="sidebar-link" data-page="teacher-students-content">
-                        <i class="fas fa-user-graduate"></i>
-                        <span>Học sinh</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#scores" class="sidebar-link" data-page="teacher-scores-content">
-                        <i class="fas fa-chart-bar"></i>
-                        <span>Điểm số</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#schedule" class="sidebar-link" data-page="teacher-schedule-content">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Lịch giảng dạy</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#profile" class="sidebar-link" data-page="teacher-profile-content">
-                        <i class="fas fa-user-cog"></i>
-                        <span>Hồ sơ cá nhân</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-menu">
+                <a href="#" class="sidebar-link active" data-target="dashboard">
+                    <i class="fas fa-tachometer-alt"></i> Trang chủ
+                </a>
+                <a href="#" class="sidebar-link" data-target="schedule">
+                    <i class="fas fa-calendar-alt"></i> Lịch dạy
+                </a>
+                <a href="#" class="sidebar-link" data-target="scores">
+                    <i class="fas fa-star"></i> Quản lý điểm số
+                </a>
+                <a href="#" class="sidebar-link" data-target="students">
+                    <i class="fas fa-user-graduate"></i> Danh sách học sinh
+                </a>
+                <a href="#" class="sidebar-link" data-target="classes">
+                    <i class="fas fa-chalkboard"></i> Lớp học
+                </a>
+                <a href="#" class="sidebar-link" data-target="reports">
+                    <i class="fas fa-chart-bar"></i> Báo cáo
+                </a>
+                <a href="#" class="sidebar-link" data-target="profile">
+                    <i class="fas fa-user-circle"></i> Hồ sơ cá nhân
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <p>© 2024 Hệ Thống Quản Lý Giáo Viên</p>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
         <main class="main-content" id="mainContent">
-            <!-- Nội dung trang sẽ được load vào đây -->
-            <div class="loading-indicator">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Đang tải...</p>
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <div class="welcome-section">
+                    <h1>Chào mừng, <span id="teacherNameHeader">Giáo viên</span>!</h1>
+                    <p>Hôm nay là: <span id="currentDate"></span></p>
+                </div>
+
+                <!-- Statistics Grid -->
+                <div class="statistics-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-user-graduate"></i>
+                        <h3>Tổng Số Học Sinh</h3>
+                        <p id="totalStudents">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chalkboard"></i>
+                        <h3>Số Lớp Giảng Dạy</h3>
+                        <p id="totalClasses">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-star"></i>
+                        <h3>Điểm Trung Bình</h3>
+                        <p id="averageScore">0.0</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-calendar-check"></i>
+                        <h3>Tiết Dạy Tuần Này</h3>
+                        <p id="lessonsThisWeek">0</p>
+                    </div>
+                </div>
+
+                <!-- Schedule Section -->
+                <div class="content-section">
+                    <h2><i class="fas fa-calendar-day"></i> Lịch Dạy Hôm Nay</h2>
+                    <div id="todaySchedule" class="schedule-container">
+                        <div class="loading">Đang tải lịch dạy...</div>
+                    </div>
+                </div>
+
+                <!-- Recent Scores Section -->
+                <div class="content-section">
+                    <h2><i class="fas fa-chart-line"></i> Điểm Số Gần Đây</h2>
+                    <div id="recentScores" class="scores-container">
+                        <div class="loading">Đang tải điểm số...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="contentLoading" class="loading-overlay">
+                <div class="spinner"></div>
+                <p>Đang tải nội dung...</p>
             </div>
         </main>
     </div>
-
-    <script src="js/dashboard-debugger.js"></script>
+    
+    <!-- JavaScript -->
     <script src="js/auth.js"></script>
-    <script src="js/data-service.js"></script>
     <script src="js/navigation.js"></script>
     <script src="js/teacher-dashboard.js"></script>
-    <script>
-        // Mục tiêu hàm này là kiểm tra quyền đã đăng nhập và là giáo viên
-        function checkTeacherAuth() {
-            const userData = localStorage.getItem('currentUser');
-            if (!userData) {
-                // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
-                window.location.href = 'login.html';
-                return false;
-            }
-
-            try {
-                const user = JSON.parse(userData);
-                // Xử lý cả trường hợp dữ liệu là đối tượng hoặc mảng
-                const userInfo = Array.isArray(user) ? user[0] : user;
-                
-                if (userInfo.role !== 'teacher') {
-                    // Nếu không phải là giáo viên, chuyển hướng đến trang phù hợp
-                    if (userInfo.role === 'student') {
-                        window.location.href = 'student-dashboard.html';
-                    } else {
-                        window.location.href = 'login.html';
-                    }
-                    return false;
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('Lỗi phân tích dữ liệu người dùng:', error);
-                window.location.href = 'login.html';
-                return false;
-            }
-        }
-
-        // Kiểm tra quyền khi tải trang
-        document.addEventListener('DOMContentLoaded', () => {
-            if (checkTeacherAuth()) {
-                // Khởi tạo navigation
-                const navigation = new Navigation('teacher');
-                navigation.loadPage('teacher-dashboard-content');
-            }
-        });
-
-        // Hàm đăng xuất
-        function logout() {
-            localStorage.removeItem('currentUser');
-            window.location.href = 'login.html';
-        }
-    </script>
 </body>
 </html> 
