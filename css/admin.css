@@ -649,29 +649,31 @@ form button[type="submit"] {
 .search-box {
     position: relative;
     margin-left: auto;
+    width: 200px;
 }
 
 .search-box input {
-    padding: 0.5rem 0.5rem 0.5rem 2rem;
+    padding: 0.5rem 0.5rem 0.5rem 2.5rem;
     border: 1px solid var(--gray-300);
     border-radius: 20px;
-    width: 200px;
+    width: 100%;
     transition: all var(--transition-speed);
 }
 
 .search-box input:focus {
-    width: 250px;
     border-color: var(--primary-light);
     box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.1);
     outline: none;
+    width: 100%;
 }
 
 .search-box i {
     position: absolute;
-    left: 10px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--gray-500);
+    pointer-events: none; /* Đảm bảo icon không chặn sự kiện click */
 }
 
 /* Actions bar styling */

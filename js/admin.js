@@ -291,7 +291,7 @@ class AdminDashboard {
                     <td>${acc.type}</td>
                     <td>${acc.fullName || ''}</td>
                     <td>${acc.email || ''}</td>
-                    <td><span class="status-active">Hoạt động</span></td>
+                    <td><span class="status-${acc.status === 'inactive' ? 'inactive' : 'active'}">${acc.status === 'inactive' ? 'Không hoạt động' : 'Hoạt động'}</span></td>
                     <td>
                         <button onclick="adminDashboard.resetPassword('${acc.username}')" class="btn-edit">
                             <i class="fas fa-key"></i>
@@ -407,12 +407,14 @@ class AdminDashboard {
     }
 
     toggleAccountStatus(username) {
+        if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái hoạt động của tài khoản này?')) return;
+        
         // Cập nhật trạng thái tài khoản
         const updateStatus = (key) => {
             const data = JSON.parse(localStorage.getItem(key) || '[]');
             const updated = data.map(item => {
                 if (item.username === username) {
-                    const newStatus = item.status === 'active' ? 'inactive' : 'active';
+                    const newStatus = item.status === 'inactive' ? 'active' : 'inactive';
                     return {...item, status: newStatus};
                 }
                 return item;
@@ -424,7 +426,10 @@ class AdminDashboard {
         updateStatus('teachers');
         updateStatus('students');
         
-        this.loadAccounts();
+        // Cập nhật lại danh sách tài khoản
+        loadAccountList();
+        
+        alert('Đã thay đổi trạng thái tài khoản thành công!');
     }
 
     getSystemStats() {
@@ -564,7 +569,156 @@ class AdminDashboard {
             student.phone.toLowerCase().includes(searchTerm)
         );
         
-        this.loadStudents();
+        // Hiển thị danh sách đã lọc
+        const tbody = document.querySelector('#studentTable tbody');
+        if (tbody) {
+            tbody.innerHTML = filteredStudents.map(student => `
+                <tr>
+                    <td>${student.studentId}</td>
+                    <td>${student.fullName}</td>
+                    <td>${student.class}</td>
+                    <td>${student.email}</td>
+                    <td>${student.phone}</td>
+                    <td>
+                        <button onclick="adminDashboard.editStudent('${student.studentId}')" class="btn-edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="adminDashboard.deleteStudent('${student.studentId}')" class="btn-delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    filterTeachers(searchTerm) {
+        if (!searchTerm) {
+            this.loadTeachers();
+            return;
+        }
+        
+        const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+        const filteredTeachers = teachers.filter(teacher => 
+            teacher.id.toString().includes(searchTerm) ||
+            teacher.fullName.toLowerCase().includes(searchTerm) ||
+            teacher.subject.toLowerCase().includes(searchTerm) ||
+            (teacher.email && teacher.email.toLowerCase().includes(searchTerm)) ||
+            (teacher.phone && teacher.phone.toLowerCase().includes(searchTerm))
+        );
+        
+        // Hiển thị danh sách đã lọc
+        const tbody = document.querySelector('#teacherTable tbody');
+        if (tbody) {
+            tbody.innerHTML = filteredTeachers.map(teacher => `
+                <tr>
+                    <td>${teacher.id}</td>
+                    <td>${teacher.fullName}</td>
+                    <td>${teacher.subject}</td>
+                    <td>${teacher.email || ''}</td>
+                    <td>${teacher.phone || ''}</td>
+                    <td>
+                        <button onclick="adminDashboard.editTeacher('${teacher.id}')" class="btn-edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="adminDashboard.deleteTeacher('${teacher.id}')" class="btn-delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    filterClasses(searchTerm) {
+        if (!searchTerm) {
+            this.loadClasses();
+            return;
+        }
+        
+        const classes = JSON.parse(localStorage.getItem('classes') || '[]');
+        const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        
+        const filteredClasses = classes.filter(cls => {
+            const teacher = teachers.find(t => t.id == cls.teacherId);
+            const teacherName = teacher ? teacher.fullName.toLowerCase() : '';
+            
+            return cls.classId.toLowerCase().includes(searchTerm) ||
+                   cls.className.toLowerCase().includes(searchTerm) ||
+                   teacherName.includes(searchTerm);
+        });
+        
+        // Hiển thị danh sách đã lọc
+        const tbody = document.querySelector('#classTable tbody');
+        if (tbody) {
+            tbody.innerHTML = filteredClasses.map(cls => {
+                const teacher = teachers.find(t => t.id == cls.teacherId);
+                const studentCount = students.filter(s => s.class === cls.className).length;
+                return `
+                    <tr>
+                        <td>${cls.classId}</td>
+                        <td>${cls.className}</td>
+                        <td>${studentCount}</td>
+                        <td>${teacher ? teacher.fullName : 'Chưa phân công'}</td>
+                        <td>
+                            <button onclick="adminDashboard.editClass('${cls.classId}')" class="btn-edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="adminDashboard.deleteClass('${cls.classId}')" class="btn-delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+
+    filterAccounts(searchTerm) {
+        if (!searchTerm) {
+            this.loadAccounts();
+            return;
+        }
+        
+        const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        const admins = JSON.parse(localStorage.getItem('admins') || '[]');
+        
+        const allAccounts = [
+            ...admins.map(a => ({...a, type: 'Admin'})),
+            ...teachers.map(t => ({...t, type: 'Giáo viên'})),
+            ...students.map(s => ({...s, type: 'Học sinh'}))
+        ];
+        
+        const filteredAccounts = allAccounts.filter(acc => 
+            acc.username.toLowerCase().includes(searchTerm) ||
+            acc.type.toLowerCase().includes(searchTerm) ||
+            (acc.fullName && acc.fullName.toLowerCase().includes(searchTerm)) ||
+            (acc.email && acc.email.toLowerCase().includes(searchTerm))
+        );
+        
+        // Hiển thị danh sách đã lọc
+        const tbody = document.querySelector('#accountTable tbody');
+        if (tbody) {
+            tbody.innerHTML = filteredAccounts.map(acc => `
+                <tr>
+                    <td>${acc.username}</td>
+                    <td>${acc.type}</td>
+                    <td>${acc.fullName || ''}</td>
+                    <td>${acc.email || ''}</td>
+                    <td><span class="status-${acc.status === 'inactive' ? 'inactive' : 'active'}">${acc.status === 'inactive' ? 'Không hoạt động' : 'Hoạt động'}</span></td>
+                    <td>
+                        <button onclick="adminDashboard.resetPassword('${acc.username}')" class="btn-edit">
+                            <i class="fas fa-key"></i>
+                        </button>
+                        <button onclick="adminDashboard.toggleAccountStatus('${acc.username}')" class="btn-warning">
+                            <i class="fas fa-ban"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
     }
 }
 
@@ -870,7 +1024,7 @@ function initStudentManagement() {
     // Thêm sự kiện tìm kiếm
     document.getElementById('searchStudent')?.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
-        filterStudents(searchTerm);
+        adminDashboard.filterStudents(searchTerm);
     });
 }
 
@@ -900,25 +1054,6 @@ function loadStudentList(filteredStudents = null) {
     }
 }
 
-// Hàm lọc học sinh theo từ khóa tìm kiếm
-function filterStudents(searchTerm) {
-    if (!searchTerm) {
-        loadStudentList();
-        return;
-    }
-    
-    const students = JSON.parse(localStorage.getItem('students') || '[]');
-    const filteredStudents = students.filter(student => 
-        student.studentId.toLowerCase().includes(searchTerm) ||
-        student.fullName.toLowerCase().includes(searchTerm) ||
-        student.class.toLowerCase().includes(searchTerm) ||
-        student.email.toLowerCase().includes(searchTerm) ||
-        student.phone.toLowerCase().includes(searchTerm)
-    );
-    
-    loadStudentList(filteredStudents);
-}
-
 // Hàm khởi tạo quản lý giáo viên
 function initTeacherManagement() {
     // Hiển thị danh sách giáo viên
@@ -938,7 +1073,7 @@ function initTeacherManagement() {
     // Thêm sự kiện tìm kiếm
     document.getElementById('searchTeacher')?.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
-        filterTeachers(searchTerm);
+        adminDashboard.filterTeachers(searchTerm);
     });
 }
 
@@ -968,25 +1103,6 @@ function loadTeacherList(filteredTeachers = null) {
     }
 }
 
-// Hàm lọc giáo viên theo từ khóa tìm kiếm
-function filterTeachers(searchTerm) {
-    if (!searchTerm) {
-        loadTeacherList();
-        return;
-    }
-    
-    const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-    const filteredTeachers = teachers.filter(teacher => 
-        teacher.id.toString().includes(searchTerm) ||
-        teacher.fullName.toLowerCase().includes(searchTerm) ||
-        teacher.subject.toLowerCase().includes(searchTerm) ||
-        (teacher.email && teacher.email.toLowerCase().includes(searchTerm)) ||
-        (teacher.phone && teacher.phone.toLowerCase().includes(searchTerm))
-    );
-    
-    loadTeacherList(filteredTeachers);
-}
-
 // Hàm khởi tạo quản lý lớp học
 function initClassManagement() {
     // Hiển thị danh sách lớp học
@@ -1006,7 +1122,7 @@ function initClassManagement() {
     // Thêm sự kiện tìm kiếm
     document.getElementById('searchClass')?.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
-        filterClasses(searchTerm);
+        adminDashboard.filterClasses(searchTerm);
     });
     
     // Cập nhật danh sách giáo viên cho select
@@ -1044,28 +1160,6 @@ function loadClassList(filteredClasses = null) {
     }
 }
 
-// Hàm lọc lớp học theo từ khóa tìm kiếm
-function filterClasses(searchTerm) {
-    if (!searchTerm) {
-        loadClassList();
-        return;
-    }
-    
-    const classes = JSON.parse(localStorage.getItem('classes') || '[]');
-    const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-    
-    const filteredClasses = classes.filter(cls => {
-        const teacher = teachers.find(t => t.id == cls.teacherId);
-        const teacherName = teacher ? teacher.fullName.toLowerCase() : '';
-        
-        return cls.classId.toLowerCase().includes(searchTerm) ||
-               cls.className.toLowerCase().includes(searchTerm) ||
-               teacherName.includes(searchTerm);
-    });
-    
-    loadClassList(filteredClasses);
-}
-
 // Hàm cập nhật danh sách giáo viên cho select
 function updateTeacherSelect() {
     const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
@@ -1086,7 +1180,7 @@ function initAccountManagement() {
     // Thêm sự kiện tìm kiếm
     document.getElementById('searchAccount')?.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase().trim();
-        filterAccounts(searchTerm);
+        adminDashboard.filterAccounts(searchTerm);
     });
     
     // Thêm sự kiện cho form đổi mật khẩu
@@ -1103,7 +1197,7 @@ function initAccountManagement() {
         }
         
         // Cập nhật mật khẩu cho tài khoản
-        const updatePassword = (items, key) => {
+        const updatePassword = (key) => {
             const data = JSON.parse(localStorage.getItem(key) || '[]');
             const updated = data.map(item => 
                 item.username === username ? {...item, password: newPassword} : item
@@ -1111,9 +1205,9 @@ function initAccountManagement() {
             localStorage.setItem(key, JSON.stringify(updated));
         };
         
-        updatePassword(admins, 'admins');
-        updatePassword(teachers, 'teachers');
-        updatePassword(students, 'students');
+        updatePassword('admins');
+        updatePassword('teachers');
+        updatePassword('students');
         
         adminDashboard.closeModal('passwordModal');
         alert('Đã cập nhật mật khẩu thành công!');
@@ -1158,31 +1252,4 @@ function loadAccountList(filteredAccounts = null) {
             </tr>
         `).join('');
     }
-}
-
-// Hàm lọc tài khoản theo từ khóa tìm kiếm
-function filterAccounts(searchTerm) {
-    if (!searchTerm) {
-        loadAccountList();
-        return;
-    }
-    
-    const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-    const students = JSON.parse(localStorage.getItem('students') || '[]');
-    const admins = JSON.parse(localStorage.getItem('admins') || '[]');
-    
-    const allAccounts = [
-        ...admins.map(a => ({...a, type: 'Admin'})),
-        ...teachers.map(t => ({...t, type: 'Giáo viên'})),
-        ...students.map(s => ({...s, type: 'Học sinh'}))
-    ];
-    
-    const filteredAccounts = allAccounts.filter(acc => 
-        acc.username.toLowerCase().includes(searchTerm) ||
-        acc.type.toLowerCase().includes(searchTerm) ||
-        (acc.fullName && acc.fullName.toLowerCase().includes(searchTerm)) ||
-        (acc.email && acc.email.toLowerCase().includes(searchTerm))
-    );
-    
-    loadAccountList(filteredAccounts);
 } 
