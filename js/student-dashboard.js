@@ -24,8 +24,15 @@ class StudentDashboard {
 
     loadStudentInfo() {
         const welcomeName = document.getElementById('studentNameWelcome');
-        if (welcomeName && this.student) {
-            welcomeName.textContent = this.student.fullName;
+        const studentName = document.getElementById('studentName');
+        
+        if (this.student) {
+            if (welcomeName) {
+                welcomeName.textContent = this.student.fullName;
+            }
+            if (studentName) {
+                studentName.textContent = this.student.fullName;
+            }
         }
     }
 
