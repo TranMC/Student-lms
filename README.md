@@ -31,3 +31,4 @@ Chào mừng bạn đến với **LMS (Hệ thống Quản lý Học tập)**! D
 ## 25/02/2025 📅 
 - Update Admin function + UI
 - Update Student Calendar + function cũ đang lỗi
+- Update student profile + bug không dùng các chức năng trong đấy được
