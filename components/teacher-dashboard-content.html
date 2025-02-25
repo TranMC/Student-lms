@@ -485,109 +485,70 @@
     </style>
 </head>
 <body>
-    <div class="dashboard-content">
-        <div class="welcome-section">
-            <div class="welcome-header">
-                <h2>Chào mừng, <span id="teacherNameWelcome"></span></h2>
-                <p class="date-time" id="currentDateTime"></p>
-            </div>
-            <div class="quick-actions">
-                <button class="action-btn" onclick="window.location.href='course-management.html'">
-                    <i class="fas fa-book"></i> Quản lý khóa học
-                </button>
-                <button class="action-btn" onclick="window.location.href='student-management.html'">
-                    <i class="fas fa-user-graduate"></i> Quản lý học viên
-                </button>
-                <button class="action-btn" onclick="window.location.href='messages.html'">
-                    <i class="fas fa-envelope"></i> <span class="notification-badge" id="unreadMessages">0</span> Tin nhắn
-                </button>
-            </div>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h2 class="welcome-message">Xin chào, <span id="teacherNameWelcome">Giáo viên</span>!</h2>
+            <div class="date-display" id="currentDateTime">Đang tải thời gian...</div>
         </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-book"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>Khóa học đang dạy</h3>
-                    <p id="totalCourses">0</p>
-                    <span class="trend up"><i class="fas fa-arrow-up"></i> <span id="newCourses">0</span> khóa mới</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-user-graduate"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>Học viên đang học</h3>
-                    <p id="totalStudents">0</p>
-                    <span class="trend up"><i class="fas fa-arrow-up"></i> <span id="newStudents">0</span> học viên mới</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-tasks"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>Bài tập cần chấm</h3>
-                    <p id="pendingAssignments">0</p>
-                    <span class="badge urgent">Gấp: <span id="urgentAssignments">0</span> bài</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>Giờ giảng dạy</h3>
-                    <p id="teachingHours">0</p>
-                    <span class="trend up"><i class="fas fa-arrow-up"></i> <span id="weeklyHours">0</span> giờ/tuần</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="card schedule-card">
-                <div class="card-header">
-                    <h3><i class="fas fa-calendar-alt"></i> Lịch dạy trực tuyến</h3>
-                    <div class="card-actions">
-                        <button class="btn-icon" id="prevDay">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <span id="currentDate" class="current-date">Hôm nay</span>
-                        <button class="btn-icon" id="nextDay">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
+        <!-- Thống kê -->
+        <div class="stats-container">
+            <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon students-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="totalStudents">0</div>
+                        <div class="stat-label">Tổng số học sinh</div>
                     </div>
                 </div>
-                <div class="schedule-list" id="todaySchedule">
-                    <!-- Lịch học sẽ được thêm bằng JavaScript -->
+            </div>
+
+            <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon average-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="averageScore">0.0</div>
+                        <div class="stat-label">Điểm trung bình</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card activity-card">
-                <div class="card-header">
-                    <h3><i class="fas fa-bell"></i> Hoạt động gần đây</h3>
-                    <a href="activities.html" class="view-all">Xem tất cả</a>
-                </div>
-                <div class="activity-list" id="recentActivities">
-                    <!-- Hoạt động sẽ được thêm bằng JavaScript -->
+            <div class="card">
+                <div class="stat-card">
+                    <div class="stat-icon pass-icon">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="passRate">0%</div>
+                        <div class="stat-label">Tỷ lệ đạt</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="dashboard-row">
-            <div class="card performance-card">
+        <!-- Khu vực hiển thị thông tin chi tiết -->
+        <div class="score-container">
+            <!-- Lịch dạy hôm nay -->
+            <div class="card">
                 <div class="card-header">
-                    <h3><i class="fas fa-chart-bar"></i> Thống kê khóa học</h3>
-                    <select class="card-select" id="courseSelect">
-                        <option value="all">Tất cả khóa học</option>
-                        <!-- Các khóa học sẽ được thêm bằng JavaScript -->
-                    </select>
+                    <h3>Lịch dạy hôm nay</h3>
                 </div>
-                <div class="chart-container">
-                    <canvas id="coursePerformanceChart"></canvas>
+                <div class="card-body" id="todaySchedule">
+                    <!-- Dữ liệu sẽ được thêm từ JavaScript -->
+                </div>
+            </div>
+
+            <!-- Điểm số gần đây -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Điểm số gần đây</h3>
+                </div>
+                <div class="card-body" id="recentScores">
+                    <!-- Dữ liệu sẽ được thêm từ JavaScript -->
                 </div>
             </div>
         </div>
@@ -596,379 +557,31 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../js/teacher-dashboard.js"></script>
     <script>
-        // Dữ liệu mẫu
+        // Dữ liệu mẫu để sử dụng khi có lỗi kết nối
         const mockData = {
             teacher: {
-                name: "Nguyễn Văn Thành",
-                id: "GV001",
-                department: "Công nghệ thông tin"
+                fullName: "Nguyễn Văn Giáo",
+                email: "teacher@school.edu",
+                department: "Khoa học tự nhiên"
             },
             stats: {
-                totalCourses: 5,
-                newCourses: 2,
                 totalStudents: 120,
-                newStudents: 12,
-                pendingAssignments: 15,
-                urgentAssignments: 5,
-                teachingHours: 32,
-                weeklyHours: 8
+                averageScore: 7.8,
+                passRate: 85
             },
-            courses: [
-                { id: "WEB101", name: "Lập trình Web cơ bản" },
-                { id: "JS201", name: "JavaScript Nâng cao" },
-                { id: "REACT101", name: "React.js Cơ bản" },
-                { id: "NODE101", name: "Node.js Cơ bản" },
-                { id: "DB101", name: "Cơ sở dữ liệu" }
-            ],
             schedule: {
                 "2023-11-01": [
-                    {
-                        id: "SCH001",
-                        courseId: "WEB101",
-                        courseName: "Lập trình Web cơ bản",
-                        startTime: "07:30",
-                        endTime: "09:00",
-                        room: "WEB101",
-                        students: 25,
-                        status: "live" // live, upcoming, completed
-                    },
-                    {
-                        id: "SCH002",
-                        courseId: "JS201",
-                        courseName: "JavaScript Nâng cao",
-                        startTime: "10:00",
-                        endTime: "11:30",
-                        room: "JS201",
-                        students: 18,
-                        status: "upcoming"
-                    }
+                    { time: "07:30 - 09:00", class: "12A1", subject: "Toán học" },
+                    { time: "09:30 - 11:00", class: "11B2", subject: "Hình học" },
+                    { time: "13:30 - 15:00", class: "10A3", subject: "Đại số" }
                 ]
             },
-            activities: [
-                {
-                    id: "ACT001",
-                    type: "submission", // submission, question, announcement
-                    title: "Nộp bài tập mới",
-                    description: "5 học viên đã nộp bài tập \"Thiết kế giao diện\"",
-                    time: "5 phút trước",
-                    actionText: "Xem ngay",
-                    actionLink: "assignments.html?id=ASG001"
-                },
-                {
-                    id: "ACT002",
-                    type: "question",
-                    title: "Câu hỏi mới",
-                    description: "Nguyễn Văn A đã đặt câu hỏi trong khóa học JavaScript",
-                    time: "15 phút trước",
-                    actionText: "Trả lời",
-                    actionLink: "forum.html?id=Q001"
-                }
-            ],
-            performance: {
-                attendance: [85, 88, 92, 90],
-                completion: [75, 82, 80, 85]
-            },
-            messages: 3
+            recentScores: [
+                { student: "Trần Văn A", subject: "Toán", score: 8.5, date: "2023-10-30" },
+                { student: "Nguyễn Thị B", subject: "Lý", score: 7.5, date: "2023-10-29" },
+                { student: "Lê Văn C", subject: "Hóa", score: 9.0, date: "2023-10-28" }
+            ]
         };
-
-        // Kiểm tra và tải dữ liệu từ localStorage
-        function loadTeacherData() {
-            try {
-                // Kiểm tra dữ liệu giáo viên trong localStorage
-                const teacherData = localStorage.getItem('currentUser');
-                const teachersData = localStorage.getItem('teachers');
-                
-                console.log('Dữ liệu giáo viên hiện tại:', teacherData);
-                console.log('Danh sách giáo viên:', teachersData);
-                
-                if (teacherData) {
-                    const teacher = JSON.parse(teacherData);
-                    console.log('Đã tìm thấy dữ liệu giáo viên:', teacher);
-                    
-                    // Cập nhật dữ liệu mockData với thông tin từ localStorage
-                    if (teacher.role === 'teacher') {
-                        mockData.teacher.name = teacher.fullName || teacher.name || "Giáo viên";
-                        mockData.teacher.id = teacher.id || "GV001";
-                        mockData.teacher.department = teacher.department || "Chưa cập nhật";
-                    }
-                } else if (teachersData) {
-                    // Nếu không có currentUser nhưng có danh sách giáo viên, lấy giáo viên đầu tiên
-                    const teachers = JSON.parse(teachersData);
-                    if (Array.isArray(teachers) && teachers.length > 0) {
-                        console.log('Sử dụng giáo viên đầu tiên từ danh sách:', teachers[0]);
-                        mockData.teacher.name = teachers[0].fullName || teachers[0].name || "Giáo viên";
-                        mockData.teacher.id = teachers[0].id || "GV001";
-                        mockData.teacher.department = teachers[0].department || "Chưa cập nhật";
-                    }
-                }
-                
-                // Kiểm tra dữ liệu học sinh
-                const studentsData = localStorage.getItem('students');
-                if (studentsData) {
-                    const students = JSON.parse(studentsData);
-                    if (Array.isArray(students)) {
-                        console.log('Số lượng học sinh:', students.length);
-                        mockData.stats.totalStudents = students.length;
-                    }
-                }
-            } catch (error) {
-                console.error('Lỗi khi tải dữ liệu giáo viên:', error);
-            }
-        }
-
-        // Cập nhật thời gian hiện tại
-        function updateDateTime() {
-            const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            };
-            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('vi-VN', options);
-        }
-        
-        // Hiển thị lịch học
-        function renderSchedule(date) {
-            const scheduleContainer = document.getElementById('todaySchedule');
-            scheduleContainer.innerHTML = '';
-            
-            // Trong thực tế, bạn sẽ lấy lịch dựa trên ngày được chọn
-            // Ở đây chúng ta sử dụng dữ liệu mẫu
-            const scheduleItems = mockData.schedule["2023-11-01"];
-            
-            if (scheduleItems && scheduleItems.length > 0) {
-                scheduleItems.forEach(item => {
-                    const scheduleItem = document.createElement('div');
-                    scheduleItem.className = 'schedule-item';
-                    
-                    let statusBadge = '';
-                    if (item.status === 'live') {
-                        statusBadge = '<span class="badge live">Đang diễn ra</span>';
-                    } else if (item.status === 'upcoming') {
-                        statusBadge = '<span class="badge upcoming">Sắp diễn ra</span>';
-                    } else {
-                        statusBadge = '<span class="badge completed">Đã hoàn thành</span>';
-                    }
-                    
-                    let actionButtons = '';
-                    if (item.status === 'live') {
-                        actionButtons = `
-                            <button class="btn-action join-meeting" onclick="joinClass('${item.id}')">
-                                <i class="fas fa-video"></i> Vào lớp học
-                            </button>
-                        `;
-                    } else if (item.status === 'upcoming') {
-                        actionButtons = `
-                            <button class="btn-action prepare-class" onclick="prepareClass('${item.id}')">
-                                <i class="fas fa-tasks"></i> Chuẩn bị
-                            </button>
-                        `;
-                    }
-                    
-                    actionButtons += `
-                        <button class="btn-action view-materials" onclick="viewMaterials('${item.courseId}')">
-                            <i class="fas fa-book"></i> Tài liệu
-                        </button>
-                    `;
-                    
-                    scheduleItem.innerHTML = `
-                        <div class="schedule-time">
-                            <span class="time">${item.startTime} - ${item.endTime}</span>
-                            ${statusBadge}
-                        </div>
-                        <div class="schedule-details">
-                            <h4>${item.courseName}</h4>
-                            <p><i class="fas fa-users"></i> ${item.students} học viên tham gia</p>
-                            <p><i class="fas fa-video"></i> Phòng học: ${item.room}</p>
-                            <div class="schedule-actions">
-                                ${actionButtons}
-                            </div>
-                        </div>
-                    `;
-                    
-                    scheduleContainer.appendChild(scheduleItem);
-                });
-            } else {
-                scheduleContainer.innerHTML = '<div class="empty-state">Không có lịch dạy nào vào ngày này</div>';
-            }
-        }
-        
-        // Hiển thị hoạt động gần đây
-        function renderActivities() {
-            const activitiesContainer = document.getElementById('recentActivities');
-            activitiesContainer.innerHTML = '';
-            
-            mockData.activities.forEach(activity => {
-                const activityItem = document.createElement('div');
-                activityItem.className = 'activity-item';
-                
-                let iconClass = '';
-                if (activity.type === 'submission') {
-                    iconClass = 'submitted';
-                    icon = 'fa-file-alt';
-                } else if (activity.type === 'question') {
-                    iconClass = 'question';
-                    icon = 'fa-question';
-                } else {
-                    iconClass = 'announcement';
-                    icon = 'fa-bullhorn';
-                }
-                
-                activityItem.innerHTML = `
-                    <div class="activity-icon ${iconClass}">
-                        <i class="fas ${icon}"></i>
-                    </div>
-                    <div class="activity-details">
-                        <h4>${activity.title}</h4>
-                        <p>${activity.description}</p>
-                        <span class="activity-time">${activity.time}</span>
-                    </div>
-                    <button class="btn-action ${activity.type}" onclick="window.location.href='${activity.actionLink}'">
-                        ${activity.actionText}
-                    </button>
-                `;
-                
-                activitiesContainer.appendChild(activityItem);
-            });
-        }
-        
-        // Tạo biểu đồ thống kê
-        function createCoursePerformanceChart() {
-            const ctx = document.getElementById('coursePerformanceChart').getContext('2d');
-            
-            const data = {
-                labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'],
-                datasets: [
-                    {
-                        label: 'Tham gia lớp học',
-                        data: mockData.performance.attendance,
-                        borderColor: 'rgba(67, 97, 238, 1)',
-                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
-                        fill: true
-                    },
-                    {
-                        label: 'Hoàn thành bài tập',
-                        data: mockData.performance.completion,
-                        borderColor: 'rgba(76, 201, 240, 1)',
-                        backgroundColor: 'rgba(76, 201, 240, 0.1)',
-                        fill: true
-                    }
-                ]
-            };
-
-            const config = {
-                type: 'line',
-                data: data,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            title: {
-                                display: true,
-                                text: 'Tỷ lệ (%)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top'
-                        }
-                    }
-                }
-            };
-
-            new Chart(ctx, config);
-        }
-        
-        // Cập nhật danh sách khóa học
-        function updateCourseSelect() {
-            const courseSelect = document.getElementById('courseSelect');
-            
-            mockData.courses.forEach(course => {
-                const option = document.createElement('option');
-                option.value = course.id;
-                option.textContent = course.name;
-                courseSelect.appendChild(option);
-            });
-            
-            // Thêm sự kiện thay đổi khóa học
-            courseSelect.addEventListener('change', function() {
-                // Trong thực tế, bạn sẽ cập nhật biểu đồ dựa trên khóa học được chọn
-                console.log('Đã chọn khóa học:', this.value);
-            });
-        }
-        
-        // Khởi tạo trang
-        function initDashboard() {
-            // Tải dữ liệu từ localStorage trước
-            loadTeacherData();
-            
-            // Cập nhật thông tin cơ bản
-            document.getElementById('teacherNameWelcome').textContent = mockData.teacher.name;
-            document.getElementById('unreadMessages').textContent = mockData.messages;
-            
-            // Cập nhật thống kê
-            document.getElementById('totalCourses').textContent = mockData.stats.totalCourses;
-            document.getElementById('newCourses').textContent = mockData.stats.newCourses;
-            document.getElementById('totalStudents').textContent = mockData.stats.totalStudents;
-            document.getElementById('newStudents').textContent = mockData.stats.newStudents;
-            document.getElementById('pendingAssignments').textContent = mockData.stats.pendingAssignments;
-            document.getElementById('urgentAssignments').textContent = mockData.stats.urgentAssignments;
-            document.getElementById('teachingHours').textContent = mockData.stats.teachingHours;
-            document.getElementById('weeklyHours').textContent = mockData.stats.weeklyHours;
-            
-            // Cập nhật thời gian
-            updateDateTime();
-            setInterval(updateDateTime, 60000);
-            
-            // Hiển thị lịch học
-            renderSchedule(new Date());
-            
-            // Hiển thị hoạt động
-            renderActivities();
-            
-            // Cập nhật danh sách khóa học
-            updateCourseSelect();
-            
-            // Khởi tạo biểu đồ
-            createCoursePerformanceChart();
-            
-            // Thêm sự kiện cho nút điều hướng lịch
-            document.getElementById('prevDay').addEventListener('click', function() {
-                // Trong thực tế, bạn sẽ cập nhật ngày và hiển thị lịch tương ứng
-                console.log('Ngày trước');
-            });
-            
-            document.getElementById('nextDay').addEventListener('click', function() {
-                // Trong thực tế, bạn sẽ cập nhật ngày và hiển thị lịch tương ứng
-                console.log('Ngày sau');
-            });
-        }
-        
-        // Các hàm xử lý sự kiện
-        function joinClass(scheduleId) {
-            // Trong thực tế, bạn sẽ chuyển hướng đến trang lớp học trực tuyến
-            console.log('Tham gia lớp học:', scheduleId);
-        }
-        
-        function prepareClass(scheduleId) {
-            // Trong thực tế, bạn sẽ chuyển hướng đến trang chuẩn bị lớp học
-            console.log('Chuẩn bị lớp học:', scheduleId);
-        }
-        
-        function viewMaterials(courseId) {
-            // Trong thực tế, bạn sẽ chuyển hướng đến trang tài liệu khóa học
-            console.log('Xem tài liệu khóa học:', courseId);
-        }
-
-        // Khởi chạy khi trang đã tải xong
-        document.addEventListener('DOMContentLoaded', initDashboard);
     </script>
 </body>
 </html> 

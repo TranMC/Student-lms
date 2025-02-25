@@ -4,45 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Học Sinh - Giao Diện Giáo Viên</title>
-    <script src="js/css-preload.js"></script>
     <link rel="stylesheet" href="css/teacher-default.css">
     <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/teacher-dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* CSS cơ bản để tránh lệch layout khi tải lần đầu */
-        .loading-indicator {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 300px;
-            color: #4a6da7;
-            font-size: 1.2rem;
-        }
-        
-        .loading-indicator i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        .dashboard-container {
-            display: flex;
-            min-height: calc(100vh - 64px);
-        }
-        
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            margin-left: 250px;
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                margin-left: 80px;
-            }
-        }
-    </style>
 </head>
 <body>
     <header class="header">
@@ -60,7 +24,7 @@
         </div>
     </header>
 
-    <div class="dashboard-container">
+    <div class="content-container">
         <nav class="sidebar">
             <ul class="sidebar-menu">
                 <li class="sidebar-item">
@@ -98,16 +62,9 @@
 
         <main class="main-content" id="mainContent">
             <!-- Nội dung trang sẽ được load vào đây -->
-            <div class="loading-indicator">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Đang tải...</p>
-            </div>
         </main>
     </div>
 
-    <script src="js/dashboard-debugger.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/data-service.js"></script>
     <script src="js/navigation.js"></script>
     <script src="js/teacher-dashboard.js"></script>
     <script>

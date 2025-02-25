@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ giáo viên</title>
+    <link rel="stylesheet" href="css/teacher-profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="welcome-section">
+        <h2>Xin chào, <span id="teacherNameWelcome"></span>!</h2>
+        <p class="current-time" id="currentDateTime"></p>
+    </div>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h3 id="teacherFullName"></h3>
+                <p id="teacherId"></p>
+                <p class="teacher-department" id="teacherDepartment"></p>
+            </div>
+            
+            <div class="profile-body">
+                <div class="info-section">
+                    <h4><i class="fas fa-info-circle"></i> Thông tin cá nhân</h4>
+                    <div class="info-row">
+                        <div class="info-label">Họ và tên:</div>
+                        <div class="info-value" id="fullName"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Email:</div>
+                        <div class="info-value" id="email"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Số điện thoại:</div>
+                        <div class="info-value" id="phone"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Ngày sinh:</div>
+                        <div class="info-value" id="birthday"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Địa chỉ:</div>
+                        <div class="info-value" id="address"></div>
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h4><i class="fas fa-graduation-cap"></i> Thông tin giảng dạy</h4>
+                    <div class="info-row">
+                        <div class="info-label">Bộ môn:</div>
+                        <div class="info-value" id="subject"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Ngày bắt đầu:</div>
+                        <div class="info-value" id="startDate"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Trình độ:</div>
+                        <div class="info-value" id="qualification"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-actions">
+                <button id="editProfileBtn" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Chỉnh sửa thông tin
+                </button>
+                <button id="changePasswordBtn" class="btn btn-outline">
+                    <i class="fas fa-key"></i> Đổi mật khẩu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal chỉnh sửa hồ sơ -->
+    <div id="editProfileModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Chỉnh sửa thông tin cá nhân</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="editFullName">Họ và tên:</label>
+                        <input type="text" id="editFullName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEmail">Email:</label>
+                        <input type="email" id="editEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPhone">Số điện thoại:</label>
+                        <input type="tel" id="editPhone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="editBirthday">Ngày sinh:</label>
+                        <input type="date" id="editBirthday" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="editAddress">Địa chỉ:</label>
+                        <input type="text" id="editAddress" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="editSubject">Bộ môn:</label>
+                        <input type="text" id="editSubject" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="editQualification">Trình độ:</label>
+                        <select id="editQualification" class="form-control">
+                            <option value="Cử nhân">Cử nhân</option>
+                            <option value="Thạc sĩ">Thạc sĩ</option>
+                            <option value="Tiến sĩ">Tiến sĩ</option>
+                            <option value="Phó Giáo sư">Phó Giáo sư</option>
+                            <option value="Giáo sư">Giáo sư</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="saveProfileBtn" class="btn btn-primary">Lưu thay đổi</button>
+                        <button type="button" class="btn btn-outline close-modal">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal đổi mật khẩu -->
+    <div id="changePasswordModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Đổi mật khẩu</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label for="currentPassword">Mật khẩu hiện tại:</label>
+                        <input type="password" id="currentPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Mật khẩu mới:</label>
+                        <input type="password" id="newPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Xác nhận mật khẩu mới:</label>
+                        <input type="password" id="confirmPassword" class="form-control" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="savePasswordBtn" class="btn btn-primary">Lưu thay đổi</button>
+                        <button type="button" class="btn btn-outline close-modal">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script khởi tạo -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Kiểm tra xem file JS tương ứng đã được tải chưa
+            if (typeof TeacherProfile === 'undefined') {
+                console.log('Đang tải script cho hồ sơ giáo viên...');
+                
+                // Điền dữ liệu mẫu nếu chưa có JS
+                loadSampleData();
+                
+                // Xử lý các sự kiện modal
+                setupModalEvents();
+            }
+        });
+        
+        function loadSampleData() {
+            console.log('Đang tải dữ liệu mẫu cho hồ sơ giáo viên');
+            
+            // Tải thông tin giáo viên từ localStorage
+            const userData = localStorage.getItem('currentUser');
+            let teacher = null;
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    teacher = Array.isArray(user) ? user[0] : user;
+                } catch (error) {
+                    console.error('Lỗi khi phân tích dữ liệu giáo viên:', error);
+                }
+            }
+            
+            // Nếu không có dữ liệu, sử dụng dữ liệu mẫu
+            if (!teacher) {
+                teacher = {
+                    id: 'T001',
+                    fullName: 'Nguyễn Văn Thành',
+                    email: 'teacher@example.com',
+                    department: 'Khoa học tự nhiên',
+                    phone: '0987654321',
+                    birthday: '1985-01-15',
+                    address: 'Số 123, Đường Nguyễn Trãi, Hà Nội',
+                    subject: 'Toán học',
+                    startDate: '2015-09-01',
+                    qualification: 'Thạc sĩ'
+                };
+            }
+            
+            // Điền thông tin vào giao diện
+            const elements = {
+                teacherNameWelcome: document.getElementById('teacherNameWelcome'),
+                teacherFullName: document.getElementById('teacherFullName'),
+                teacherId: document.getElementById('teacherId'),
+                teacherDepartment: document.getElementById('teacherDepartment'),
+                fullName: document.getElementById('fullName'),
+                email: document.getElementById('email'),
+                phone: document.getElementById('phone'),
+                birthday: document.getElementById('birthday'),
+                address: document.getElementById('address'),
+                subject: document.getElementById('subject'),
+                startDate: document.getElementById('startDate'),
+                qualification: document.getElementById('qualification')
+            };
+            
+            // Cập nhật nội dung các phần tử
+            if (elements.teacherNameWelcome) elements.teacherNameWelcome.textContent = teacher.fullName;
+            if (elements.teacherFullName) elements.teacherFullName.textContent = teacher.fullName;
+            if (elements.teacherId) elements.teacherId.textContent = 'ID: ' + teacher.id;
+            if (elements.teacherDepartment) elements.teacherDepartment.textContent = teacher.department || 'Khoa học tự nhiên';
+            if (elements.fullName) elements.fullName.textContent = teacher.fullName;
+            if (elements.email) elements.email.textContent = teacher.email;
+            if (elements.phone) elements.phone.textContent = teacher.phone || 'Chưa cập nhật';
+            if (elements.birthday) elements.birthday.textContent = formatDate(teacher.birthday) || 'Chưa cập nhật';
+            if (elements.address) elements.address.textContent = teacher.address || 'Chưa cập nhật';
+            if (elements.subject) elements.subject.textContent = teacher.subject || 'Chưa cập nhật';
+            if (elements.startDate) elements.startDate.textContent = formatDate(teacher.startDate) || 'Chưa cập nhật';
+            if (elements.qualification) elements.qualification.textContent = teacher.qualification || 'Chưa cập nhật';
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '';
+            
+            return date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+        
+        function setupModalEvents() {
+            // Xử lý sự kiện mở modal chỉnh sửa
+            const editBtn = document.getElementById('editProfileBtn');
+            if (editBtn) {
+                editBtn.addEventListener('click', openEditModal);
+            }
+            
+            // Xử lý sự kiện mở modal đổi mật khẩu
+            const changePwdBtn = document.getElementById('changePasswordBtn');
+            if (changePwdBtn) {
+                changePwdBtn.addEventListener('click', openPasswordModal);
+            }
+            
+            // Xử lý sự kiện đóng modal
+            const closeButtons = document.querySelectorAll('.close-modal');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', closeModals);
+            });
+            
+            // Đóng modal khi click bên ngoài
+            window.addEventListener('click', function(event) {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (event.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Xử lý sự kiện lưu thông tin hồ sơ
+            const saveProfileBtn = document.getElementById('saveProfileBtn');
+            if (saveProfileBtn) {
+                saveProfileBtn.addEventListener('click', saveProfile);
+            }
+            
+            // Xử lý sự kiện lưu mật khẩu mới
+            const savePasswordBtn = document.getElementById('savePasswordBtn');
+            if (savePasswordBtn) {
+                savePasswordBtn.addEventListener('click', savePassword);
+            }
+        }
+        
+        function openEditModal() {
+            const modal = document.getElementById('editProfileModal');
+            if (!modal) return;
+            
+            // Tải dữ liệu hiện tại vào form
+            const userData = localStorage.getItem('currentUser');
+            let teacher = null;
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    teacher = Array.isArray(user) ? user[0] : user;
+                } catch (error) {
+                    console.error('Lỗi khi phân tích dữ liệu giáo viên:', error);
+                    return;
+                }
+            }
+            
+            if (teacher) {
+                document.getElementById('editFullName').value = teacher.fullName || '';
+                document.getElementById('editEmail').value = teacher.email || '';
+                document.getElementById('editPhone').value = teacher.phone || '';
+                document.getElementById('editBirthday').value = teacher.birthday || '';
+                document.getElementById('editAddress').value = teacher.address || '';
+                document.getElementById('editSubject').value = teacher.subject || '';
+                document.getElementById('editQualification').value = teacher.qualification || 'Cử nhân';
+            }
+            
+            modal.style.display = 'flex';
+        }
+        
+        function openPasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            if (!modal) return;
+            
+            // Reset form
+            document.getElementById('passwordForm').reset();
+            
+            modal.style.display = 'flex';
+        }
+        
+        function closeModals() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+        
+        function saveProfile() {
+            // Lấy dữ liệu từ form
+            const fullName = document.getElementById('editFullName').value;
+            const email = document.getElementById('editEmail').value;
+            const phone = document.getElementById('editPhone').value;
+            const birthday = document.getElementById('editBirthday').value;
+            const address = document.getElementById('editAddress').value;
+            const subject = document.getElementById('editSubject').value;
+            const qualification = document.getElementById('editQualification').value;
+            
+            // Kiểm tra dữ liệu bắt buộc
+            if (!fullName || !email) {
+                alert('Vui lòng điền đầy đủ các trường bắt buộc!');
+                return;
+            }
+            
+            // Cập nhật dữ liệu người dùng
+            const userData = localStorage.getItem('currentUser');
+            let teacher = null;
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    teacher = Array.isArray(user) ? user[0] : user;
+                    
+                    // Cập nhật thông tin
+                    teacher.fullName = fullName;
+                    teacher.email = email;
+                    teacher.phone = phone;
+                    teacher.birthday = birthday;
+                    teacher.address = address;
+                    teacher.subject = subject;
+                    teacher.qualification = qualification;
+                    
+                    // Lưu lại vào localStorage
+                    localStorage.setItem('currentUser', JSON.stringify(teacher));
+                    
+                    // Cập nhật giao diện
+                    loadSampleData();
+                    
+                    // Hiển thị thông báo thành công
+                    alert('Cập nhật thông tin thành công!');
+                    
+                    // Đóng modal
+                    closeModals();
+                } catch (error) {
+                    console.error('Lỗi khi cập nhật dữ liệu:', error);
+                    alert('Đã xảy ra lỗi khi cập nhật thông tin!');
+                }
+            }
+        }
+        
+        function savePassword() {
+            // Lấy dữ liệu từ form
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // Kiểm tra dữ liệu
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('Vui lòng điền đầy đủ thông tin!');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('Mật khẩu mới và xác nhận mật khẩu không khớp!');
+                return;
+            }
+            
+            // Kiểm tra mật khẩu hiện tại (giả lập)
+            if (currentPassword !== 'password') {
+                alert('Mật khẩu hiện tại không đúng!');
+                return;
+            }
+            
+            // Hiển thị thông báo thành công
+            alert('Đổi mật khẩu thành công!');
+            
+            // Đóng modal
+            closeModals();
+        }
+    </script>
+</body>
+</html> 

@@ -1,93 +1,123 @@
 <!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý điểm số</title>
+    <link rel="stylesheet" href="css/teacher-scores.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
 <body>
     <div class="scores-content">
+        <h1 class="page-title">Quản lý điểm số</h1>
+        
         <div class="score-actions">
-            <button class="btn btn-primary" onclick="scoreManager.openAddScoreModal()">
-                <i class="fas fa-plus"></i> Thêm điểm
+            <button id="addScoreBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Thêm điểm số
             </button>
-            <select id="classFilter">
-                <option value="">Tất cả lớp</option>
-                <option value="12A1">12A1</option>
-                <option value="12A2">12A2</option>
+            <select id="classFilter" class="form-control">
+                <option value="">Tất cả các lớp</option>
             </select>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h3><i class="fas fa-edit"></i> Bảng Điểm</h3>
-            </div>
-            <div class="table-container">
-                <table id="scoreTable">
-                    <thead>
-                        <tr>
-                            <th>Mã học sinh</th>
-                            <th>Họ và tên</th>
-                            <th>Lớp</th>
-                            <th>Môn học</th>
-                            <th>Loại điểm</th>
-                            <th>Điểm số</th>
-                            <th>Ngày nhập</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
-                    </tbody>
-                </table>
-            </div>
+        <div class="score-table-container">
+            <table id="scoreTable" class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Học sinh</th>
+                        <th>Lớp</th>
+                        <th>Môn học</th>
+                        <th>Điểm số</th>
+                        <th>Ngày</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="scoreTableBody">
+                    <!-- Dữ liệu điểm số sẽ được thêm vào đây -->
+                </tbody>
+            </table>
         </div>
 
-        <!-- Modal Thêm/Sửa Điểm -->
-        <div id="scoreModal" class="modal">
+        <!-- Modal thêm/sửa điểm số -->
+        <div id="scoreModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 id="modalTitle">Thêm Điểm Mới</h3>
-                    <span class="close">&times;</span>
+                    <h2 id="modalTitle">Thêm điểm số mới</h2>
+                    <span class="close-modal">&times;</span>
                 </div>
-                <form id="scoreForm">
-                    <input type="hidden" id="scoreId">
-                    <div class="form-group">
-                        <label for="studentSelect">Học sinh</label>
-                        <select id="studentSelect" required>
-                            <option value="">Chọn học sinh</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="subject">Môn học</label>
-                        <select id="subject" required>
-                            <option value="Toán">Toán</option>
-                            <option value="Văn">Văn</option>
-                            <option value="Anh">Anh</option>
-                            <option value="Lý">Lý</option>
-                            <option value="Hóa">Hóa</option>
-                            <option value="Sinh">Sinh</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="scoreType">Loại điểm</label>
-                        <select id="scoreType" required>
-                            <option value="Miệng">Miệng</option>
-                            <option value="15 phút">15 phút</option>
-                            <option value="1 tiết">1 tiết</option>
-                            <option value="Giữa kỳ">Giữa kỳ</option>
-                            <option value="Cuối kỳ">Cuối kỳ</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="scoreValue">Điểm số</label>
-                        <input type="number" id="scoreValue" required min="0" max="10" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label for="scoreDate">Ngày nhập</label>
-                        <input type="date" id="scoreDate" required>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Lưu</button>
-                        <button type="button" class="btn btn-secondary" onclick="scoreManager.closeModal()">Hủy</button>
-                    </div>
-                </form>
+                <div class="modal-body">
+                    <form id="scoreForm">
+                        <div class="form-group">
+                            <label for="studentId">Học sinh:</label>
+                            <select id="studentId" class="form-control" required>
+                                <option value="">Chọn học sinh</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Môn học:</label>
+                            <input type="text" id="subject" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="score">Điểm số:</label>
+                            <input type="number" id="score" class="form-control" min="0" max="10" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Ngày:</label>
+                            <input type="date" id="date" class="form-control" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="saveScoreBtn" class="btn btn-primary">Lưu</button>
+                            <button type="button" class="btn btn-secondary close-modal">Hủy</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Script để khởi tạo màn hình trống -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Kiểm tra xem TeacherScores đã được tải chưa
+            if (typeof TeacherScores === 'undefined') {
+                console.warn('TeacherScores chưa được tải, đang tải script...');
+                const script = document.createElement('script');
+                script.src = 'js/teacher-scores.js';
+                script.onload = function() {
+                    console.log('Đã tải script teacher-scores.js');
+                    if (typeof TeacherScores === 'function') {
+                        window.scoreManager = new TeacherScores();
+                    }
+                };
+                script.onerror = function() {
+                    console.error('Không thể tải script teacher-scores.js');
+                    document.getElementById('scoreTableBody').innerHTML = 
+                        '<tr><td colspan="7" class="empty-state">Không thể tải dữ liệu điểm số.</td></tr>';
+                };
+                document.body.appendChild(script);
+            } else if (window.scoreManager) {
+                // Nếu đã tải, cập nhật lại giao diện
+                window.scoreManager.renderScoreTable();
+            }
+
+            // Đảm bảo modal hoạt động đúng
+            const modal = document.getElementById('scoreModal');
+            const closeButtons = document.querySelectorAll('.close-modal');
+            
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+            });
+
+            // Đóng modal khi click ra ngoài
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

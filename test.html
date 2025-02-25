@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm tra tải trang</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #4a6da7;
+        }
+        .btn {
+            padding: 10px 15px;
+            background-color: #4a6da7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background-color: #3c5a8b;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            min-height: 200px;
+        }
+        .actions {
+            margin: 20px 0;
+        }
+        .log {
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            background-color: #333;
+            color: #f8f8f8;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Kiểm tra tải trang</h1>
+        
+        <div class="actions">
+            <button class="btn" id="checkEncoding">Kiểm tra encoding</button>
+            <button class="btn" id="checkLocalStorage">Kiểm tra localStorage</button>
+            <button class="btn" id="checkNavigation">Kiểm tra Navigation</button>
+            <button class="btn" id="resetStorage">Đặt lại dữ liệu</button>
+        </div>
+        
+        <div class="log" id="log">Nhật ký sẽ hiển thị ở đây...</div>
+        
+        <div class="result" id="result">Kết quả kiểm tra sẽ hiển thị ở đây...</div>
+    </div>
+
+    <script>
+        const logEl = document.getElementById('log');
+        const resultEl = document.getElementById('result');
+        
+        // Hàm ghi log
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.textContent += `\n[${timestamp}] ${message}`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        // Hàm hiển thị kết quả
+        function showResult(html) {
+            resultEl.innerHTML = html;
+        }
+        
+        // Kiểm tra mã hóa ký tự
+        document.getElementById('checkEncoding').addEventListener('click', () => {
+            log('Đang kiểm tra mã hóa ký tự...');
+            
+            const vietnameseText = 'Xin chào thế giới! Đây là tiếng Việt có dấu.';
+            log(`Test text: ${vietnameseText}`);
+            
+            const html = `
+                <h3>Kết quả kiểm tra mã hóa:</h3>
+                <p>Text hiển thị: ${vietnameseText}</p>
+                <p>Charset: ${document.characterSet}</p>
+                <p>Mã hóa ký tự OK: ${vietnameseText === 'Xin chào thế giới! Đây là tiếng Việt có dấu.'}</p>
+            `;
+            
+            showResult(html);
+        });
+        
+        // Kiểm tra localStorage
+        document.getElementById('checkLocalStorage').addEventListener('click', () => {
+            log('Đang kiểm tra localStorage...');
+            
+            try {
+                // Lưu một giá trị vào localStorage
+                localStorage.setItem('test', 'Giá trị tiếng Việt có dấu');
+                
+                // Đọc lại giá trị
+                const storedValue = localStorage.getItem('test');
+                
+                // Hiển thị tất cả dữ liệu trong localStorage
+                let allItems = '';
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    allItems += `<tr><td>${key}</td><td>${localStorage.getItem(key)}</td></tr>`;
+                }
+                
+                const html = `
+                    <h3>Kết quả kiểm tra localStorage:</h3>
+                    <p>Giá trị đã lưu: ${storedValue}</p>
+                    <p>Lưu trữ OK: ${storedValue === 'Giá trị tiếng Việt có dấu'}</p>
+                    <h4>Tất cả dữ liệu:</h4>
+                    <table border="1" style="width: 100%; border-collapse: collapse;">
+                        <tr><th>Key</th><th>Value</th></tr>
+                        ${allItems}
+                    </table>
+                `;
+                
+                showResult(html);
+                log('Kiểm tra localStorage hoàn tất.');
+            } catch (error) {
+                log(`Lỗi: ${error.message}`);
+                showResult(`<p style="color: red">Lỗi: ${error.message}</p>`);
+            }
+        });
+        
+        // Kiểm tra Navigation
+        document.getElementById('checkNavigation').addEventListener('click', () => {
+            log('Đang kiểm tra Navigation...');
+            
+            try {
+                // Kiểm tra xem Navigation đã được định nghĩa chưa
+                if (typeof Navigation === 'undefined') {
+                    log('Lỗi: Class Navigation chưa được định nghĩa.');
+                    
+                    // Thử tải script
+                    const script = document.createElement('script');
+                    script.src = 'js/navigation.js';
+                    script.onload = () => {
+                        log('Đã tải script navigation.js');
+                        if (typeof Navigation === 'function') {
+                            log('Class Navigation đã được định nghĩa sau khi tải script.');
+                        } else {
+                            log('Lỗi: Class Navigation vẫn chưa được định nghĩa sau khi tải script.');
+                        }
+                    };
+                    script.onerror = (error) => {
+                        log(`Lỗi khi tải script: ${error}`);
+                    };
+                    document.head.appendChild(script);
+                    
+                    showResult(`<p>Đang tải script navigation.js...</p>`);
+                    return;
+                }
+                
+                // Kiểm tra instance hiện tại
+                if (window.navigationInstance) {
+                    log('Đã tìm thấy instance của Navigation.');
+                    const html = `
+                        <h3>Thông tin Navigation:</h3>
+                        <p>UserRole: ${window.navigationInstance.userRole}</p>
+                        <p>MainContent exists: ${!!window.navigationInstance.mainContent}</p>
+                        <p>Loaded Scripts: ${window.navigationInstance.loadedScripts.join(', ') || 'None'}</p>
+                    `;
+                    showResult(html);
+                } else {
+                    log('Không tìm thấy instance của Navigation. Tạo mới...');
+                    
+                    // Tạo phần tử main content để test
+                    if (!document.getElementById('mainContent')) {
+                        const mainContent = document.createElement('div');
+                        mainContent.id = 'mainContent';
+                        document.body.appendChild(mainContent);
+                        log('Đã tạo phần tử mainContent.');
+                    }
+                    
+                    try {
+                        window.navigationInstance = new Navigation('teacher');
+                        log('Đã tạo instance mới của Navigation.');
+                        
+                        const html = `
+                            <h3>Đã tạo Navigation mới:</h3>
+                            <p>UserRole: ${window.navigationInstance.userRole}</p>
+                            <p>MainContent exists: ${!!window.navigationInstance.mainContent}</p>
+                        `;
+                        showResult(html);
+                    } catch (error) {
+                        log(`Lỗi khi tạo Navigation: ${error.message}`);
+                        showResult(`<p style="color: red">Lỗi khi tạo Navigation: ${error.message}</p>`);
+                    }
+                }
+            } catch (error) {
+                log(`Lỗi: ${error.message}`);
+                showResult(`<p style="color: red">Lỗi: ${error.message}</p>`);
+            }
+        });
+        
+        // Đặt lại dữ liệu
+        document.getElementById('resetStorage').addEventListener('click', () => {
+            log('Đang đặt lại dữ liệu localStorage...');
+            
+            try {
+                localStorage.clear();
+                log('Đã xóa tất cả dữ liệu trong localStorage.');
+                showResult('<p>Đã đặt lại dữ liệu thành công.</p>');
+            } catch (error) {
+                log(`Lỗi: ${error.message}`);
+                showResult(`<p style="color: red">Lỗi: ${error.message}</p>`);
+            }
+        });
+        
+        // Ghi log ban đầu
+        log('Trang đã tải xong. Sẵn sàng kiểm tra.');
+    </script>
+</body>
+</html> 
