@@ -185,17 +185,126 @@ class Navigation {
     }
     
     initializeTeacherComponent(page) {
-        // Đảm bảo dữ liệu cơ bản đã được tải
-        this.ensureDataLoaded();
-        
         switch(page) {
             case 'dashboard':
                 if (typeof TeacherDashboard !== 'undefined') {
-                    console.log('Khởi tạo TeacherDashboard');
                     window.dashboardInstance = new TeacherDashboard();
                 } else {
-                    console.log('TeacherDashboard class không được định nghĩa, tải script');
-                    this.loadScript('js/teacher-dashboard.js');
+                    console.error('TeacherDashboard class is not defined');
+                }
+                break;
+            case 'scores':
+                const pageContent = document.getElementById('pageContent');
+                if (!pageContent) {
+                    console.error('Không tìm thấy phần tử pageContent');
+                    return;
+                }
+
+                pageContent.innerHTML = `
+                    <div class="col-span-3">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-semibold">Quản lý điểm số</h2>
+                                <div class="flex space-x-4">
+                                    <select id="classSelect" class="form-input w-48">
+                                        <option value="">Tất cả lớp</option>
+                                    </select>
+                                    <select id="semesterSelect" class="form-input w-48">
+                                        <option value="">Tất cả học kỳ</option>
+                                        <option value="1">Học kỳ 1</option>
+                                        <option value="2">Học kỳ 2</option>
+                                    </select>
+                                    <button id="addScoreBtn" class="btn-primary">
+                                        <i class="fas fa-plus mr-2"></i>Thêm điểm
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Thống kê điểm -->
+                            <div class="grid grid-cols-5 gap-4 mb-6">
+                                <div class="bg-blue-50 p-4 rounded-lg">
+                                    <h4 class="text-sm text-blue-600 mb-1">Điểm trung bình</h4>
+                                    <p id="averageScore" class="text-2xl font-semibold">0.0</p>
+                                </div>
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <h4 class="text-sm text-green-600 mb-1">Điểm cao nhất</h4>
+                                    <p id="highestScore" class="text-2xl font-semibold">0.0</p>
+                                </div>
+                                <div class="bg-red-50 p-4 rounded-lg">
+                                    <h4 class="text-sm text-red-600 mb-1">Điểm thấp nhất</h4>
+                                    <p id="lowestScore" class="text-2xl font-semibold">0.0</p>
+                                </div>
+                                <div class="bg-yellow-50 p-4 rounded-lg">
+                                    <h4 class="text-sm text-yellow-600 mb-1">Tỷ lệ đạt</h4>
+                                    <p id="passRate" class="text-2xl font-semibold">0%</p>
+                                </div>
+                                <div class="bg-purple-50 p-4 rounded-lg">
+                                    <h4 class="text-sm text-purple-600 mb-1">Tổng số điểm</h4>
+                                    <p id="totalScores" class="text-2xl font-semibold">0</p>
+                                </div>
+                            </div>
+
+                            <!-- Bảng điểm -->
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Mã học sinh
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Họ và tên
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Lớp
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Môn học
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Loại điểm
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Điểm số
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Ngày
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Thao tác
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scoresTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Dữ liệu điểm sẽ được thêm vào đây -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Khởi tạo TeacherScores
+                if (typeof TeacherScores !== 'undefined') {
+                    if (!window.teacherScores) {
+                        window.teacherScores = new TeacherScores();
+                    } else {
+                        window.teacherScores.loadScoreTable();
+                    }
+                } else {
+                    this.loadScript('js/teacher-scores.js')
+                        .then(() => {
+                            window.teacherScores = new TeacherScores();
+                        })
+                        .catch(error => {
+                            console.error('Lỗi khi tải TeacherScores:', error);
+                            pageContent.innerHTML = `
+                                <div class="p-4 text-center">
+                                    <p class="text-red-500">Có lỗi xảy ra khi tải dữ liệu điểm số.</p>
+                                    <p>Vui lòng thử lại sau.</p>
+                                </div>
+                            `;
+                        });
                 }
                 break;
             case 'schedule':
@@ -216,13 +325,29 @@ class Navigation {
                     this.loadScript('js/teacher-students.js');
                 }
                 break;
-            case 'scores':
-                if (typeof TeacherScores !== 'undefined') {
-                    console.log('Khởi tạo TeacherScores');
-                    window.scoresInstance = new TeacherScores();
+            case 'profile':
+                console.log('Chuẩn bị khởi tạo StudentProfile');
+                if (typeof StudentProfile !== 'undefined') {
+                    console.log('Khởi tạo StudentProfile từ navigation.js');
+                    // Đảm bảo chỉ tạo một instance
+                    if (!window.studentProfile) {
+                        window.studentProfile = new StudentProfile();
+                    } else {
+                        console.log('StudentProfile đã tồn tại, tải lại dữ liệu');
+                        window.studentProfile.loadProfileData();
+                        window.studentProfile.loadAvatar();
+                    }
                 } else {
-                    console.log('TeacherScores class không được định nghĩa, tải script');
-                    this.loadScript('js/teacher-scores.js');
+                    console.error('StudentProfile class is not defined - có thể script chưa được tải');
+                    this.loadScript('js/student-profile.js');
+                }
+                break;
+            case 'notifications':
+                if (typeof StudentNotifications !== 'undefined') {
+                    console.log('Khởi tạo StudentNotifications');
+                    window.notificationsInstance = new StudentNotifications();
+                } else {
+                    console.error('StudentNotifications class is not defined');
                 }
                 break;
         }

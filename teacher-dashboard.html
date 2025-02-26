@@ -123,7 +123,7 @@
 
             <!-- Main Dashboard -->
             <main class="p-6">
-                <div id="pageContent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="pageContent" class="grid grid-cols-1 md">
                     <!-- Content will be loaded dynamically -->
                 </div>
             </main>
@@ -146,6 +146,7 @@
     <script src="js/homework.js"></script>
     <script src="js/messages.js"></script>
     <script src="js/teacher-navigation.js"></script>
+    <script src="js/teacher-scores.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -153,6 +154,7 @@
             if (!teacher) {
                 window.location.href = 'login.html';
             }
+            window.teacherNavigation = new TeacherNavigation();
         });
 
         // Show toast notification

@@ -11,6 +11,7 @@ class TeacherNavigation {
         this.initializeNavigation();
         this.initializeUserDropdown();
         this.initializeNotifications();
+        this.loadedScripts = new Set();
     }
 
     initializeSampleData() {
@@ -365,330 +366,148 @@ class TeacherNavigation {
         }
     }
 
+    loadScript(src) {
+        return new Promise((resolve, reject) => {
+            if (this.loadedScripts.has(src)) {
+                resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+
+            script.onload = () => {
+                this.loadedScripts.add(src);
+                resolve();
+            };
+
+            script.onerror = () => {
+                reject(new Error(`Không thể tải script: ${src}`));
+            };
+
+            document.head.appendChild(script);
+        });
+    }
+
     async loadScoresInterface() {
         const pageContent = document.getElementById('pageContent');
+        if (!pageContent) {
+            console.error('Không tìm thấy phần tử pageContent');
+            return;
+        }
+
         pageContent.innerHTML = `
-            <div class="col-span-3">
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold">Quản lý điểm số</h2>
-                        <div class="flex space-x-4">
-                            <select id="classFilter" class="form-input w-48">
-                                <option value="">Tất cả lớp</option>
-                                <option value="10A1">Lớp 10A1</option>
-                                <option value="10A2">Lớp 10A2</option>
-                            </select>
-                            <select id="subjectFilter" class="form-input w-48">
-                                <option value="">Tất cả môn</option>
-                                <option value="Toán">Toán</option>
-                                <option value="Văn">Văn</option>
-                                <option value="Anh">Anh</option>
-                                <option value="Lý">Lý</option>
-                                <option value="Hóa">Hóa</option>
-                                <option value="Sinh">Sinh</option>
-                            </select>
+            <div class="p-6 w-full">
+                <div class="bg-white rounded-lg shadow-sm">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-semibold text-gray-800">Quản lý điểm số</h2>
+                            <div class="flex space-x-4">
+                                <select id="classSelect" class="form-input min-w-[200px]">
+                                    <option value="">Tất cả lớp</option>
+                                </select>
+                                <select id="semesterSelect" class="form-input min-w-[200px]">
+                                    <option value="">Tất cả học kỳ</option>
+                                    <option value="1">Học kỳ 1</option>
+                                    <option value="2">Học kỳ 2</option>
+                                </select>
+                                <button id="addScoreBtn" class="btn-primary">
+                                    <i class="fas fa-plus mr-2"></i>Thêm điểm
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Học sinh
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Điểm miệng
-                                        <button onclick="teacherNavigation.openAddScoreModal(null, 'Kiểm tra miệng')" class="ml-2 text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-plus-circle"></i>
-                                        </button>
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Điểm 15 phút
-                                        <button onclick="teacherNavigation.openAddScoreModal(null, 'Kiểm tra 15 phút')" class="ml-2 text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-plus-circle"></i>
-                                        </button>
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Điểm 1 tiết
-                                        <button onclick="teacherNavigation.openAddScoreModal(null, 'Kiểm tra 1 tiết')" class="ml-2 text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-plus-circle"></i>
-                                        </button>
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Điểm học kỳ
-                                        <button onclick="teacherNavigation.openAddScoreModal(null, 'Kiểm tra học kỳ')" class="ml-2 text-blue-600 hover:text-blue-800">
-                                            <i class="fas fa-plus-circle"></i>
-                                        </button>
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Điểm TB
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="scoresList">
-                                <!-- Danh sách điểm sẽ được thêm vào đây -->
-                            </tbody>
-                        </table>
+                        <!-- Thống kê điểm -->
+                        <div class="grid grid-cols-5 gap-6 mb-8">
+                            <div class="bg-blue-50 p-6 rounded-lg">
+                                <h4 class="text-sm text-blue-600 mb-2">Điểm trung bình</h4>
+                                <p id="averageScore" class="text-3xl font-bold text-blue-700">0.0</p>
+                            </div>
+                            <div class="bg-green-50 p-6 rounded-lg">
+                                <h4 class="text-sm text-green-600 mb-2">Điểm cao nhất</h4>
+                                <p id="highestScore" class="text-3xl font-bold text-green-700">0.0</p>
+                            </div>
+                            <div class="bg-red-50 p-6 rounded-lg">
+                                <h4 class="text-sm text-red-600 mb-2">Điểm thấp nhất</h4>
+                                <p id="lowestScore" class="text-3xl font-bold text-red-700">0.0</p>
+                            </div>
+                            <div class="bg-yellow-50 p-6 rounded-lg">
+                                <h4 class="text-sm text-yellow-600 mb-2">Tỷ lệ đạt</h4>
+                                <p id="passRate" class="text-3xl font-bold text-yellow-700">0%</p>
+                            </div>
+                            <div class="bg-purple-50 p-6 rounded-lg">
+                                <h4 class="text-sm text-purple-600 mb-2">Tổng số điểm</h4>
+                                <p id="totalScores" class="text-3xl font-bold text-purple-700">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Bảng điểm -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead>
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                            Mã học sinh
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                            Họ và tên
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                            Lớp
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                            Môn học
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                            Loại điểm
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                            Điểm số
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                            Ngày
+                                        </th>
+                                        <th class="px-6 py-4 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                            Thao tác
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scoresTableBody" class="bg-white divide-y divide-gray-200">
+                                    <!-- Dữ liệu điểm sẽ được thêm vào đây -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
-
-        // Thêm event listeners cho bộ lọc
-        document.getElementById('classFilter').addEventListener('change', () => this.filterScores());
-        document.getElementById('subjectFilter').addEventListener('change', () => this.filterScores());
-
-        // Load dữ liệu điểm
-        await this.loadScoresData();
-    }
-
-    async loadScoresData() {
-        const selectedClass = document.getElementById('classFilter')?.value;
-        const selectedSubject = document.getElementById('subjectFilter')?.value;
-        
-        // Lấy danh sách học sinh và điểm
-        const students = JSON.parse(localStorage.getItem('students')) || [];
-        const scores = JSON.parse(localStorage.getItem('scores')) || [];
-        
-        // Lọc học sinh theo lớp nếu có
-        const filteredStudents = selectedClass 
-            ? students.filter(student => student.class === selectedClass)
-            : students;
-
-        const scoresList = document.getElementById('scoresList');
-        if (!scoresList) return;
-
-        scoresList.innerHTML = filteredStudents.map(student => {
-            // Lọc điểm của học sinh
-            const studentScores = scores.filter(score => 
-                score.studentId === student.studentId &&
-                (!selectedSubject || score.subject === selectedSubject)
-            );
-
-            // Tổ chức điểm theo loại
-            const organizedScores = {
-                'Kiểm tra miệng': studentScores.filter(s => s.type === 'Kiểm tra miệng').map(s => s.score),
-                'Kiểm tra 15 phút': studentScores.filter(s => s.type === 'Kiểm tra 15 phút').map(s => s.score),
-                'Kiểm tra 1 tiết': studentScores.filter(s => s.type === 'Kiểm tra 1 tiết').map(s => s.score),
-                'Kiểm tra học kỳ': studentScores.filter(s => s.type === 'Kiểm tra học kỳ').map(s => s.score)
-            };
-
-            // Tính điểm trung bình
-            const average = this.calculateAverage(organizedScores);
-
-            return `
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}" alt="">
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${student.fullName}</div>
-                                <div class="text-sm text-gray-500">${student.class}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(organizedScores['Kiểm tra miệng'])}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(organizedScores['Kiểm tra 15 phút'])}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(organizedScores['Kiểm tra 1 tiết'])}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(organizedScores['Kiểm tra học kỳ'])}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${this.getScoreClass(average)}">
-                            ${average.toFixed(1)}
-                        </span>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
-
-    renderScores(scores) {
-        if (!scores || scores.length === 0) {
-            return '<span class="text-gray-400">-</span>';
-        }
-
-        return scores.map(score => `
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${this.getScoreClass(score)}">
-                ${score.toFixed(1)}
-            </span>
-        `).join(' ');
-    }
-
-    calculateAverage(scores) {
-        let totalScore = 0;
-        let totalWeight = 0;
-
-        Object.entries(scores).forEach(([type, scoreArray]) => {
-            if (scoreArray && scoreArray.length > 0) {
-                const weight = this.getScoreWeight(type);
-                const sum = scoreArray.reduce((a, b) => a + b, 0);
-                totalScore += sum * weight;
-                totalWeight += weight * scoreArray.length;
-            }
-        });
-
-        return totalWeight > 0 ? totalScore / totalWeight : 0;
-    }
-
-    getScoreClass(score) {
-        if (score >= 8) return 'bg-green-100 text-green-800';
-        if (score >= 6.5) return 'bg-blue-100 text-blue-800';
-        if (score >= 5) return 'bg-yellow-100 text-yellow-800';
-        return 'bg-red-100 text-red-800';
-    }
-
-    getScoreWeight(type) {
-        switch (type) {
-            case 'Kiểm tra miệng': return 1;
-            case 'Kiểm tra 15 phút': return 1;
-            case 'Kiểm tra 1 tiết': return 2;
-            case 'Kiểm tra học kỳ': return 3;
-            default: return 1;
-        }
-    }
-
-    openAddScoreModal(studentId = null, scoreType = null) {
-        const modalContent = `
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Thêm điểm mới</h3>
-                    <form id="addScoreForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Học sinh</label>
-                            <select id="studentSelect" class="form-input w-full" required>
-                                <option value="">Chọn học sinh</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Môn học</label>
-                            <select id="subjectSelect" class="form-input w-full" required>
-                                <option value="">Chọn môn học</option>
-                                <option value="Toán">Toán</option>
-                                <option value="Văn">Văn</option>
-                                <option value="Anh">Anh</option>
-                                <option value="Lý">Lý</option>
-                                <option value="Hóa">Hóa</option>
-                                <option value="Sinh">Sinh</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Loại điểm</label>
-                            <select id="scoreTypeSelect" class="form-input w-full" required>
-                                <option value="">Chọn loại điểm</option>
-                                <option value="Kiểm tra miệng">Kiểm tra miệng</option>
-                                <option value="Kiểm tra 15 phút">Kiểm tra 15 phút</option>
-                                <option value="Kiểm tra 1 tiết">Kiểm tra 1 tiết</option>
-                                <option value="Kiểm tra học kỳ">Kiểm tra học kỳ</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Điểm số</label>
-                            <input type="number" id="scoreInput" class="form-input w-full" min="0" max="10" step="0.1" required>
-                        </div>
-                        <div class="flex justify-end space-x-3 mt-6">
-                            <button type="button" class="btn-secondary" onclick="document.getElementById('modalContainer').classList.add('hidden')">
-                                Hủy
-                            </button>
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-save mr-2"></i>Lưu điểm
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        `;
-
-        const modalContainer = document.getElementById('modalContainer');
-        modalContainer.innerHTML = modalContent;
-        modalContainer.classList.remove('hidden');
-
-        // Populate student select
-        const students = JSON.parse(localStorage.getItem('students')) || [];
-        const selectedClass = document.getElementById('classFilter').value;
-        const filteredStudents = selectedClass ? 
-            students.filter(student => student.class === selectedClass) : 
-            students;
-
-        const studentSelect = document.getElementById('studentSelect');
-        filteredStudents.forEach(student => {
-            const option = document.createElement('option');
-            option.value = student.studentId;
-            option.textContent = `${student.fullName} - ${student.class}`;
-            studentSelect.appendChild(option);
-        });
-
-        // Set pre-selected values if provided
-        if (studentId) {
-            document.getElementById('studentSelect').value = studentId;
-        }
-        if (scoreType) {
-            document.getElementById('scoreTypeSelect').value = scoreType;
-        }
-
-        // Add form submit handler
-        document.getElementById('addScoreForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveScore();
-        });
-    }
-
-    filterScores() {
-        this.loadScoresData();
-    }
-
-    async saveScore() {
-        const studentId = document.getElementById('studentSelect').value;
-        const subject = document.getElementById('subjectSelect').value;
-        const scoreType = document.getElementById('scoreTypeSelect').value;
-        const scoreValue = parseFloat(document.getElementById('scoreInput').value);
-
-        if (!studentId || !subject || !scoreType || isNaN(scoreValue)) {
-            showToast('Vui lòng điền đầy đủ thông tin', 'error');
-            return;
-        }
-
-        if (scoreValue < 0 || scoreValue > 10) {
-            showToast('Điểm số phải từ 0 đến 10', 'error');
-            return;
-        }
 
         try {
-            // Lấy mảng điểm từ localStorage
-            let scores = JSON.parse(localStorage.getItem('scores')) || [];
-            
-            // Thêm điểm mới vào mảng
-            const newScore = {
-                id: Date.now().toString(),
-                studentId,
-                subject,
-                type: scoreType,
-                score: scoreValue,
-                date: new Date().toISOString()
-            };
-            
-            scores.push(newScore);
+            // Tải script TeacherScores nếu chưa có
+            if (typeof TeacherScores === 'undefined') {
+                const scriptPath = 'js/teacher-scores.js';
+                await this.loadScript(scriptPath);
+            }
 
-            // Lưu vào localStorage
-            localStorage.setItem('scores', JSON.stringify(scores));
-
-            // Đóng modal và cập nhật giao diện
-            document.getElementById('modalContainer').classList.add('hidden');
-            await this.loadScoresData();
-
-            showToast('Đã lưu điểm thành công', 'success');
+            // Khởi tạo TeacherScores
+            if (typeof TeacherScores !== 'undefined') {
+                if (!window.teacherScores) {
+                    window.teacherScores = new TeacherScores();
+                } else {
+                    window.teacherScores.loadScoreTable();
+                }
+            } else {
+                throw new Error('Không thể tải TeacherScores class');
+            }
         } catch (error) {
-            console.error('Lỗi khi lưu điểm:', error);
-            showToast('Có lỗi xảy ra khi lưu điểm', 'error');
+            console.error('Lỗi khi tải giao diện điểm số:', error);
+            pageContent.innerHTML = `
+                <div class="p-6 text-center">
+                    <p class="text-red-500 text-lg">Có lỗi xảy ra khi tải dữ liệu điểm số.</p>
+                    <p class="text-gray-600 mt-2">Vui lòng thử lại sau.</p>
+                </div>
+            `;
         }
     }
 
