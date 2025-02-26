@@ -11,15 +11,54 @@ class TeacherNavigation {
         this.initializeNavigation();
         this.initializeUserDropdown();
         this.initializeNotifications();
+
+        // Thêm hàm logout vào window object
+        window.logout = () => {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('currentTeacher');
+            window.location.href = 'login.html';
+        };
     }
 
     initializeSampleData() {
         // Thêm dữ liệu học sinh mẫu nếu chưa có
         if (!localStorage.getItem('students')) {
             const sampleStudents = [
-                { id: 'ST001', name: 'Nguyễn Văn A', class: '10A1', email: 'nguyenvana@example.com' },
-                { id: 'ST002', name: 'Trần Thị B', class: '10A1', email: 'tranthib@example.com' },
-                { id: 'ST003', name: 'Lê Văn C', class: '10A2', email: 'levanc@example.com' }
+                { 
+                    id: 'HS001', 
+                    name: 'Nguyễn Văn An', 
+                    class: '12A1', 
+                    email: 'an@example.com',
+                    avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+An&background=random'
+                },
+                { 
+                    id: 'HS002', 
+                    name: 'Trần Thị Bình', 
+                    class: '12A1', 
+                    email: 'binh@example.com',
+                    avatar: 'https://ui-avatars.com/api/?name=Tran+Thi+Binh&background=random'
+                },
+                { 
+                    id: 'HS003', 
+                    name: 'Lê Văn Cường', 
+                    class: '12A2', 
+                    email: 'cuong@example.com',
+                    avatar: 'https://ui-avatars.com/api/?name=Le+Van+Cuong&background=random'
+                },
+                {
+                    id: 'HS004',
+                    name: 'Phạm Thị Dung',
+                    class: 'Test',
+                    email: 'Test@example.com',
+                    avatar: 'https://ui-avatars.com/api/?name=Pham+Thi+Dung&background=random'
+                },
+                {
+                    id: 'HS005',
+                    name: 'Hoàng Văn Em',
+                    class: '12A1',
+                    email: 'admin@gmail.com',
+                    avatar: 'https://ui-avatars.com/api/?name=Hoang+Van+Em&background=random'
+                }
             ];
             localStorage.setItem('students', JSON.stringify(sampleStudents));
         }
@@ -27,27 +66,35 @@ class TeacherNavigation {
         // Thêm dữ liệu điểm số mẫu với cấu trúc mới
         if (!localStorage.getItem('scores')) {
             const sampleScores = {
-                'ST001': {
-                    'Toán': {
-                        'Kiểm tra miệng': [8.0, 9.0],
-                        'Kiểm tra 15 phút': [7.5, 8.5],
-                        'Kiểm tra 45 phút': [8.0],
-                        'Kiểm tra học kỳ': [8.5]
-                    },
-                    'Văn': {
-                        'Kiểm tra miệng': [7.0],
-                        'Kiểm tra 15 phút': [7.5],
-                        'Kiểm tra 45 phút': [8.0],
-                        'Kiểm tra học kỳ': [7.5]
-                    }
+                'HS001': {
+                    'Kiểm tra miệng': [8.0, 9.0],
+                    'Kiểm tra 15 phút': [7.5, 8.5],
+                    'Kiểm tra 1 tiết': [8.0],
+                    'Kiểm tra học kỳ': [8.5]
                 },
-                'ST002': {
-                    'Toán': {
-                        'Kiểm tra miệng': [8.5],
-                        'Kiểm tra 15 phút': [9.0],
-                        'Kiểm tra 45 phút': [8.5],
-                        'Kiểm tra học kỳ': [9.0]
-                    }
+                'HS002': {
+                    'Kiểm tra miệng': [7.0, 8.0],
+                    'Kiểm tra 15 phút': [7.5],
+                    'Kiểm tra 1 tiết': [8.0, 8.5],
+                    'Kiểm tra học kỳ': [7.5]
+                },
+                'HS003': {
+                    'Kiểm tra miệng': [9.0],
+                    'Kiểm tra 15 phút': [8.5, 9.0],
+                    'Kiểm tra 1 tiết': [8.5],
+                    'Kiểm tra học kỳ': [9.0]
+                },
+                'HS004': {
+                    'Kiểm tra miệng': [7.0],
+                    'Kiểm tra 15 phút': [7.5],
+                    'Kiểm tra 1 tiết': [8.0],
+                    'Kiểm tra học kỳ': [7.5]
+                },
+                'HS005': {
+                    'Kiểm tra miệng': [8.5],
+                    'Kiểm tra 15 phút': [9.0],
+                    'Kiểm tra 1 tiết': [8.5],
+                    'Kiểm tra học kỳ': [9.0]
                 }
             };
             localStorage.setItem('scores', JSON.stringify(sampleScores));
@@ -118,9 +165,6 @@ class TeacherNavigation {
         // Khởi tạo trạng thái ban đầu
         const hash = window.location.hash.replace('#', '') || 'dashboard';
         this.navigateToPage(hash);
-
-        this.initializeUserDropdown();
-        this.initializeNotifications();
     }
 
     async navigateToPage(page) {
@@ -241,18 +285,54 @@ class TeacherNavigation {
     initializeUserDropdown() {
         const userMenuButton = document.getElementById('userMenuButton');
         const userDropdown = document.querySelector('.user-dropdown');
+        let isDropdownOpen = false;
 
-        if (userMenuButton && userDropdown) {
-            userMenuButton.addEventListener('click', () => {
-                userDropdown.classList.toggle('hidden');
-            });
+        // Xử lý click vào nút menu
+        userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isDropdownOpen = !isDropdownOpen;
+            
+            if (isDropdownOpen) {
+                userDropdown.classList.remove('hidden');
+                userDropdown.classList.add('show');
+                userDropdown.classList.remove('hide');
+                userMenuButton.classList.add('active');
+            } else {
+                this.closeDropdown();
+            }
+        });
 
-            // Đóng dropdown khi click ra ngoài
-            document.addEventListener('click', (e) => {
-                if (!userMenuButton.contains(e.target)) {
-                    userDropdown.classList.add('hidden');
+        // Xử lý click ra ngoài để đóng dropdown
+        document.addEventListener('click', (e) => {
+            if (!userDropdown.contains(e.target) && !userMenuButton.contains(e.target)) {
+                this.closeDropdown();
+            }
+        });
+
+        // Xử lý các item trong dropdown
+        const dropdownItems = userDropdown.querySelectorAll('a, button');
+        dropdownItems.forEach(item => {
+            item.addEventListener('click', () => {
+                if (item.id === 'logoutButton') {
+                    this.handleLogout();
                 }
+                this.closeDropdown();
             });
+        });
+
+        // Cập nhật thông tin giáo viên trong dropdown
+        const teacherData = JSON.parse(localStorage.getItem('teacherData'));
+        if (teacherData) {
+            const teacherName = document.querySelector('#userMenuButton .teacher-name');
+            const teacherAvatar = document.querySelector('#userMenuButton img');
+            
+            if (teacherName) {
+                teacherName.textContent = teacherData.name || 'Giáo viên';
+            }
+            
+            if (teacherAvatar && teacherData.avatar) {
+                teacherAvatar.src = teacherData.avatar;
+            }
         }
     }
 
@@ -461,7 +541,7 @@ class TeacherNavigation {
         
         // Lấy danh sách học sinh và điểm
         const students = JSON.parse(localStorage.getItem('students')) || [];
-        const scores = JSON.parse(localStorage.getItem('scores')) || [];
+        const scores = JSON.parse(localStorage.getItem('scores')) || {};
         
         // Lọc học sinh theo lớp nếu có
         const filteredStudents = selectedClass 
@@ -472,32 +552,29 @@ class TeacherNavigation {
         if (!scoresList) return;
 
         scoresList.innerHTML = filteredStudents.map(student => {
-            // Lọc điểm của học sinh
-            const studentScores = scores.filter(score => 
-                score.studentId === student.studentId &&
-                (!selectedSubject || score.subject === selectedSubject)
-            );
+            // Lấy điểm của học sinh từ object scores
+            const studentScores = scores[student.id] || {};
 
             // Tổ chức điểm theo loại
             const organizedScores = {
-                'Kiểm tra miệng': studentScores.filter(s => s.type === 'Kiểm tra miệng').map(s => s.score),
-                'Kiểm tra 15 phút': studentScores.filter(s => s.type === 'Kiểm tra 15 phút').map(s => s.score),
-                'Kiểm tra 1 tiết': studentScores.filter(s => s.type === 'Kiểm tra 1 tiết').map(s => s.score),
-                'Kiểm tra học kỳ': studentScores.filter(s => s.type === 'Kiểm tra học kỳ').map(s => s.score)
+                'Kiểm tra miệng': studentScores['Kiểm tra miệng'] || [],
+                'Kiểm tra 15 phút': studentScores['Kiểm tra 15 phút'] || [],
+                'Kiểm tra 1 tiết': studentScores['Kiểm tra 1 tiết'] || [],
+                'Kiểm tra học kỳ': studentScores['Kiểm tra học kỳ'] || []
             };
 
             // Tính điểm trung bình
-            const average = this.calculateAverage(organizedScores);
+            const average = this.calculateAverageScore(studentScores);
 
             return `
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-10 w-10">
-                                <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}" alt="">
+                                <img class="h-10 w-10 rounded-full" src="${student.avatar}" alt="">
                             </div>
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${student.fullName}</div>
+                                <div class="text-sm font-medium text-gray-900">${student.name}</div>
                                 <div class="text-sm text-gray-500">${student.class}</div>
                             </div>
                         </div>
@@ -515,8 +592,14 @@ class TeacherNavigation {
                         ${this.renderScores(organizedScores['Kiểm tra học kỳ'])}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${this.getScoreClass(average)}">
-                            ${average.toFixed(1)}
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            average === 'N/A' ? 'bg-gray-100 text-gray-800' :
+                            parseFloat(average) >= 8 ? 'bg-green-100 text-green-800' :
+                            parseFloat(average) >= 6.5 ? 'bg-blue-100 text-blue-800' :
+                            parseFloat(average) >= 5 ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                        }">
+                            ${average}
                         </span>
                     </td>
                 </tr>
@@ -536,20 +619,34 @@ class TeacherNavigation {
         `).join(' ');
     }
 
-    calculateAverage(scores) {
-        let totalScore = 0;
+    calculateAverageScore(studentScores) {
+        if (!studentScores || Object.keys(studentScores).length === 0) {
+            return 'N/A';
+        }
+
+        let totalWeightedScore = 0;
         let totalWeight = 0;
 
-        Object.entries(scores).forEach(([type, scoreArray]) => {
-            if (scoreArray && scoreArray.length > 0) {
-                const weight = this.getScoreWeight(type);
-                const sum = scoreArray.reduce((a, b) => a + b, 0);
-                totalScore += sum * weight;
-                totalWeight += weight * scoreArray.length;
+        // Trọng số cho từng loại điểm
+        const weights = {
+            'Kiểm tra miệng': 1,
+            'Kiểm tra 15 phút': 1,
+            'Kiểm tra 1 tiết': 2,
+            'Kiểm tra học kỳ': 3
+        };
+
+        Object.entries(studentScores).forEach(([type, scores]) => {
+            if (Array.isArray(scores) && scores.length > 0) {
+                const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                const weight = weights[type] || 1;
+                totalWeightedScore += avgScore * weight;
+                totalWeight += weight;
             }
         });
 
-        return totalWeight > 0 ? totalScore / totalWeight : 0;
+        return totalWeight > 0 
+            ? (totalWeightedScore / totalWeight).toFixed(1) 
+            : 'N/A';
     }
 
     getScoreClass(score) {
@@ -571,51 +668,59 @@ class TeacherNavigation {
 
     openAddScoreModal(studentId = null, scoreType = null) {
         const modalContent = `
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">Thêm điểm mới</h3>
-                    <form id="addScoreForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Học sinh</label>
-                            <select id="studentSelect" class="form-input w-full" required>
-                                <option value="">Chọn học sinh</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Môn học</label>
-                            <select id="subjectSelect" class="form-input w-full" required>
-                                <option value="">Chọn môn học</option>
-                                <option value="Toán">Toán</option>
-                                <option value="Văn">Văn</option>
-                                <option value="Anh">Anh</option>
-                                <option value="Lý">Lý</option>
-                                <option value="Hóa">Hóa</option>
-                                <option value="Sinh">Sinh</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Loại điểm</label>
-                            <select id="scoreTypeSelect" class="form-input w-full" required>
-                                <option value="">Chọn loại điểm</option>
-                                <option value="Kiểm tra miệng">Kiểm tra miệng</option>
-                                <option value="Kiểm tra 15 phút">Kiểm tra 15 phút</option>
-                                <option value="Kiểm tra 1 tiết">Kiểm tra 1 tiết</option>
-                                <option value="Kiểm tra học kỳ">Kiểm tra học kỳ</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Điểm số</label>
-                            <input type="number" id="scoreInput" class="form-input w-full" min="0" max="10" step="0.1" required>
-                        </div>
-                        <div class="flex justify-end space-x-3 mt-6">
-                            <button type="button" class="btn-secondary" onclick="document.getElementById('modalContainer').classList.add('hidden')">
-                                Hủy
-                            </button>
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-save mr-2"></i>Lưu điểm
+            <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+                <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full m-4">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-6">
+                            <h3 class="text-lg font-semibold">Thêm điểm mới</h3>
+                            <button onclick="document.getElementById('modalContainer').classList.add('hidden')" 
+                                class="text-gray-400 hover:text-gray-500">
+                                <i class="fas fa-times"></i>
                             </button>
                         </div>
-                    </form>
+                        <form id="addScoreForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Học sinh</label>
+                                <select id="studentSelect" class="form-input w-full" required>
+                                    <option value="">Chọn học sinh</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Môn học</label>
+                                <select id="subjectSelect" class="form-input w-full" required>
+                                    <option value="">Chọn môn học</option>
+                                    <option value="Toán">Toán</option>
+                                    <option value="Văn">Văn</option>
+                                    <option value="Anh">Anh</option>
+                                    <option value="Lý">Lý</option>
+                                    <option value="Hóa">Hóa</option>
+                                    <option value="Sinh">Sinh</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Loại điểm</label>
+                                <select id="scoreTypeSelect" class="form-input w-full" required>
+                                    <option value="">Chọn loại điểm</option>
+                                    <option value="Kiểm tra miệng">Kiểm tra miệng</option>
+                                    <option value="Kiểm tra 15 phút">Kiểm tra 15 phút</option>
+                                    <option value="Kiểm tra 1 tiết">Kiểm tra 1 tiết</option>
+                                    <option value="Kiểm tra học kỳ">Kiểm tra học kỳ</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Điểm số</label>
+                                <input type="number" id="scoreInput" class="form-input w-full" min="0" max="10" step="0.1" required>
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" class="btn-secondary" onclick="document.getElementById('modalContainer').classList.add('hidden')">
+                                    Hủy
+                                </button>
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save mr-2"></i>Lưu điểm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         `;
@@ -626,7 +731,7 @@ class TeacherNavigation {
 
         // Populate student select
         const students = JSON.parse(localStorage.getItem('students')) || [];
-        const selectedClass = document.getElementById('classFilter').value;
+        const selectedClass = document.getElementById('classFilter')?.value;
         const filteredStudents = selectedClass ? 
             students.filter(student => student.class === selectedClass) : 
             students;
@@ -634,8 +739,8 @@ class TeacherNavigation {
         const studentSelect = document.getElementById('studentSelect');
         filteredStudents.forEach(student => {
             const option = document.createElement('option');
-            option.value = student.studentId;
-            option.textContent = `${student.fullName} - ${student.class}`;
+            option.value = student.id;
+            option.textContent = `${student.name} - ${student.class}`;
             studentSelect.appendChild(option);
         });
 
@@ -648,14 +753,11 @@ class TeacherNavigation {
         }
 
         // Add form submit handler
-        document.getElementById('addScoreForm').addEventListener('submit', (e) => {
+        document.getElementById('addScoreForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            this.saveScore();
+            await this.saveScore();
+            await this.loadScoresData(); // Tự động tải lại dữ liệu sau khi thêm điểm
         });
-    }
-
-    filterScores() {
-        this.loadScoresData();
     }
 
     async saveScore() {
@@ -675,29 +777,32 @@ class TeacherNavigation {
         }
 
         try {
-            // Lấy mảng điểm từ localStorage
-            let scores = JSON.parse(localStorage.getItem('scores')) || [];
+            // Lấy điểm từ localStorage
+            let scores = JSON.parse(localStorage.getItem('scores')) || {};
             
-            // Thêm điểm mới vào mảng
-            const newScore = {
-                id: Date.now().toString(),
-                studentId,
-                subject,
-                type: scoreType,
-                score: scoreValue,
-                date: new Date().toISOString()
-            };
+            // Khởi tạo cấu trúc điểm cho học sinh nếu chưa có
+            if (!scores[studentId]) {
+                scores[studentId] = {};
+            }
             
-            scores.push(newScore);
+            // Khởi tạo mảng điểm cho loại điểm nếu chưa có
+            if (!scores[studentId][scoreType]) {
+                scores[studentId][scoreType] = [];
+            }
+            
+            // Thêm điểm mới vào mảng điểm tương ứng
+            scores[studentId][scoreType].push(scoreValue);
 
             // Lưu vào localStorage
             localStorage.setItem('scores', JSON.stringify(scores));
 
-            // Đóng modal và cập nhật giao diện
+            // Đóng modal
             document.getElementById('modalContainer').classList.add('hidden');
-            await this.loadScoresData();
-
+            
             showToast('Đã lưu điểm thành công', 'success');
+            
+            // Tự động tải lại dữ liệu
+            await this.loadScoresData();
         } catch (error) {
             console.error('Lỗi khi lưu điểm:', error);
             showToast('Có lỗi xảy ra khi lưu điểm', 'error');
@@ -763,124 +868,153 @@ class TeacherNavigation {
         const pageContent = document.getElementById('pageContent');
         if (!pageContent) return;
 
-        // Load dữ liệu học sinh từ localStorage
+        // Xóa dữ liệu cũ trong localStorage
+        localStorage.removeItem('students');
+        localStorage.removeItem('scores');
+        
+        // Khởi tạo lại dữ liệu mẫu
+        this.initializeSampleData();
+
+        // Lấy dữ liệu từ localStorage
         const students = JSON.parse(localStorage.getItem('students')) || [];
         const scores = JSON.parse(localStorage.getItem('scores')) || {};
 
+        // Lấy danh sách lớp học
+        const classes = [...new Set(students.map(student => student.class))].sort();
+
         pageContent.innerHTML = `
-            <div class="col-span-3">
-                <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold">Danh sách học sinh</h2>
-                        <div class="flex space-x-4">
-                            <div class="relative">
-                                <input type="text" id="studentSearch" placeholder="Tìm kiếm học sinh..." 
-                                    class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                            </div>
-                            <select id="classFilter" class="form-input">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Quản lý học sinh</h2>
+                    <div class="flex space-x-4">
+                        <div class="relative">
+                            <select id="classFilter" class="form-select">
                                 <option value="">Tất cả lớp</option>
-                                <option value="10A1">Lớp 10A1</option>
-                                <option value="10A2">Lớp 10A2</option>
+                                ${classes.map(cls => `<option value="${cls}">${cls}</option>`).join('')}
                             </select>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Mã học sinh
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Họ và tên
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Lớp
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Điểm trung bình
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Thao tác
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                ${students.map(student => {
-                                    const studentScores = scores[student.id] || [];
-                                    const average = studentScores.length > 0 
-                                        ? (studentScores.reduce((a, b) => a + b, 0) / studentScores.length).toFixed(1)
-                                        : 'N/A';
-                                    
-                                    return `
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                ${student.id}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <div class="h-10 w-10 flex-shrink-0">
-                                                        <img class="h-10 w-10 rounded-full" 
-                                                            src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=random" 
-                                                            alt="${student.name}">
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Mã học sinh
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Thông tin
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Lớp
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Điểm trung bình
+                                </th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Thao tác
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${students.map(student => {
+                                const studentScores = scores[student.id] || {};
+                                const averageScore = this.calculateAverageScore(studentScores);
+                                
+                                return `
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            ${student.id}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="h-10 w-10 flex-shrink-0">
+                                                    <img class="h-10 w-10 rounded-full" 
+                                                        src="${student.avatar}" 
+                                                        alt="${student.name}">
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        ${student.name}
                                                     </div>
-                                                    <div class="ml-4">
-                                                        <div class="text-sm font-medium text-gray-900">
-                                                            ${student.name}
-                                                        </div>
-                                                        <div class="text-sm text-gray-500">
-                                                            ${student.email || 'Chưa có email'}
-                                                        </div>
+                                                    <div class="text-sm text-gray-500">
+                                                        ${student.email}
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                ${student.class}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                    ${average >= 8 ? 'bg-green-100 text-green-800' : 
-                                                    average >= 6.5 ? 'bg-blue-100 text-blue-800' :
-                                                    average >= 5 ? 'bg-yellow-100 text-yellow-800' :
-                                                    'bg-red-100 text-red-800'}">
-                                                    ${average}
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <button onclick="viewStudentDetails('${student.id}')" 
-                                                    class="text-blue-600 hover:text-blue-900 mr-3">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                                <button onclick="editStudent('${student.id}')" 
-                                                    class="text-indigo-600 hover:text-indigo-900 mr-3">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button onclick="deleteStudent('${student.id}')" 
-                                                    class="text-red-600 hover:text-red-900">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            ${student.class}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                averageScore === 'N/A' ? 'bg-gray-100 text-gray-800' :
+                                                parseFloat(averageScore) >= 8 ? 'bg-green-100 text-green-800' :
+                                                parseFloat(averageScore) >= 6.5 ? 'bg-blue-100 text-blue-800' :
+                                                parseFloat(averageScore) >= 5 ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-red-100 text-red-800'
+                                            }">
+                                                ${averageScore}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button onclick="viewStudentDetails('${student.id}')" class="text-blue-600 hover:text-blue-900 mr-3">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button onclick="editStudent('${student.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button onclick="deleteStudent('${student.id}')" class="text-red-600 hover:text-red-900">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         `;
 
-        // Thêm event listeners cho search và filter
-        const searchInput = document.getElementById('studentSearch');
+        // Thêm event listener cho bộ lọc
         const classFilter = document.getElementById('classFilter');
-
-        if (searchInput) {
-            searchInput.addEventListener('input', this.filterStudents);
-        }
         if (classFilter) {
-            classFilter.addEventListener('change', this.filterStudents);
+            classFilter.addEventListener('change', (e) => {
+                this.filterStudentsByClass(e.target.value);
+            });
         }
+    }
+
+    calculateAverageScore(studentScores) {
+        if (!studentScores || Object.keys(studentScores).length === 0) {
+            return 'N/A';
+        }
+
+        let totalWeightedScore = 0;
+        let totalWeight = 0;
+
+        // Trọng số cho từng loại điểm
+        const weights = {
+            'Kiểm tra miệng': 1,
+            'Kiểm tra 15 phút': 1,
+            'Kiểm tra 1 tiết': 2,
+            'Kiểm tra học kỳ': 3
+        };
+
+        Object.entries(studentScores).forEach(([type, scores]) => {
+            if (Array.isArray(scores) && scores.length > 0) {
+                const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                const weight = weights[type] || 1;
+                totalWeightedScore += avgScore * weight;
+                totalWeight += weight;
+            }
+        });
+
+        return totalWeight > 0 
+            ? (totalWeightedScore / totalWeight).toFixed(1) 
+            : 'N/A';
     }
 
     async loadReportsInterface() {
@@ -930,18 +1064,12 @@ class TeacherNavigation {
         await this.loadNotifications();
     }
 
-    filterStudents() {
-        const searchTerm = document.getElementById('studentSearch')?.value.toLowerCase();
-        const selectedClass = document.getElementById('classFilter')?.value;
+    filterStudentsByClass(selectedClass) {
         const rows = document.querySelectorAll('tbody tr');
-
         rows.forEach(row => {
-            const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
             const className = row.querySelector('td:nth-child(3)').textContent;
-            const matchesSearch = !searchTerm || name.includes(searchTerm);
             const matchesClass = !selectedClass || className === selectedClass;
-
-            row.style.display = matchesSearch && matchesClass ? '' : 'none';
+            row.style.display = matchesClass ? '' : 'none';
         });
     }
 
@@ -963,47 +1091,79 @@ class TeacherNavigation {
         const student = this.getStudentById(studentId);
         if (!student) return;
 
+        const scores = JSON.parse(localStorage.getItem('scores')) || {};
+        const studentScores = scores[student.id] || {};
+        const averageScore = this.calculateAverageScore(studentScores);
+
         const modalContent = `
-            <div class="bg-white rounded-lg p-6 max-w-2xl w-full">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold">Thông tin học sinh</h3>
-                    <button onclick="document.getElementById('modalContainer').classList.add('hidden')" 
-                        class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-gray-600">Mã học sinh</p>
-                        <p class="font-semibold">${student.id}</p>
+            <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+                <div class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full m-4 p-6">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex items-center">
+                            <img class="h-16 w-16 rounded-full border-4 border-blue-100" 
+                                src="${student.avatar}" 
+                                alt="${student.name}">
+                            <div class="ml-4">
+                                <h3 class="text-2xl font-bold text-gray-900">${student.name}</h3>
+                                <p class="text-sm text-gray-500">${student.email}</p>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('modalContainer').classList.add('hidden')" 
+                            class="text-gray-400 hover:text-gray-500 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
                     </div>
-                    <div>
-                        <p class="text-gray-600">Họ và tên</p>
-                        <p class="font-semibold">${student.name}</p>
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Mã học sinh</p>
+                            <p class="font-semibold text-gray-900">${student.id}</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Lớp</p>
+                            <p class="font-semibold text-gray-900">${student.class}</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-1">Điểm trung bình</p>
+                            <p class="font-semibold">
+                                <span class="px-2 py-1 text-sm rounded-full ${
+                                    averageScore === 'N/A' ? 'bg-gray-200 text-gray-800' :
+                                    parseFloat(averageScore) >= 8 ? 'bg-green-100 text-green-800' :
+                                    parseFloat(averageScore) >= 6.5 ? 'bg-blue-100 text-blue-800' :
+                                    parseFloat(averageScore) >= 5 ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                }">${averageScore}</span>
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-gray-600">Lớp</p>
-                        <p class="font-semibold">${student.class}</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-600">Email</p>
-                        <p class="font-semibold">${student.email || 'Chưa có'}</p>
-                    </div>
-                </div>
-                <div class="mt-6">
-                    <h4 class="font-semibold mb-2">Điểm số</h4>
-                    <div class="space-y-2">
-                        ${this.getStudentScores(student.id)}
+
+                    <div class="border-t border-gray-200 pt-6">
+                        <h4 class="text-lg font-semibold mb-4">Bảng điểm chi tiết</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            ${Object.entries(studentScores).map(([type, scores]) => `
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    <p class="text-sm font-medium text-gray-600 mb-2">${type}</p>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${scores.map(score => `
+                                            <span class="px-2 py-1 text-sm rounded-full ${
+                                                score >= 8 ? 'bg-green-100 text-green-800' :
+                                                score >= 6.5 ? 'bg-blue-100 text-blue-800' :
+                                                score >= 5 ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-red-100 text-red-800'
+                                            }">${score.toFixed(1)}</span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
                 </div>
             </div>
         `;
 
         const modalContainer = document.getElementById('modalContainer');
-        if (modalContainer) {
-            modalContainer.innerHTML = modalContent;
-            modalContainer.classList.remove('hidden');
-        }
+        modalContainer.innerHTML = modalContent;
+        modalContainer.classList.remove('hidden');
     }
 
     editStudent(studentId) {
@@ -1011,64 +1171,156 @@ class TeacherNavigation {
         if (!student) return;
 
         const modalContent = `
-            <div class="bg-white rounded-lg p-6 max-w-2xl w-full">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold">Chỉnh sửa thông tin học sinh</h3>
-                    <button onclick="document.getElementById('modalContainer').classList.add('hidden')" 
-                        class="text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
+            <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+                <div class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full m-4">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900">Chỉnh sửa thông tin học sinh</h3>
+                            <button onclick="document.getElementById('modalContainer').classList.add('hidden')" 
+                                class="text-gray-400 hover:text-gray-500 transition-colors">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+
+                        <form id="editStudentForm" class="space-y-6">
+                            <div class="flex items-center space-x-6 mb-6">
+                                <img class="h-16 w-16 rounded-full border-4 border-blue-100" 
+                                    src="${student.avatar}" 
+                                    alt="${student.name}">
+                                <div class="flex-1">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Họ và tên
+                                    </label>
+                                    <input type="text" name="name" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                        value="${student.name}" required>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Mã học sinh
+                                    </label>
+                                    <input type="text" name="id" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50" 
+                                        value="${student.id}" readonly>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Lớp
+                                    </label>
+                                    <select name="class" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                        <option value="12A1" ${student.class === '12A1' ? 'selected' : ''}>12A1</option>
+                                        <option value="12A2" ${student.class === '12A2' ? 'selected' : ''}>12A2</option>
+                                        <option value="11A1" ${student.class === '11A1' ? 'selected' : ''}>11A1</option>
+                                        <option value="11A2" ${student.class === '11A2' ? 'selected' : ''}>11A2</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Email
+                                    </label>
+                                    <input type="email" name="email" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                                        value="${student.email}">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                                <button type="button" 
+                                    onclick="document.getElementById('modalContainer').classList.add('hidden')"
+                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    Hủy
+                                </button>
+                                <button type="submit"
+                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-save mr-2"></i>Lưu thay đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <form id="editStudentForm" class="space-y-4">
-                    <div>
-                        <label class="form-label">Họ và tên</label>
-                        <input type="text" class="form-input w-full" value="${student.name}" required>
-                    </div>
-                    <div>
-                        <label class="form-label">Lớp</label>
-                        <select class="form-input w-full" required>
-                            <option value="10A1" ${student.class === '10A1' ? 'selected' : ''}>Lớp 10A1</option>
-                            <option value="10A2" ${student.class === '10A2' ? 'selected' : ''}>Lớp 10A2</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-input w-full" value="${student.email || ''}">
-                    </div>
-                    <div class="flex justify-end gap-4">
-                        <button type="button" onclick="document.getElementById('modalContainer').classList.add('hidden')" 
-                            class="btn-secondary">
-                            Hủy
-                        </button>
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-save mr-2"></i>Lưu thay đổi
-                        </button>
-                    </div>
-                </form>
             </div>
         `;
 
         const modalContainer = document.getElementById('modalContainer');
-        if (modalContainer) {
-            modalContainer.innerHTML = modalContent;
-            modalContainer.classList.remove('hidden');
+        modalContainer.innerHTML = modalContent;
+        modalContainer.classList.remove('hidden');
 
-            const form = document.getElementById('editStudentForm');
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.saveStudentChanges(studentId, form);
-            });
-        }
+        const form = document.getElementById('editStudentForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveStudentChanges(studentId, form);
+        });
     }
 
     deleteStudent(studentId) {
-        if (confirm('Bạn có chắc chắn muốn xóa học sinh này?')) {
-            const students = JSON.parse(localStorage.getItem('students')) || [];
-            const updatedStudents = students.filter(s => s.id !== studentId);
-            localStorage.setItem('students', JSON.stringify(updatedStudents));
-            this.loadStudentsInterface();
-            showToast('Đã xóa học sinh thành công', 'success');
-        }
+        const student = this.getStudentById(studentId);
+        if (!student) return;
+
+        const modalContent = `
+            <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+                <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full m-4 p-6">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-lg font-medium text-gray-900">
+                                    Xác nhận xóa học sinh
+                                </h3>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('modalContainer').classList.add('hidden')" 
+                            class="text-gray-400 hover:text-gray-500 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500">
+                            Bạn có chắc chắn muốn xóa học sinh <span class="font-medium text-gray-900">${student.name}</span>? 
+                            Hành động này không thể hoàn tác.
+                        </p>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" 
+                            onclick="document.getElementById('modalContainer').classList.add('hidden')"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Hủy
+                        </button>
+                        <button type="button"
+                            onclick="confirmDeleteStudent('${student.id}')"
+                            class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            <i class="fas fa-trash mr-2"></i>Xóa học sinh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const modalContainer = document.getElementById('modalContainer');
+        modalContainer.innerHTML = modalContent;
+        modalContainer.classList.remove('hidden');
+    }
+
+    confirmDeleteStudent(studentId) {
+        const students = JSON.parse(localStorage.getItem('students')) || [];
+        const updatedStudents = students.filter(s => s.id !== studentId);
+        localStorage.setItem('students', JSON.stringify(updatedStudents));
+        
+        // Xóa điểm của học sinh
+        const scores = JSON.parse(localStorage.getItem('scores')) || {};
+        delete scores[studentId];
+        localStorage.setItem('scores', JSON.stringify(scores));
+
+        document.getElementById('modalContainer').classList.add('hidden');
+        this.loadStudentsInterface();
+        showToast('Đã xóa học sinh thành công', 'success');
     }
 
     getStudentById(studentId) {
@@ -1172,6 +1424,23 @@ class TeacherNavigation {
                 </div>
             </div>
         `;
+    }
+
+    closeDropdown() {
+        const userDropdown = document.querySelector('.user-dropdown');
+        if (userDropdown) {
+            userDropdown.classList.add('hidden');
+            userDropdown.classList.remove('show', 'hide');
+        }
+        const userMenuButton = document.getElementById('userMenuButton');
+        if (userMenuButton) {
+            userMenuButton.classList.remove('active');
+        }
+    }
+
+    handleLogout() {
+        localStorage.removeItem('teacherData');
+        window.location.href = 'login.html';
     }
 }
 

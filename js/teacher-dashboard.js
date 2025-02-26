@@ -12,9 +12,14 @@ class TeacherDashboard {
         try {
             const teacher = JSON.parse(localStorage.getItem('currentTeacher'));
             if (teacher) {
-                document.getElementById('teacherName').textContent = teacher.fullName || teacher.name;
-                // Cập nhật avatar với tên giáo viên
-                const avatar = document.querySelector('img[alt="Profile"]');
+                // Cập nhật tên giáo viên trong dropdown menu
+                const teacherNameElement = document.querySelector('#userMenuButton .teacher-name');
+                if (teacherNameElement) {
+                    teacherNameElement.textContent = teacher.fullName || teacher.name;
+                }
+                
+                // Cập nhật avatar
+                const avatar = document.querySelector('#userMenuButton img');
                 if (avatar) {
                     avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.fullName || teacher.name)}&background=0D8ABC&color=fff`;
                 }

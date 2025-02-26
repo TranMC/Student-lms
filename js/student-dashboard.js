@@ -116,53 +116,42 @@ class StudentDashboard {
         const averageScoreElement = document.getElementById('averageScore');
         const completionRateElement = document.getElementById('completionRate');
         const daysToExamElement = document.getElementById('daysToExam');
+        const scoreTrendElement = document.getElementById('scoreTrend');
+        const scoreTrendValueElement = document.getElementById('scoreTrendValue');
+        const completionTrendElement = document.getElementById('completionTrend');
+        const completionTrendValueElement = document.getElementById('completionTrendValue');
 
-            if (averageScoreElement) {
-                averageScoreElement.textContent = stats.averageScore.toFixed(1);
-            }
-            if (scoreTrendElement && scoreTrendValueElement && stats.scoreTrend) {
-                scoreTrendElement.className = `stats-trend ${stats.scoreTrend.direction}`;
-                scoreTrendElement.innerHTML = `
-                    <i class="fas fa-arrow-${stats.scoreTrend.direction}"></i>
-                    <span>${stats.scoreTrend.value.toFixed(1)}</span>
-                `;
-                scoreTrendValueElement.textContent = stats.scoreTrend.value.toFixed(1);
-            }
-            if (completionRateElement) {
-                completionRateElement.textContent = `${stats.completionRate}%`;
-            }
-            if (completionTrendElement && completionTrendValueElement && stats.completionTrend) {
-                completionTrendElement.className = `stats-trend ${stats.completionTrend.direction}`;
-                completionTrendElement.innerHTML = `
-                    <i class="fas fa-arrow-${stats.completionTrend.direction}"></i>
-                    <span>${stats.completionTrend.value}%</span>
-                `;
-                completionTrendValueElement.textContent = `${stats.completionTrend.value}%`;
-            }
-            if (daysToExamElement) {
-                daysToExamElement.textContent = stats.daysToExam;
-            }
+        if (averageScoreElement) {
+            averageScoreElement.textContent = averageScore.toFixed(1);
+        }
+        if (completionRateElement) {
+            completionRateElement.textContent = `${completionRate.toFixed(1)}%`;
+        }
+        if (daysToExamElement) {
+            const nextExam = this.getNextExam();
+            daysToExamElement.textContent = nextExam ? this.calculateDaysLeft(nextExam.date) : '-';
         }
     }
 
     loadRecentScores() {
-        if (!this.student || !this.student.studentId) {
-            console.error('Không có thông tin ID học sinh');
-            return;
-        }
+        try {
+            if (!this.student || !this.student.studentId) {
+                console.error('Không có thông tin ID học sinh');
+                return;
+            }
 
-        const allScores = JSON.parse(localStorage.getItem('scores')) || [];
-        const studentScores = allScores.filter(score => score.studentId === this.student.studentId);
-        
-        // Sắp xếp theo ngày mới nhất và lấy 5 điểm gần nhất
-        const latestScores = studentScores
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 5);
+            const allScores = JSON.parse(localStorage.getItem('scores')) || [];
+            const studentScores = allScores.filter(score => score.studentId === this.student.studentId);
+            
+            // Sắp xếp theo ngày mới nhất và lấy 5 điểm gần nhất
+            const latestScores = studentScores
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
 
             const tableBody = document.getElementById('recentScoresTable');
             if (!tableBody) return;
 
-            tableBody.innerHTML = studentScores.map(score => `
+            tableBody.innerHTML = latestScores.map(score => `
                 <tr>
                     <td>${score.subject}</td>
                     <td>${score.type}</td>
@@ -359,4 +348,4 @@ function updateDateTime() {
         minute: '2-digit'
     });
     document.getElementById('currentDateTime').textContent = dateTimeString;
-} 
+}

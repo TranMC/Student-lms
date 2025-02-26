@@ -98,22 +98,25 @@
                         </div>
                         <!-- User Menu -->
                         <div class="relative">
-                            <div class="flex items-center space-x-3 cursor-pointer" id="userMenuButton">
-                                <span id="teacherName" class="text-gray-700"></span>
-                                <img class="h-10 w-10 rounded-full border-2 border-blue-500" src="https://ui-avatars.com/api/?name=Teacher&background=0D8ABC&color=fff" alt="Profile">
-                                <i class="fas fa-chevron-down text-gray-500"></i>
-                            </div>
+                            <button id="userMenuButton" class="flex items-center">
+                                <img src="images/default-avatar.png" alt="Avatar" class="w-10 h-10 rounded-full">
+                                <span class="teacher-name ml-2 text-gray-700">Giáo viên</span>
+                                <i class="fas fa-chevron-down ml-2 text-gray-500"></i>
+                            </button>
                             <!-- User Dropdown -->
-                            <div class="user-dropdown hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
-                                <a href="#profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-user mr-2"></i> Hồ sơ
+                            <div class="user-dropdown hidden">
+                                <a href="#profile" class="dropdown-item">
+                                    <i class="fas fa-user"></i>
+                                    <span>Thông tin cá nhân</span>
                                 </a>
-                                <a href="#settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-cog mr-2"></i> Cài đặt
+                                <a href="#settings" class="dropdown-item">
+                                    <i class="fas fa-cog"></i>
+                                    <span>Cài đặt</span>
                                 </a>
-                                <hr class="my-2">
-                                <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
-                                    <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+                                <hr>
+                                <button id="logoutButton" class="dropdown-item text-red-600">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Đăng xuất</span>
                                 </button>
                             </div>
                         </div>
@@ -150,11 +153,24 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Kiểm tra xác thực trước khi khởi tạo
             const teacher = checkTeacherAuth();
             if (!teacher) {
                 window.location.href = 'login.html';
+                return;
             }
+
+            // Khởi tạo navigation sau khi đã xác thực
             window.teacherNavigation = new TeacherNavigation();
+
+            // Gán hàm logout vào window object nếu chưa có
+            if (typeof window.logout !== 'function') {
+                window.logout = () => {
+                    localStorage.removeItem('currentUser');
+                    localStorage.removeItem('currentTeacher');
+                    window.location.href = 'login.html';
+                };
+            }
         });
 
         // Show toast notification

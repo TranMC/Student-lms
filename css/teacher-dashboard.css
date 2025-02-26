@@ -485,4 +485,337 @@ td {
   th, td {
     padding: 0.75rem 1rem;
   }
+}
+
+/* User Menu Button Styles */
+#userMenuButton {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    transition: all 0.2s ease-in-out;
+    gap: 0.75rem;
+}
+
+#userMenuButton:hover {
+    background-color: var(--gray-100);
+}
+
+#userMenuButton img {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: none;
+    transition: all 0.2s ease-in-out;
+}
+
+/* User Dropdown Styles */
+.user-dropdown {
+    position: absolute;
+    right: 0.5rem;
+    top: calc(100% + 0.5rem);
+    width: 360px;
+    background: var(--white);
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease-in-out;
+    z-index: 50;
+}
+
+.user-dropdown:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* User Info Section */
+.user-info {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+}
+
+.user-info:hover {
+    background-color: var(--gray-100);
+}
+
+.user-info img {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+}
+
+.user-info .info-text {
+    flex: 1;
+}
+
+.user-info .info-text h4 {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.user-info .info-text p {
+    color: var(--gray-600);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.user-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    color: var(--gray-800);
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.user-dropdown .dropdown-item:hover {
+    background-color: var(--gray-100);
+}
+
+.user-dropdown .dropdown-item i {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
+    background-color: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.user-dropdown hr {
+    margin: 0.5rem 0;
+    border: none;
+    height: 1px;
+    background-color: var(--gray-200);
+}
+
+/* Style cho nút đăng xuất */
+.user-dropdown #logoutButton {
+    color: var(--gray-800);
+}
+
+.user-dropdown #logoutButton i {
+    background-color: var(--gray-200);
+    color: var(--gray-700);
+}
+
+.user-dropdown #logoutButton:hover {
+    background-color: var(--gray-100);
+}
+
+/* Animation cho dropdown items */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-dropdown:not(.hidden) {
+    animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Modal/Popup Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease-in-out;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-container {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.modal-overlay.active .modal-container {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: var(--gray-500);
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: var(--gray-700);
+}
+
+.modal-body {
+    margin-bottom: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+/* Form Animation */
+.form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    transition: all 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.form-label {
+    position: absolute;
+    left: 1rem;
+    top: 0.75rem;
+    color: var(--gray-500);
+    background-color: white;
+    padding: 0 0.25rem;
+    transition: all 0.2s;
+    pointer-events: none;
+}
+
+.form-control:focus + .form-label,
+.form-control:not(:placeholder-shown) + .form-label {
+    transform: translateY(-1.4rem) scale(0.85);
+    color: var(--primary);
+}
+
+/* Button Animation */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.btn:active::after {
+    width: 200%;
+    height: 200%;
+}
+
+/* Table Row Animation */
+tr {
+    transition: all 0.2s;
+}
+
+tr:hover {
+    background-color: var(--gray-50);
+    transform: translateX(4px);
+}
+
+/* Toast Notification */
+.toast {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius);
+    background-color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: all 0.3s;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-success {
+    border-left: 4px solid var(--success);
+}
+
+.toast-error {
+    border-left: 4px solid var(--error);
+}
+
+.toast-warning {
+    border-left: 4px solid var(--warning);
 } 
