@@ -134,32 +134,41 @@ class AdminDashboard {
         const formData = new FormData(form);
         const studentData = Object.fromEntries(formData.entries());
         
-        let students = JSON.parse(localStorage.getItem('students') || '[]');
-        
-        if (studentData.studentId) {
-            students = students.map(s => 
-                s.studentId === studentData.studentId ? {...s, ...studentData} : s
-            );
-        } else {
-            studentData.studentId = 'HS' + Date.now();
-            studentData.role = 'student';
-            studentData.status = 'active';
-            students.push(studentData);
+        try {
+            let students = JSON.parse(localStorage.getItem('students') || '[]');
+            
+            if (studentData.studentId) {
+                students = students.map(s => 
+                    s.studentId === studentData.studentId ? {...s, ...studentData} : s
+                );
+            } else {
+                studentData.studentId = 'S' + Date.now();
+                studentData.role = 'student';
+                studentData.status = 'active';
+                students.push(studentData);
+            }
+            
+            localStorage.setItem('students', JSON.stringify(students));
+            this.closeModal('studentModal');
+            this.loadStudents();
+            this.showToast('success', 'Đã lưu thông tin học sinh thành công!');
+        } catch (error) {
+            this.showToast('error', 'Có lỗi xảy ra khi lưu thông tin!');
         }
-        
-        localStorage.setItem('students', JSON.stringify(students));
-        this.closeModal('studentModal');
-        this.loadStudents();
     }
 
     deleteStudent(studentId) {
-        if (!confirm('Bạn có chắc chắn muốn xóa học sinh này?')) return;
-        
-        let students = JSON.parse(localStorage.getItem('students') || '[]');
-        students = students.filter(s => s.studentId !== studentId);
-        localStorage.setItem('students', JSON.stringify(students));
-        
-        this.loadStudents();
+        this.currentDeleteId = studentId;
+        this.currentDeleteType = 'student';
+        const overlay = document.getElementById('deleteConfirmOverlay');
+        const popup = document.getElementById('deleteConfirmPopup');
+        if (overlay && popup) {
+            overlay.style.display = 'block';
+            popup.style.display = 'block';
+            popup.querySelector('p').textContent = 'Bạn có chắc chắn muốn xóa học sinh này? Hành động này không thể hoàn tác.';
+        } else {
+            console.error('Không tìm thấy phần tử popup xác nhận xóa');
+        }
     }
 
     editStudent(studentId) {
@@ -226,6 +235,9 @@ class AdminDashboard {
             }
         } else {
             form.reset();
+            // Tạo mã lớp tự động nếu không có mã lớp được nhập
+            const classIdInput = form.querySelector('[name="classId"]');
+            classIdInput.value = 'C' + Date.now();
         }
         
         modal.style.display = 'block';
@@ -236,31 +248,40 @@ class AdminDashboard {
         const formData = new FormData(form);
         const classData = Object.fromEntries(formData.entries());
         
-        let classes = JSON.parse(localStorage.getItem('classes') || '[]');
-        
-        if (classData.classId) {
-            classes = classes.map(c => 
-                c.classId === classData.classId ? {...c, ...classData} : c
-            );
-        } else {
-            classData.classId = 'L' + Date.now();
-            classData.status = 'active';
-            classes.push(classData);
+        try {
+            let classes = JSON.parse(localStorage.getItem('classes') || '[]');
+            
+            if (classData.classId) {
+                classes = classes.map(c => 
+                    c.classId === classData.classId ? {...c, ...classData} : c
+                );
+            } else {
+                classData.classId = 'C' + Date.now();
+                classData.status = 'active';
+                classes.push(classData);
+            }
+            
+            localStorage.setItem('classes', JSON.stringify(classes));
+            this.closeModal('classModal');
+            this.loadClasses();
+            this.showToast('success', 'Đã lưu thông tin lớp học thành công!');
+        } catch (error) {
+            this.showToast('error', 'Có lỗi xảy ra khi lưu thông tin!');
         }
-        
-        localStorage.setItem('classes', JSON.stringify(classes));
-        this.closeModal('classModal');
-        this.loadClasses();
     }
 
     deleteClass(classId) {
-        if (!confirm('Bạn có chắc chắn muốn xóa lớp học này?')) return;
-        
-        let classes = JSON.parse(localStorage.getItem('classes') || '[]');
-        classes = classes.filter(c => c.classId !== classId);
-        localStorage.setItem('classes', JSON.stringify(classes));
-        
-        this.loadClasses();
+        this.currentDeleteId = classId;
+        this.currentDeleteType = 'class';
+        const overlay = document.getElementById('deleteConfirmOverlay');
+        const popup = document.getElementById('deleteConfirmPopup');
+        if (overlay && popup) {
+            overlay.style.display = 'block';
+            popup.style.display = 'block';
+            popup.querySelector('p').textContent = 'Bạn có chắc chắn muốn xóa lớp học này? Hành động này không thể hoàn tác.';
+        } else {
+            console.error('Không tìm thấy phần tử popup xác nhận xóa');
+        }
     }
 
     editClass(classId) {
@@ -319,6 +340,18 @@ class AdminDashboard {
             e.preventDefault();
             this.savePassword();
         });
+
+        // Thêm sự kiện cho form chỉnh sửa tài khoản
+        document.getElementById('editAccountForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveAccountChanges();
+        });
+
+        // Thêm sự kiện tìm kiếm
+        document.getElementById('searchAccount')?.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            this.filterAccounts(searchTerm);
+        });
     }
 
     openAccountModal(username = null) {
@@ -346,30 +379,116 @@ class AdminDashboard {
         const formData = new FormData(form);
         const accountData = Object.fromEntries(formData.entries());
         
-        let accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
-        
-        if (accountData.username) {
-            accounts = accounts.map(a => 
-                a.username === accountData.username ? {...a, ...accountData} : a
-            );
-        } else {
-            accountData.username = 'U' + Date.now();
-            accounts.push(accountData);
+        try {
+            let accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+            
+            if (accountData.username) {
+                accounts = accounts.map(a => 
+                    a.username === accountData.username ? {...a, ...accountData} : a
+                );
+            } else {
+                accountData.username = 'U' + Date.now();
+                accounts.push(accountData);
+            }
+            
+            localStorage.setItem('accounts', JSON.stringify(accounts));
+            this.closeModal('accountModal');
+            this.loadAccounts();
+            this.showToast('success', 'Đã lưu thông tin tài khoản thành công!');
+        } catch (error) {
+            this.showToast('error', 'Có lỗi xảy ra khi lưu thông tin!');
         }
-        
-        localStorage.setItem('accounts', JSON.stringify(accounts));
-        this.closeModal('accountModal');
-        this.loadAccounts();
     }
 
     deleteAccount(username) {
-        if (!confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) return;
+        this.currentDeleteUsername = username; // Lưu username cần xóa
+        document.getElementById('deleteConfirmOverlay').style.display = 'block';
+        document.getElementById('deleteConfirmPopup').style.display = 'block';
+    }
+
+    closeDeleteConfirm() {
+        const overlay = document.getElementById('deleteConfirmOverlay');
+        const popup = document.getElementById('deleteConfirmPopup');
+        if (overlay && popup) {
+            overlay.style.display = 'none';
+            popup.style.display = 'none';
+            this.currentDeleteId = null;
+            this.currentDeleteType = null;
+        }
+    }
+
+    confirmDelete() {
+        if (!this.currentDeleteId || !this.currentDeleteType) return;
+
+        let success = false;
+        switch(this.currentDeleteType) {
+            case 'student':
+                let students = JSON.parse(localStorage.getItem('students') || '[]');
+                students = students.filter(s => s.studentId !== this.currentDeleteId);
+                localStorage.setItem('students', JSON.stringify(students));
+                this.loadStudents();
+                success = true;
+                break;
+
+            case 'teacher':
+                let teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+                teachers = teachers.filter(t => t.id != this.currentDeleteId);
+                localStorage.setItem('teachers', JSON.stringify(teachers));
+                this.loadTeachers();
+                success = true;
+                break;
+
+            case 'class':
+                let classes = JSON.parse(localStorage.getItem('classes') || '[]');
+                classes = classes.filter(c => c.classId !== this.currentDeleteId);
+                localStorage.setItem('classes', JSON.stringify(classes));
+                this.loadClasses();
+                success = true;
+                break;
+        }
+
+        this.closeDeleteConfirm();
         
-        let accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
-        accounts = accounts.filter(a => a.username !== username);
-        localStorage.setItem('accounts', JSON.stringify(accounts));
-        
-        this.loadAccounts();
+        if (success) {
+            this.showToast('success', `Đã xóa ${
+                this.currentDeleteType === 'student' ? 'học sinh' : 
+                this.currentDeleteType === 'teacher' ? 'giáo viên' : 'lớp học'
+            } thành công!`);
+        } else {
+            this.showToast('error', 'Có lỗi xảy ra khi xóa!');
+        }
+    }
+
+    showToast(type, message) {
+        const container = document.getElementById('toastContainer');
+        if (!container) {
+            console.error('Không tìm thấy phần tử toastContainer');
+            return;
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <span class="message">${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        // Hiệu ứng slide in
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 100);
+
+        // Tự động ẩn sau 3 giây
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode === container) {
+                    container.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
     }
 
     resetPassword(username) {
@@ -385,11 +504,10 @@ class AdminDashboard {
         const confirmPassword = form.querySelector('input[name="confirmPassword"]').value;
         
         if (newPassword !== confirmPassword) {
-            alert('Mật khẩu xác nhận không khớp!');
+            this.showToast('error', 'Mật khẩu xác nhận không khớp!');
             return;
         }
         
-        // Cập nhật mật khẩu cho tài khoản
         const updatePassword = (key) => {
             const data = JSON.parse(localStorage.getItem(key) || '[]');
             const updated = data.map(item => 
@@ -403,33 +521,103 @@ class AdminDashboard {
         updatePassword('students');
         
         this.closeModal('passwordModal');
-        alert('Đã cập nhật mật khẩu thành công!');
+        this.showToast('success', 'Đã cập nhật mật khẩu thành công!');
     }
 
     toggleAccountStatus(username) {
-        if (!confirm('Bạn có chắc chắn muốn thay đổi trạng thái hoạt động của tài khoản này?')) return;
+        const overlay = document.getElementById('statusConfirmOverlay');
+        const popup = document.getElementById('statusConfirmPopup');
+        if (overlay && popup) {
+            this.currentUsername = username;
+            overlay.style.display = 'block';
+            popup.style.display = 'block';
+            
+            // Kiểm tra trạng thái hiện tại của tài khoản
+            const checkStatus = (key) => {
+                const data = JSON.parse(localStorage.getItem(key) || '[]');
+                const account = data.find(item => item.username === username);
+                if (account) return account.status;
+                return null;
+            };
+            
+            const currentStatus = checkStatus('admins') || checkStatus('teachers') || checkStatus('students');
+            const newStatus = currentStatus === 'inactive' ? 'kích hoạt' : 'vô hiệu hóa';
+            
+            popup.querySelector('p').textContent = `Bạn có chắc chắn muốn ${newStatus} tài khoản này?`;
+        } else {
+            console.error('Không tìm thấy phần tử popup xác nhận thay đổi trạng thái');
+        }
+    }
+
+    confirmStatusChange() {
+        if (!this.currentUsername) return;
         
-        // Cập nhật trạng thái tài khoản
         const updateStatus = (key) => {
             const data = JSON.parse(localStorage.getItem(key) || '[]');
-            const updated = data.map(item => {
-                if (item.username === username) {
+            let updated = false;
+            
+            const newData = data.map(item => {
+                if (item.username === this.currentUsername) {
+                    updated = true;
                     const newStatus = item.status === 'inactive' ? 'active' : 'inactive';
                     return {...item, status: newStatus};
                 }
                 return item;
             });
+            
+            if (updated) {
+                localStorage.setItem(key, JSON.stringify(newData));
+                return true;
+            }
+            return false;
+        };
+        
+        const updated = updateStatus('admins') || updateStatus('teachers') || updateStatus('students');
+        
+        if (updated) {
+            this.loadAccounts();
+            this.showToast('success', 'Đã thay đổi trạng thái tài khoản thành công!');
+        }
+        
+        this.closeStatusConfirm();
+    }
+
+    closeStatusConfirm() {
+        const overlay = document.getElementById('statusConfirmOverlay');
+        const popup = document.getElementById('statusConfirmPopup');
+        if (overlay && popup) {
+            overlay.style.display = 'none';
+            popup.style.display = 'none';
+            this.currentUsername = null;
+        }
+    }
+
+    saveAccountChanges() {
+        const form = document.getElementById('editAccountForm');
+        const formData = new FormData(form);
+        const accountData = Object.fromEntries(formData.entries());
+        
+        const updateAccount = (key) => {
+            const data = JSON.parse(localStorage.getItem(key) || '[]');
+            const updated = data.map(item => 
+                item.username === accountData.username 
+                    ? {...item, 
+                        fullName: accountData.fullName,
+                        email: accountData.email,
+                        phone: accountData.phone
+                      }
+                    : item
+            );
             localStorage.setItem(key, JSON.stringify(updated));
         };
         
-        updateStatus('admins');
-        updateStatus('teachers');
-        updateStatus('students');
+        updateAccount('admins');
+        updateAccount('teachers');
+        updateAccount('students');
         
-        // Cập nhật lại danh sách tài khoản
-        loadAccountList();
-        
-        alert('Đã thay đổi trạng thái tài khoản thành công!');
+        this.closeModal('editAccountModal');
+        this.loadAccounts();
+        this.showToast('success', 'Đã cập nhật thông tin tài khoản thành công!');
     }
 
     getSystemStats() {
@@ -511,32 +699,41 @@ class AdminDashboard {
         const formData = new FormData(form);
         const teacherData = Object.fromEntries(formData.entries());
         
-        let teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-        
-        if (teacherData.id) {
-            teachers = teachers.map(t => 
-                t.id == teacherData.id ? {...t, ...teacherData} : t
-            );
-        } else {
-            teacherData.id = Date.now();
-            teacherData.role = 'teacher';
-            teacherData.status = 'active';
-            teachers.push(teacherData);
+        try {
+            let teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+            
+            if (teacherData.id) {
+                teachers = teachers.map(t => 
+                    t.id === teacherData.id ? {...t, ...teacherData} : t
+                );
+            } else {
+                teacherData.id = 'T' + Date.now();
+                teacherData.role = 'teacher';
+                teacherData.status = 'active';
+                teachers.push(teacherData);
+            }
+            
+            localStorage.setItem('teachers', JSON.stringify(teachers));
+            this.closeModal('teacherModal');
+            this.loadTeachers();
+            this.showToast('success', 'Đã lưu thông tin giáo viên thành công!');
+        } catch (error) {
+            this.showToast('error', 'Có lỗi xảy ra khi lưu thông tin!');
         }
-        
-        localStorage.setItem('teachers', JSON.stringify(teachers));
-        this.closeModal('teacherModal');
-        this.loadTeachers();
     }
 
     deleteTeacher(teacherId) {
-        if (!confirm('Bạn có chắc chắn muốn xóa giáo viên này?')) return;
-        
-        let teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-        teachers = teachers.filter(t => t.id != teacherId);
-        localStorage.setItem('teachers', JSON.stringify(teachers));
-        
-        this.loadTeachers();
+        this.currentDeleteId = teacherId;
+        this.currentDeleteType = 'teacher';
+        const overlay = document.getElementById('deleteConfirmOverlay');
+        const popup = document.getElementById('deleteConfirmPopup');
+        if (overlay && popup) {
+            overlay.style.display = 'block';
+            popup.style.display = 'block';
+            popup.querySelector('p').textContent = 'Bạn có chắc chắn muốn xóa giáo viên này? Hành động này không thể hoàn tác.';
+        } else {
+            console.error('Không tìm thấy phần tử popup xác nhận xóa');
+        }
     }
 
     editTeacher(teacherId) {
@@ -640,6 +837,44 @@ class AdminDashboard {
         
         // Hiển thị danh sách đã lọc
         loadAccountList(filteredAccounts);
+    }
+
+    editAccount(username) {
+        const form = document.getElementById('editAccountForm');
+        const modal = document.getElementById('editAccountModal');
+        
+        // Tìm thông tin tài khoản từ các danh sách
+        const findAccount = (key) => {
+            const data = JSON.parse(localStorage.getItem(key) || '[]');
+            return data.find(item => item.username === username);
+        };
+        
+        let account = findAccount('admins') || findAccount('teachers') || findAccount('students');
+        
+        if (account) {
+            form.querySelector('input[name="username"]').value = account.username;
+            form.querySelector('input[name="type"]').value = account.type || '';
+            form.querySelector('input[name="fullName"]').value = account.fullName || '';
+            form.querySelector('input[name="email"]').value = account.email || '';
+            form.querySelector('input[name="phone"]').value = account.phone || '';
+            
+            modal.style.display = 'block';
+        }
+    }
+
+    togglePasswordVisibility(button) {
+        const input = button.parentElement.querySelector('input');
+        const icon = button.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     }
 }
 
@@ -1061,8 +1296,10 @@ function loadClassList(filteredClasses = null) {
         tbody.innerHTML = classes.map(cls => {
             const teacher = teachers.find(t => t.id == cls.teacherId);
             const studentCount = students.filter(s => s.class === cls.className).length;
+            const isAssigned = cls.teacherId && teacher ? true : false;
+            
             return `
-                <tr>
+                <tr class="${isAssigned ? 'assigned' : ''}">
                     <td>${cls.classId}</td>
                     <td>${cls.className}</td>
                     <td>${studentCount}</td>
@@ -1173,4 +1410,61 @@ function loadAccountList(filteredAccounts = null) {
             </tr>
         `).join('');
     }
+}
+
+async function addClass(formData) {
+    try {
+        const response = await fetch('/api/classes', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            // Sau khi thêm lớp thành công, cập nhật lại dữ liệu
+            await loadClasses();  // Gọi hàm load lại danh sách lớp
+            showNotification('Thêm lớp học thành công', 'success');
+        }
+    } catch (error) {
+        console.error('Lỗi khi thêm lớp:', error);
+        showNotification('Có lỗi xảy ra khi thêm lớp', 'error');
+    }
+}
+
+async function loadClasses() {
+    try {
+        const response = await fetch('/api/classes');
+        const classes = await response.json();
+        
+        // Cập nhật giao diện với dữ liệu mới
+        const classesContainer = document.querySelector('#classes-list');
+        classesContainer.innerHTML = ''; // Xóa dữ liệu cũ
+        
+        classes.forEach(classItem => {
+            const classElement = createClassElement(classItem);
+            classesContainer.appendChild(classElement);
+        });
+        
+        // Cập nhật trạng thái phân công
+        updateAssignmentStatus();
+    } catch (error) {
+        console.error('Lỗi khi tải danh sách lớp:', error);
+    }
+}
+
+function updateAssignmentStatus() {
+    // Cập nhật trạng thái phân công cho từng lớp
+    const classItems = document.querySelectorAll('.class-item');
+    classItems.forEach(async (item) => {
+        const classId = item.dataset.classId;
+        const assignmentStatus = await checkAssignmentStatus(classId);
+        const statusElement = item.querySelector('.assignment-status');
+        statusElement.textContent = assignmentStatus ? 'Đã phân công' : 'Chưa phân công';
+    });
+}
+
+// Thêm hàm mới để kiểm tra trạng thái phân công
+function checkClassAssignment(classId) {
+    const classes = JSON.parse(localStorage.getItem('classes') || '[]');
+    const classData = classes.find(c => c.classId === classId);
+    return classData && classData.teacherId ? true : false;
 } 

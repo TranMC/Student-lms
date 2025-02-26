@@ -142,6 +142,10 @@ const adminLogin = (username, password) => {
     const admin = admins.find(a => a.username === username && a.password === password);
     
     if (admin) {
+        if (admin.status === 'inactive') {
+            showLoginError('Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.');
+            return false;
+        }
         localStorage.setItem('currentUser', JSON.stringify({...admin, role: 'admin'}));
         return true;
     }
@@ -154,6 +158,10 @@ const teacherLogin = (username, password) => {
     const teacher = teachers.find(t => t.username === username && t.password === password);
     
     if (teacher) {
+        if (teacher.status === 'inactive') {
+            showLoginError('Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.');
+            return false;
+        }
         localStorage.setItem('currentUser', JSON.stringify({...teacher, role: 'teacher'}));
         return true;
     }
@@ -166,7 +174,10 @@ const studentLogin = (username, password) => {
     const student = students.find(s => s.username === username && s.password === password);
     
     if (student) {
-        // Lưu thông tin user và thông tin chi tiết học sinh riêng biệt
+        if (student.status === 'inactive') {
+            showLoginError('Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.');
+            return false;
+        }
         localStorage.setItem('currentUser', JSON.stringify({...student, role: 'student'}));
         localStorage.setItem('currentStudent', JSON.stringify(student));
         return true;
@@ -209,6 +220,18 @@ const checkAdminAuth = () => {
         return false;
     }
     return true;
+};
+
+// Hàm hiển thị thông báo lỗi đăng nhập
+const showLoginError = (message) => {
+    const errorPopup = document.getElementById('loginErrorPopup');
+    const errorMessage = document.getElementById('loginErrorMessage');
+    if (errorPopup && errorMessage) {
+        errorMessage.textContent = message;
+        errorPopup.style.display = 'block';
+    } else {
+        alert(message); // Fallback nếu không tìm thấy popup
+    }
 };
 
 // Khởi tạo dữ liệu khi tải trang

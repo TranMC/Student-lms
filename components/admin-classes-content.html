@@ -52,4 +52,18 @@
             </form>
         </div>
     </div>
+
+    <!-- Popup xác nhận xóa -->
+    <div class="popup-overlay" id="deleteConfirmOverlay"></div>
+    <div class="confirm-popup" id="deleteConfirmPopup">
+        <h3>Xác nhận xóa</h3>
+        <p>Bạn có chắc chắn muốn xóa lớp học này? Hành động này không thể hoàn tác.</p>
+        <div class="buttons">
+            <button class="btn-cancel" onclick="adminDashboard.closeDeleteConfirm()">Hủy bỏ</button>
+            <button class="btn-confirm" onclick="adminDashboard.confirmDelete()">Xóa</button>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
 </div> 
