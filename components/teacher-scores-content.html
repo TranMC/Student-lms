@@ -1,9 +1,12 @@
 <!DOCTYPE html>
+<head>
+    <link rel="stylesheet" href="../css/animations.css">
+</head>
 <body>
-    <div class="scores-content">
-        <div class="score-filters">
+    <div class="scores-content fade-in">
+        <div class="score-filters slide-in-left">
             <div class="filter-group">
-                <select id="classFilter" class="form-control">
+                <select id="classFilter" class="form-control input-animation">
                     <option value="">Tất cả lớp</option>
                     <option value="12A1">12A1</option>
                     <option value="12A2">12A2</option>
@@ -14,25 +17,25 @@
                 </select>
             </div>
             <div class="filter-group">
-                <select id="semesterFilter" class="form-control">
+                <select id="semesterFilter" class="form-control input-animation">
                     <option value="">Tất cả học kỳ</option>
                     <option value="1">Học kỳ I</option>
                     <option value="2">Học kỳ II</option>
                 </select>
             </div>
-            <button class="btn btn-primary" onclick="scoreManager.openAddScoreModal()">
+            <button class="btn btn-primary btn-hover-animation" onclick="scoreManager.openAddScoreModal()">
                 <i class="fas fa-plus"></i> Thêm điểm
             </button>
         </div>
 
-        <div class="card">
+        <div class="card card-hover-animation scale-in">
             <div class="card-header">
                 <h3><i class="fas fa-edit"></i> Bảng Điểm</h3>
             </div>
             <div class="table-container">
                 <table id="scoreTable" class="table">
                     <thead>
-                        <tr>
+                        <tr class="slide-in-right">
                             <th>Mã học sinh</th>
                             <th>Họ và tên</th>
                             <th>Lớp</th>
@@ -45,7 +48,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Dữ liệu sẽ được thêm bằng JavaScript -->
+                        <!-- Dữ liệu sẽ được thêm bằng JavaScript với class table-row-animation -->
                     </tbody>
                 </table>
             </div>
@@ -53,7 +56,7 @@
 
         <!-- Modal thêm/sửa điểm -->
         <div id="scoreModal" class="modal">
-            <div class="modal-content">
+            <div class="modal-content modal-animation">
                 <div class="modal-header">
                     <h3 id="modalTitle">Thêm Điểm Mới</h3>
                     <button type="button" class="close" onclick="scoreManager.closeModal()">
@@ -150,7 +153,7 @@
     border-radius: 8px;
     max-width: 600px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    animation: slideIn 0.3s ease-out;
+    animation: scaleIn 0.3s ease-out forwards;
 }
 
 @keyframes slideIn {
@@ -219,13 +222,12 @@
     background-color: #fff;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    transition: border-color 0.3s ease-out, box-shadow 0.3s ease-out;
 }
 
 .form-control:focus {
-    border-color: #80bdff;
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
 }
 
 .form-actions {
@@ -247,7 +249,7 @@
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: transform 0.2s ease-out;
 }
 
 .btn-primary {
@@ -351,6 +353,12 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     margin-bottom: 2rem;
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
@@ -516,6 +524,7 @@
     z-index: 9999;
     transform: translateX(120%);
     transition: transform 0.3s ease-in-out;
+    animation: slideInRight 0.3s ease-out forwards;
 }
 
 .toast.show {
@@ -546,6 +555,36 @@
 
 .toast-error i {
     color: #dc3545;
+}
+
+/* Thêm animation cho modal */
+.modal-content {
+    animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* Thêm animation cho nút */
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Thêm animation cho form input */
+.form-control {
+    transition: border-color 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+.form-control:focus {
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+/* Thêm animation cho card */
+.card {
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 </style>
 </html>
