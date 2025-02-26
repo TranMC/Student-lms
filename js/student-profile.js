@@ -59,6 +59,44 @@ class StudentProfile {
         console.log('=== StudentProfile init được gọi ===');
         this.loadProfileData();
         this.loadAvatar();
+
+        // Thêm các event listeners
+        const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+        const editProfileBtn = document.getElementById('editProfileBtn');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const printProfileBtn = document.getElementById('printProfileBtn');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const savePasswordBtn = document.getElementById('savePasswordBtn');
+
+        if (changeAvatarBtn) {
+            changeAvatarBtn.addEventListener('click', () => this.changeAvatar());
+        }
+
+        if (editProfileBtn) {
+            editProfileBtn.addEventListener('click', () => this.editProfile());
+        }
+
+        if (changePasswordBtn) {
+            changePasswordBtn.addEventListener('click', () => this.changePassword());
+        }
+
+        if (printProfileBtn) {
+            printProfileBtn.addEventListener('click', () => this.printProfile());
+        }
+
+        if (saveProfileBtn) {
+            saveProfileBtn.addEventListener('click', () => this.saveProfile());
+        }
+
+        if (savePasswordBtn) {
+            savePasswordBtn.addEventListener('click', () => this.savePassword());
+        }
+
+        // Thêm event listener cho input file avatar
+        const avatarInput = document.getElementById('avatarInput');
+        if (avatarInput) {
+            avatarInput.addEventListener('change', (e) => this.previewAvatar(e));
+        }
     }
 
     loadProfileData() {
@@ -154,7 +192,12 @@ class StudentProfile {
     saveAvatar() {
         console.log('=== saveAvatar được gọi ===');
         const avatarPreview = document.getElementById('avatarPreview');
-        if (avatarPreview && avatarPreview.src) {
+        if (!avatarPreview || !avatarPreview.src || avatarPreview.src === window.location.href) {
+            this.showToast('Vui lòng chọn ảnh trước khi lưu!', 'warning');
+            return;
+        }
+
+        try {
             // Lưu avatar vào đối tượng student
             this.student.avatar = avatarPreview.src;
             
@@ -163,6 +206,8 @@ class StudentProfile {
             if (avatarImage) {
                 avatarImage.src = avatarPreview.src;
                 avatarImage.style.display = 'block';
+                
+                // Ẩn icon mặc định nếu có
                 const iconElement = document.querySelector('#profileAvatar i');
                 if (iconElement) {
                     iconElement.style.display = 'none';
@@ -175,8 +220,21 @@ class StudentProfile {
             // Đóng modal
             this.closeModal('changeAvatarModal');
             
+            // Reset preview
+            avatarPreview.src = '';
+            avatarPreview.style.display = 'none';
+            
+            // Reset input file
+            const avatarInput = document.getElementById('avatarInput');
+            if (avatarInput) {
+                avatarInput.value = '';
+            }
+            
             // Thông báo thành công
             this.showToast('Cập nhật ảnh đại diện thành công!', 'success');
+        } catch (error) {
+            console.error('Lỗi khi lưu avatar:', error);
+            this.showToast('Có lỗi xảy ra khi lưu ảnh!', 'error');
         }
     }
 
@@ -237,189 +295,80 @@ class StudentProfile {
     // Phương thức để in hồ sơ
     printProfile() {
         console.log('=== printProfile được gọi ===');
-        // Chuẩn bị nội dung in
         const printTemplate = document.getElementById('printTemplate');
-        if (printTemplate) {
-            console.log('Chuẩn bị in hồ sơ');
-            
-            // Tạo style cho bản in
-            const printStyle = `
-                <style>
-                    @media print {
-                        body * {
-                            visibility: hidden;
-                        }
-                        #printTemplate, #printTemplate * {
-                            visibility: visible;
-                        }
-                        #printTemplate {
-                            position: absolute;
-                            left: 0;
-                            top: 0;
-                            width: 100%;
-                        }
-                    }
-                    .print-profile {
-                        font-family: Arial, sans-serif;
-                        max-width: 800px;
-                        margin: 0 auto;
-                        padding: 20px;
-                    }
-                    .school-info {
-                        text-align: center;
-                        margin-bottom: 30px;
-                    }
-                    .student-info {
-                        margin-bottom: 30px;
-                    }
-                    .student-info h2 {
-                        margin-bottom: 15px;
-                        border-bottom: 1px solid #ccc;
-                        padding-bottom: 5px;
-                    }
-                    .academic-info h3 {
-                        margin-bottom: 15px;
-                        border-bottom: 1px solid #ccc;
-                        padding-bottom: 5px;
-                    }
-                </style>
-            `;
-            
-            // Tạo nội dung in hồ sơ
-            printTemplate.innerHTML = printStyle + `
+        if (!printTemplate) {
+            console.error('Không tìm thấy template in');
+            return;
+        }
+
+        try {
+            // Tạo nội dung in
+            const content = `
                 <div class="print-profile">
-                    <div class="school-info text-center">
+                    <div class="school-info">
                         <h2>TRƯỜNG THPT ABC</h2>
                         <h3>HỒ SƠ HỌC SINH</h3>
                     </div>
                     <div class="student-info">
                         <h2>${this.student.fullName || 'Chưa cập nhật'}</h2>
-                        <p>Mã học sinh: ${this.student.studentId || ''}</p>
-                        <p>Lớp: ${this.student.className || this.student.class || 'Chưa cập nhật'}</p>
-                        <p>Ngày sinh: ${this.formatDateForDisplay(this.student.birthDate || this.student.birthday || '')}</p>
-                        <p>Giới tính: ${this.student.gender || 'Chưa cập nhật'}</p>
-                        <p>Email: ${this.student.email || 'Chưa cập nhật'}</p>
-                        <p>Số điện thoại: ${this.student.phone || 'Chưa cập nhật'}</p>
-                        <p>Địa chỉ: ${this.student.address || 'Chưa cập nhật'}</p>
+                        <p><strong>Mã học sinh:</strong> ${this.student.studentId || ''}</p>
+                        <p><strong>Lớp:</strong> ${this.student.className || this.student.class || 'Chưa cập nhật'}</p>
+                        <p><strong>Ngày sinh:</strong> ${this.formatDateForDisplay(this.student.birthDate || this.student.birthday || '')}</p>
+                        <p><strong>Giới tính:</strong> ${this.student.gender || 'Chưa cập nhật'}</p>
+                        <p><strong>Email:</strong> ${this.student.email || 'Chưa cập nhật'}</p>
+                        <p><strong>Số điện thoại:</strong> ${this.student.phone || 'Chưa cập nhật'}</p>
+                        <p><strong>Địa chỉ:</strong> ${this.student.address || 'Chưa cập nhật'}</p>
                     </div>
                     <div class="academic-info">
                         <h3>Thông tin học tập</h3>
-                        <p>Điểm trung bình học kỳ 1: ${this.student.gpa1 || '8.5'}</p>
-                        <p>Điểm trung bình học kỳ 2: ${this.student.gpa2 || '8.7'}</p>
-                        <p>Điểm trung bình cả năm: ${this.student.gpaYear || '8.6'}</p>
-                        <p>Xếp loại học lực: ${this.student.academicRank || 'Giỏi'}</p>
-                        <p>Hạnh kiểm: ${this.student.conductRank || 'Tốt'}</p>
+                        <p><strong>Điểm trung bình học kỳ 1:</strong> ${this.student.gpa1 || '8.5'}</p>
+                        <p><strong>Điểm trung bình học kỳ 2:</strong> ${this.student.gpa2 || '8.7'}</p>
+                        <p><strong>Điểm trung bình cả năm:</strong> ${this.student.gpaYear || '8.6'}</p>
+                        <p><strong>Xếp loại học lực:</strong> ${this.student.academicRank || 'Giỏi'}</p>
+                        <p><strong>Hạnh kiểm:</strong> ${this.student.conductRank || 'Tốt'}</p>
                     </div>
                 </div>
             `;
-            
-            // In hồ sơ
-            console.log('Gọi hàm window.print()');
-            window.print();
-        } else {
-            console.error('Không tìm thấy phần tử printTemplate');
-            // Tạo một printTemplate mới nếu không tìm thấy
-            const newPrintTemplate = document.createElement('div');
-            newPrintTemplate.id = 'printTemplate';
-            newPrintTemplate.style.display = 'none';
-            document.body.appendChild(newPrintTemplate);
-            
-            // Gọi lại phương thức
-            this.printProfile();
+
+            // Cập nhật nội dung template
+            printTemplate.innerHTML = content;
+            printTemplate.style.display = 'block';
+
+            // Đợi một chút để đảm bảo nội dung được render
+            setTimeout(() => {
+                window.print();
+                // Ẩn template sau khi in
+                printTemplate.style.display = 'none';
+            }, 100);
+        } catch (error) {
+            console.error('Lỗi khi in hồ sơ:', error);
+            this.showToast('Có lỗi xảy ra khi in hồ sơ!', 'error');
         }
     }
 
     // Phương thức mở modal chung - helper
     openModal(modalId) {
-        console.log(`Mở modal ${modalId}`);
+        console.log('=== openModal được gọi với modalId:', modalId);
         const modal = document.getElementById(modalId);
-        
-        if (!modal) {
-            console.error(`Không tìm thấy modal ${modalId}`);
-            return false;
-        }
-        
-        try {
-            // Thử sử dụng Bootstrap
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                const bsModal = new bootstrap.Modal(modal);
-                bsModal.show();
-                return true;
-            } else {
-                throw new Error('Bootstrap không khả dụng');
-            }
-        } catch (error) {
-            console.warn(`Không thể sử dụng Bootstrap Modal: ${error.message}`);
-            
-            // Fallback: hiển thị modal theo cách thủ công
-            modal.style.display = 'block';
-            modal.classList.add('show');
-            modal.setAttribute('aria-modal', 'true');
-            modal.setAttribute('role', 'dialog');
-            modal.removeAttribute('aria-hidden');
-            
-            // Thêm backdrop
-            const backdrop = document.createElement('div');
-            backdrop.className = 'modal-backdrop fade show';
-            document.body.appendChild(backdrop);
-            
-            // Thêm class cho body
-            document.body.classList.add('modal-open');
-            document.body.style.overflow = 'hidden';
-            document.body.style.paddingRight = '17px';
-            
-            // Thêm sự kiện đóng modal
-            const closeButtons = modal.querySelectorAll('[data-bs-dismiss="modal"]');
-            closeButtons.forEach(button => {
-                button.addEventListener('click', () => this.closeModal(modalId));
-            });
-            
-            return true;
+        if (modal) {
+            const bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+        } else {
+            console.error('Không tìm thấy modal với id:', modalId);
         }
     }
     
     // Phương thức đóng modal chung - helper
     closeModal(modalId) {
+        console.log('=== closeModal được gọi với modalId:', modalId);
         const modal = document.getElementById(modalId);
-        
-        if (!modal) {
-            console.error(`Không tìm thấy modal ${modalId}`);
-            return;
-        }
-        
-        try {
-            // Thử sử dụng Bootstrap
-            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
-                const bsModal = bootstrap.Modal.getInstance(modal);
-                if (bsModal) {
-                    bsModal.hide();
-                    return;
-                } else {
-                    throw new Error('Không tìm thấy instance của Modal');
-                }
-            } else {
-                throw new Error('Bootstrap không khả dụng');
+        if (modal) {
+            const bootstrapModal = bootstrap.Modal.getInstance(modal);
+            if (bootstrapModal) {
+                bootstrapModal.hide();
             }
-        } catch (error) {
-            console.warn(`Không thể sử dụng Bootstrap Modal để đóng: ${error.message}`);
-            
-            // Fallback: đóng modal theo cách thủ công
-            modal.style.display = 'none';
-            modal.classList.remove('show');
-            modal.setAttribute('aria-hidden', 'true');
-            modal.removeAttribute('aria-modal');
-            modal.removeAttribute('role');
-            
-            // Xóa backdrop
-            const backdrop = document.querySelector('.modal-backdrop');
-            if (backdrop) {
-                backdrop.parentNode.removeChild(backdrop);
-            }
-            
-            // Xóa class modal-open
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
+        } else {
+            console.error('Không tìm thấy modal với id:', modalId);
         }
     }
 
@@ -518,125 +467,79 @@ class StudentProfile {
 
     // Phương thức để hiển thị thông báo
     showToast(message, type = 'info') {
-        console.log(`=== showToast: ${message} (${type}) ===`);
-        const toastContainer = document.getElementById('toastContainer');
+        console.log('=== showToast được gọi ===');
+        // Tạo toast container nếu chưa có
+        let toastContainer = document.querySelector('.toast-container');
         if (!toastContainer) {
-            console.error('Không tìm thấy phần tử toastContainer');
-            // Tạo một toastContainer mới nếu không tìm thấy
-            const newToastContainer = document.createElement('div');
-            newToastContainer.id = 'toastContainer';
-            newToastContainer.style.position = 'fixed';
-            newToastContainer.style.top = '20px';
-            newToastContainer.style.right = '20px';
-            newToastContainer.style.zIndex = '9999';
-            document.body.appendChild(newToastContainer);
-            
-            // Gọi lại phương thức
-            this.showToast(message, type);
-            return;
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
         }
-        
-        const toastId = 'toast-' + Date.now();
-        const toastHTML = `
-            <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+
+        // Tạo toast element
+        const toastElement = document.createElement('div');
+        toastElement.className = `toast align-items-center text-white bg-${type} border-0`;
+        toastElement.setAttribute('role', 'alert');
+        toastElement.setAttribute('aria-live', 'assertive');
+        toastElement.setAttribute('aria-atomic', 'true');
+
+        // Tạo nội dung toast
+        toastElement.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
                 </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
         `;
-        
-        toastContainer.innerHTML += toastHTML;
-        
-        const toastElement = document.getElementById(toastId);
-        if (toastElement) {
-            try {
-                // Thử sử dụng Bootstrap Toast
-                if (typeof bootstrap !== 'undefined' && bootstrap.Toast) {
-                    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-                    toast.show();
-                    
-                    // Xóa toast sau khi ẩn
-                    toastElement.addEventListener('hidden.bs.toast', function () {
-                        toastElement.remove();
-                    });
-                } else {
-                    throw new Error('Bootstrap.Toast không khả dụng');
-                }
-            } catch (error) {
-                console.warn(`Không thể sử dụng Bootstrap Toast: ${error.message}`);
-                
-                // Fallback: hiển thị toast theo cách thủ công
-                toastElement.style.display = 'block';
-                toastElement.style.opacity = '1';
-                toastElement.style.backgroundColor = type === 'error' ? '#dc3545' : 
-                                                    type === 'success' ? '#198754' : 
-                                                    type === 'warning' ? '#ffc107' : '#0dcaf0';
-                toastElement.style.color = '#fff';
-                toastElement.style.padding = '15px';
-                toastElement.style.borderRadius = '5px';
-                toastElement.style.marginBottom = '10px';
-                
-                // Thêm sự kiện đóng toast
-                const closeButton = toastElement.querySelector('.btn-close');
-                if (closeButton) {
-                    closeButton.onclick = function() {
-                        toastElement.remove();
-                    };
-                }
-                
-                // Tự động đóng sau 3 giây
-                setTimeout(() => {
-                    toastElement.style.opacity = '0';
-                    toastElement.style.transition = 'opacity 0.5s';
-                    
-                    // Xóa phần tử sau khi ẩn
-                    setTimeout(() => {
-                        if (toastElement.parentNode) {
-                            toastElement.parentNode.removeChild(toastElement);
-                        }
-                    }, 500);
-                }, 3000);
-            }
-        }
+
+        // Thêm toast vào container
+        toastContainer.appendChild(toastElement);
+
+        // Khởi tạo toast Bootstrap
+        const toast = new bootstrap.Toast(toastElement, {
+            animation: true,
+            autohide: true,
+            delay: 3000
+        });
+
+        // Hiển thị toast
+        toast.show();
+
+        // Xóa toast sau khi ẩn
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
     }
 
     // Phương thức để định dạng ngày tháng cho input
     formatDateForInput(dateString) {
         if (!dateString) return '';
-        
-        // Kiểm tra nếu đã đúng định dạng YYYY-MM-DD
-        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-            return dateString;
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return '';
+            return date.toISOString().split('T')[0];
+        } catch (error) {
+            console.error('Lỗi khi định dạng ngày cho input:', error);
+            return '';
         }
-        
-        // Chuyển đổi từ DD/MM/YYYY sang YYYY-MM-DD
-        const parts = dateString.split('/');
-        if (parts.length === 3) {
-            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        }
-        
-        return dateString;
     }
 
     // Phương thức để định dạng ngày tháng cho hiển thị
     formatDateForDisplay(dateString) {
-        if (!dateString) return '';
-        
-        // Chuyển đổi từ YYYY-MM-DD sang DD/MM/YYYY
-        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-            const parts = dateString.split('-');
-            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        if (!dateString) return 'Chưa cập nhật';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'Chưa cập nhật';
+            return date.toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        } catch (error) {
+            console.error('Lỗi khi định dạng ngày để hiển thị:', error);
+            return 'Chưa cập nhật';
         }
-        
-        // Nếu đã là định dạng DD/MM/YYYY
-        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
-            return dateString;
-        }
-        
-        return dateString;
     }
 }
 

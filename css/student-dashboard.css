@@ -15,7 +15,7 @@
 }
 
 .stats-card {
-    background: white;
+    background: #ffffff;
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -52,17 +52,14 @@
 }
 
 .stats-card.primary {
-    background: linear-gradient(to right, #ffffff, #e3f2fd);
     border-left: 5px solid #1565c0;
 }
 
 .stats-card.success {
-    background: linear-gradient(to right, #ffffff, #e8f5e9);
-    border-left: 5px solid #2e7d32;
+    border-left: 5px solid #80e785;
 }
 
 .stats-card.warning {
-    background: linear-gradient(to right, #ffffff, #fff3e0);
     border-left: 5px solid #e65100;
 }
 
@@ -110,6 +107,7 @@
     text-shadow: 0 1px 2px rgba(0,0,0,0.1);
     animation: countUp 1.5s ease-out forwards;
     letter-spacing: 0.5px;
+    color: #424242;
 }
 
 @keyframes countUp {
@@ -124,20 +122,20 @@
 }
 
 .stats-card.primary .stats-info h3 {
-    color: #0d47a1;
+    color: #ffffff;
 }
 
 .stats-card.success .stats-info h3 {
-    color: #1b5e20;
+    color: #ffffff;
 }
 
 .stats-card.warning .stats-info h3 {
-    color: #e65100;
+    color: #ffffff;
 }
 
 .stats-info p {
     margin: 0;
-    color: #212121;
+    color: #424242;
     font-size: 1rem;
     font-weight: 600;
     letter-spacing: 0.3px;

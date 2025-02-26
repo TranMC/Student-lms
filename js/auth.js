@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (loginSuccess) {
                 window.location.href = redirectUrl;
             } else {
-                showLoginError('Tên đăng nhập hoặc mật khẩu không đúng!');
+                showLoginError('Tên đăng nhập, mật khẩu, hoặc vai trò không đúng!');
             }
         });
     }
