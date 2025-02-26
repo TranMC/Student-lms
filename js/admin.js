@@ -703,29 +703,10 @@ class AdminDashboard {
             let teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
             
             if (teacherData.id) {
-                // Cập nhật giáo viên hiện có
-                const existingTeacher = teachers.find(t => t.id === teacherData.id);
-                if (existingTeacher) {
-                    const updatedTeacher = {
-                        ...existingTeacher,
-                        fullName: teacherData.fullName,
-                        subject: teacherData.subject,
-                        email: teacherData.email,
-                        phone: teacherData.phone,
-                        username: teacherData.username
-                    };
-                    
-                    // Chỉ cập nhật mật khẩu nếu có nhập mới
-                    if (teacherData.password) {
-                        updatedTeacher.password = teacherData.password;
-                    }
-                    
-                    teachers = teachers.map(t => 
-                        t.id === teacherData.id ? updatedTeacher : t
-                    );
-                }
+                teachers = teachers.map(t => 
+                    t.id === teacherData.id ? {...t, ...teacherData} : t
+                );
             } else {
-                // Thêm giáo viên mới
                 teacherData.id = 'T' + Date.now();
                 teacherData.role = 'teacher';
                 teacherData.status = 'active';
@@ -736,13 +717,7 @@ class AdminDashboard {
             this.closeModal('teacherModal');
             this.loadTeachers();
             this.showToast('success', 'Đã lưu thông tin giáo viên thành công!');
-            
-            // Cập nhật danh sách tài khoản nếu đang ở trang quản lý tài khoản
-            if (document.getElementById('accountTable')) {
-                this.loadAccounts();
-            }
         } catch (error) {
-            console.error('Lỗi khi lưu thông tin giáo viên:', error);
             this.showToast('error', 'Có lỗi xảy ra khi lưu thông tin!');
         }
     }
@@ -762,33 +737,7 @@ class AdminDashboard {
     }
 
     editTeacher(teacherId) {
-        const teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
-        const teacher = teachers.find(t => t.id === teacherId);
-        
-        if (!teacher) {
-            this.showToast('error', 'Không tìm thấy thông tin giáo viên!');
-            return;
-        }
-
-        // Điền thông tin vào form
-        const form = document.getElementById('teacherForm');
-        form.querySelector('input[name="id"]').value = teacher.id;
-        form.querySelector('input[name="fullName"]').value = teacher.fullName || '';
-        form.querySelector('select[name="subject"]').value = teacher.subject || '';
-        form.querySelector('input[name="email"]').value = teacher.email || '';
-        form.querySelector('input[name="phone"]').value = teacher.phone || '';
-        form.querySelector('input[name="username"]').value = teacher.username || '';
-        
-        // Xóa giá trị mật khẩu vì đây là trường nhập mới
-        const passwordInput = form.querySelector('input[name="password"]');
-        if (passwordInput) {
-            passwordInput.value = '';
-            passwordInput.placeholder = 'Nhập mật khẩu mới nếu muốn thay đổi';
-            passwordInput.required = false;
-        }
-
-        // Hiển thị modal
-        document.getElementById('teacherModal').style.display = 'block';
+        this.openTeacherModal(teacherId);
     }
 
     loadTeachersForSelect() {

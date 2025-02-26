@@ -49,96 +49,94 @@
         </nav>
 
         <main class="dashboard">
-            <div id="pageContent">
-                <div class="welcome-section">
-                    <h2>Xin chào, <span id="studentNameWelcome"></span></h2>
-                    <p class="date-time" id="currentDateTime"></p>
-                    <button id="viewProfileBtn" class="btn btn-outline-primary">
-                        <i class="fas fa-user"></i> Xem hồ sơ
-                    </button>
-                </div>
+            <div class="welcome-section">
+                <h2>Xin chào, <span id="studentNameWelcome"></span></h2>
+                <p class="date-time" id="currentDateTime"></p>
+                <button id="viewProfileBtn" class="btn btn-outline-primary">
+                    <i class="fas fa-user"></i> Xem hồ sơ
+                </button>
+            </div>
 
-                <div class="dashboard-grid">
-                    <div class="stats-card primary">
-                        <div class="stats-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3 id="averageScore">0.0</h3>
-                            <p>Điểm trung bình</p>
-                        </div>
-                        <div class="stats-trend up" id="scoreTrend">
-                            <i class="fas fa-arrow-up"></i>
-                            <span id="scoreTrendValue">0.0</span>
-                        </div>
+            <div class="dashboard-grid">
+                <div class="stats-card primary">
+                    <div class="stats-icon">
+                        <i class="fas fa-star"></i>
                     </div>
-                    
-                    <div class="stats-card success">
-                        <div class="stats-icon">
-                            <i class="fas fa-tasks"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3 id="completionRate">0%</h3>
-                            <p>Tỷ lệ hoàn thành</p>
-                        </div>
-                        <div class="stats-trend up" id="completionTrend">
-                            <i class="fas fa-arrow-up"></i>
-                            <span id="completionTrendValue">0%</span>
-                        </div>
+                    <div class="stats-info">
+                        <h3 id="averageScore">0.0</h3>
+                        <p>Điểm trung bình</p>
                     </div>
-                    
-                    <div class="stats-card warning">
-                        <div class="stats-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stats-info">
-                            <h3 id="daysToExam">0</h3>
-                            <p>Ngày tới kỳ thi</p>
-                        </div>
+                    <div class="stats-trend up" id="scoreTrend">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="scoreTrendValue">0.0</span>
                     </div>
                 </div>
-
-                <div class="content-grid">
-                    <div class="card recent-scores">
-                        <div class="card-header">
-                            <h3><i class="fas fa-chart-bar"></i> Điểm số gần đây</h3>
-                            <button class="btn btn-text" id="viewAllScoresBtn">Xem tất cả</button>
-                        </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Môn học</th>
-                                        <th>Loại điểm</th>
-                                        <th>Điểm</th>
-                                        <th>Ngày</th>
-                                        <th>Đánh giá</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="recentScoresTable">
-                                    <!-- Recent scores will be rendered here -->
-                                </tbody>
-                            </table>
-                        </div>
+                
+                <div class="stats-card success">
+                    <div class="stats-icon">
+                        <i class="fas fa-tasks"></i>
                     </div>
-
-                    <div class="card upcoming-events">
-                        <div class="card-header">
-                            <h3><i class="fas fa-calendar"></i> Lịch kiểm tra</h3>
-                        </div>
-                        <div class="events-list" id="upcomingExams">
-                            <!-- Upcoming exams will be rendered here -->
-                        </div>
+                    <div class="stats-info">
+                        <h3 id="completionRate">0%</h3>
+                        <p>Tỷ lệ hoàn thành</p>
                     </div>
+                    <div class="stats-trend up" id="completionTrend">
+                        <i class="fas fa-arrow-up"></i>
+                        <span id="completionTrendValue">0%</span>
+                    </div>
+                </div>
+                
+                <div class="stats-card warning">
+                    <div class="stats-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stats-info">
+                        <h3 id="daysToExam">0</h3>
+                        <p>Ngày tới kỳ thi</p>
+                    </div>
+                </div>
+            </div>
 
-                    <div class="card subject-progress">
-                        <div class="card-header">
-                            <h3><i class="fas fa-book"></i> Tiến độ học tập</h3>
-                        </div>
-                        <div class="card-content">
-                            <div id="subjectProgressContainer" class="progress-container">
-                                <!-- Tiến độ học tập sẽ được hiển thị ở đây -->
-                            </div>
+            <div class="content-grid">
+                <div class="card recent-scores">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar"></i> Điểm số gần đây</h3>
+                        <button class="btn btn-text" id="viewAllScoresBtn">Xem tất cả</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Môn học</th>
+                                    <th>Loại điểm</th>
+                                    <th>Điểm</th>
+                                    <th>Ngày</th>
+                                    <th>Đánh giá</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentScoresTable">
+                                <!-- Recent scores will be rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card upcoming-events">
+                    <div class="card-header">
+                        <h3><i class="fas fa-calendar"></i> Lịch kiểm tra</h3>
+                    </div>
+                    <div class="events-list" id="upcomingExams">
+                        <!-- Upcoming exams will be rendered here -->
+                    </div>
+                </div>
+
+                <div class="card subject-progress">
+                    <div class="card-header">
+                        <h3><i class="fas fa-book"></i> Tiến độ học tập</h3>
+                    </div>
+                    <div class="card-content">
+                        <div id="subjectProgressContainer" class="progress-container">
+                            <!-- Tiến độ học tập sẽ được hiển thị ở đây -->
                         </div>
                     </div>
                 </div>

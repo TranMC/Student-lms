@@ -163,45 +163,63 @@ class TeacherScores {
     }
 
     saveScore() {
-        const scoreId = document.getElementById('scoreId').value;
-        const scoreData = {
-            studentId: document.getElementById('studentSelect').value,
-            subject: document.getElementById('subjectSelect').value,
-            type: document.getElementById('scoreType').value,
-            score: document.getElementById('scoreValue').value,
-            date: document.getElementById('scoreDate').value,
-            semester: this.currentSemester || '1'
-        };
-
-        if (this.validateScoreData(scoreData)) {
-            if (scoreId) {
-                // Cập nhật điểm
-                const index = this.scores.findIndex(s => s.id === scoreId);
-                if (index !== -1) {
-                    this.scores[index] = { ...scoreData, id: scoreId };
-                }
+        // Lấy dữ liệu từ form
+        const scoreId = this.currentScoreId || `score_${Date.now()}`;
+        const studentId = document.getElementById('studentSelect').value;
+        const subject = document.getElementById('subject').value;
+        const type = document.getElementById('scoreType').value;
+        const score = parseFloat(document.getElementById('scoreValue').value);
+        const date = document.getElementById('scoreDate').value;
+        
+        try {
+            // Tạo đối tượng điểm số
+            const scoreData = {
+                id: scoreId,
+                studentId,
+                subject,
+                type,
+                score,
+                date,
+                semester: this.getCurrentSemester() // Thêm thông tin học kỳ
+            };
+            
+            // Cập nhật hoặc thêm mới điểm số
+            let scores = JSON.parse(localStorage.getItem('scores') || '[]');
+            
+            if (this.currentScoreId) {
+                // Cập nhật điểm số hiện có
+                scores = scores.map(s => s.id === this.currentScoreId ? scoreData : s);
             } else {
-                // Thêm điểm mới
-                this.scores.push({
-                    ...scoreData,
-                    id: Date.now().toString()
-                });
+                // Thêm điểm số mới
+                scores.push(scoreData);
             }
             
-            localStorage.setItem('scores', JSON.stringify(this.scores));
-            this.loadScoreTable();
-            this.closeModal();
-            this.showToast(scoreId ? 'Đã cập nhật điểm thành công' : 'Đã thêm điểm thành công');
+            // Lưu vào localStorage
+            localStorage.setItem('scores', JSON.stringify(scores));
+            
+            // Kích hoạt sự kiện cập nhật điểm
+            window.dispatchEvent(new CustomEvent('scoresUpdated'));
+            
+            // Cập nhật giao diện
+            this.loadScores();
+            
+            // Đóng modal và hiển thị thông báo
+            this.closeModal('scoreModal');
+            this.showToast('success', 'Đã lưu điểm thành công!');
+            
+            // Reset form
+            this.currentScoreId = null;
+            document.getElementById('scoreForm').reset();
+        } catch (error) {
+            console.error('Lỗi khi lưu điểm:', error);
+            this.showToast('error', 'Có lỗi xảy ra khi lưu điểm!');
         }
     }
 
-    editScore(scoreId) {
-        const score = this.scores.find(s => s.id === scoreId);
-        if (score) {
-            this.showAddScoreForm(score);
-        } else {
-            this.showToast('Không tìm thấy thông tin điểm', 'error');
-        }
+    getCurrentSemester() {
+        const now = new Date();
+        const month = now.getMonth() + 1; // getMonth() trả về 0-11
+        return month >= 8 || month <= 1 ? '1' : '2';
     }
 
     deleteScore(scoreId) {
