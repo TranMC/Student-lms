@@ -1,0 +1,184 @@
+/* Toast Container */
+#toastContainer {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 9999;
+}
+
+.toast {
+    opacity: 0;
+    transform: translateY(1rem);
+    transition: all 0.3s ease;
+}
+
+.toast.success {
+    border-left: 4px solid #10B981;
+}
+
+.toast.error {
+    border-left: 4px solid #EF4444;
+}
+
+.toast.warning {
+    border-left: 4px solid #F59E0B;
+}
+
+.toast.info {
+    border-left: 4px solid #3B82F6;
+}
+
+/* Confirm Popup */
+.popup-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.confirm-popup {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    max-width: 28rem;
+    width: 90%;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+.confirm-popup.show {
+    transform: scale(1);
+}
+
+.confirm-popup h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.confirm-popup p {
+    color: #4B5563;
+    margin-bottom: 1.5rem;
+}
+
+.confirm-popup .buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.confirm-popup button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.confirm-popup button:hover {
+    opacity: 0.9;
+}
+
+.confirm-popup .btn-cancel {
+    background-color: #F3F4F6;
+    color: #4B5563;
+}
+
+.confirm-popup .btn-confirm {
+    background-color: #2563EB;
+    color: white;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    width: 90%;
+    max-width: 32rem;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.close {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6B7280;
+}
+
+.close:hover {
+    color: #374151;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.375rem;
+    transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .confirm-popup {
+        width: 95%;
+        padding: 1rem;
+    }
+
+    .confirm-popup .buttons {
+        flex-direction: column;
+    }
+
+    .confirm-popup button {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 1rem;
+    }
+} 

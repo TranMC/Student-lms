@@ -162,7 +162,9 @@ const teacherLogin = (username, password) => {
             showLoginError('Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.');
             return false;
         }
+        // Lưu thông tin giáo viên vào các key cần thiết
         localStorage.setItem('currentUser', JSON.stringify({...teacher, role: 'teacher'}));
+        localStorage.setItem('currentTeacher', JSON.stringify(teacher));
         return true;
     }
     return false;
@@ -210,7 +212,7 @@ const checkTeacherAuth = () => {
     if (!currentUser || currentUser.role !== 'teacher') {
         return false;
     }
-    return true;
+    return currentUser;
 };
 
 // Kiểm tra xác thực admin

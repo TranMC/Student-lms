@@ -1,84 +1,36 @@
 class TeacherDashboard {
     constructor() {
-        this.dataService = new DataService();
+        this.currentView = 'overview';
+        this.charts = {
+            grades: null,
+            attendance: null
+        };
         this.initializeDashboard();
     }
 
     async initializeDashboard() {
         try {
-            // Debug: Kiểm tra dữ liệu trong localStorage
-            const teacherData = localStorage.getItem('currentUser');
-            console.log('Raw teacher data:', teacherData);
-
-            if (teacherData) {
-                const teacher = JSON.parse(teacherData);
-                console.log('Parsed teacher data:', teacher);
-
-                // Nếu teacher là mảng, lấy phần tử đầu tiên
-                const teacherInfo = Array.isArray(teacher) ? teacher[0] : teacher;
-                console.log('Teacher info to use:', teacherInfo);
-
-                const welcomeElement = document.getElementById('teacherNameWelcome');
-                const headerElement = document.getElementById('teacherName');
-                
-                if (welcomeElement) {
-                    welcomeElement.textContent = teacherInfo.fullName || 'Giáo viên';
+            const teacher = JSON.parse(localStorage.getItem('currentTeacher'));
+            if (teacher) {
+                document.getElementById('teacherName').textContent = teacher.fullName || teacher.name;
+                // Cập nhật avatar với tên giáo viên
+                const avatar = document.querySelector('img[alt="Profile"]');
+                if (avatar) {
+                    avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.fullName || teacher.name)}&background=0D8ABC&color=fff`;
                 }
-                if (headerElement) {
-                    headerElement.textContent = teacherInfo.fullName || 'Giáo viên';
-                }
-            } else {
-                console.log('No teacher data found in localStorage');
             }
-
-            const data = await this.dataService.fetchDashboardData();
-            this.updateDashboardView(data);
-            
-            // Cập nhật thời gian
             this.updateDateTime();
             setInterval(() => this.updateDateTime(), 60000);
-            
-            // Lắng nghe sự kiện cập nhật
-            document.addEventListener('dashboard-data-updated', (event) => {
-                this.updateDashboardView(event.detail);
-            });
+            await this.loadDashboardOverview();
         } catch (error) {
             console.error('Lỗi khởi tạo dashboard:', error);
-            console.error('Error details:', error.message);
-            
-            // Sử dụng dữ liệu mẫu từ teacher-dashboard-content.html nếu có lỗi
-            this.useSampleData();
+            showToast('Không thể tải dữ liệu dashboard', 'error');
         }
     }
 
-    updateDashboardView(data) {
-        // Cập nhật tên giáo viên
-        const welcomeElement = document.getElementById('teacherNameWelcome');
-        const headerElement = document.getElementById('teacherName');
-        
-        if (welcomeElement) welcomeElement.textContent = data.teacher.fullName;
-        if (headerElement) headerElement.textContent = data.teacher.fullName;
-
-        // Cập nhật thống kê
-        const { statistics } = data;
-        const totalStudentsElement = document.getElementById('totalStudents');
-        const averageElement = document.getElementById('averageScore');
-        const passRateElement = document.getElementById('passRate');
-
-        if (totalStudentsElement) totalStudentsElement.textContent = statistics.totalStudents;
-        if (averageElement) averageElement.textContent = statistics.averageScore;
-        if (passRateElement) passRateElement.textContent = `${statistics.passRate}%`;
-
-        // Cập nhật điểm gần đây
-        this.updateRecentScores(data.recentScores);
-        
-        // Cập nhật lịch dạy
-        this.updateSchedule(data.schedule);
-    }
-
     updateDateTime() {
-        const dateElement = document.getElementById('currentDateTime');
-        if (dateElement) {
+        const dateTimeElement = document.getElementById('currentDateTime');
+        if (dateTimeElement) {
             const now = new Date();
             const options = { 
                 weekday: 'long', 
@@ -88,62 +40,269 @@ class TeacherDashboard {
                 hour: '2-digit',
                 minute: '2-digit'
             };
-            dateElement.textContent = now.toLocaleDateString('vi-VN', options);
+            dateTimeElement.textContent = now.toLocaleDateString('vi-VN', options);
         }
     }
 
-    updateRecentScores(scores) {
-        const recentScoresContainer = document.getElementById('recentScores');
-        if (recentScoresContainer) {
-            recentScoresContainer.innerHTML = scores.map(score => `
-                <div class="score-item">
-                    <div class="score-info">
-                        <div class="score-student">${score.studentName}</div>
-                        <div class="score-details">
-                            ${score.subject} - ${score.type} - ${new Date(score.date).toLocaleDateString('vi-VN')}
+    destroyCharts() {
+        Object.values(this.charts).forEach(chart => {
+            if (chart) {
+                chart.destroy();
+            }
+        });
+        this.charts.grades = null;
+        this.charts.attendance = null;
+    }
+
+    async loadDashboardOverview() {
+        const pageContent = document.getElementById('pageContent');
+        if (!pageContent) return;
+
+        // Đảm bảo hủy các biểu đồ cũ trước khi tạo mới
+        this.destroyCharts();
+
+        pageContent.innerHTML = `
+            <div class="col-span-3">
+                <!-- Thống kê tổng quan -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="stat-card bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-700">Tổng số lớp</h3>
+                                <p class="text-3xl font-bold text-primary-600">5</p>
+                            </div>
+                            <div class="text-primary-500">
+                                <i class="fas fa-chalkboard-teacher text-3xl"></i>
+                            </div>
                         </div>
                     </div>
-                    <div class="score-value">${score.score}</div>
-                </div>
-            `).join('');
-        }
-    }
-
-    updateSchedule(schedule) {
-        const scheduleContainer = document.getElementById('todaySchedule');
-        if (scheduleContainer) {
-            scheduleContainer.innerHTML = schedule.map(item => `
-                <div class="schedule-item">
-                    <div class="schedule-time">${item.time}</div>
-                    <div class="schedule-info">
-                        <div class="schedule-class">${item.class}</div>
-                        <div class="schedule-subject">${item.subject}</div>
+                    <div class="stat-card bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-700">Tổng số học sinh</h3>
+                                <p class="text-3xl font-bold text-success-600">150</p>
+                            </div>
+                            <div class="text-success-500">
+                                <i class="fas fa-user-graduate text-3xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-700">Điểm trung bình</h3>
+                                <p class="text-3xl font-bold text-warning-600">7.5</p>
+                            </div>
+                            <div class="text-warning-500">
+                                <i class="fas fa-star text-3xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-700">Bài tập mới</h3>
+                                <p class="text-3xl font-bold text-danger-600">3</p>
+                            </div>
+                            <div class="text-danger-500">
+                                <i class="fas fa-book text-3xl"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            `).join('');
+
+                <!-- Biểu đồ và thông tin chi tiết -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Biểu đồ điểm số -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold mb-4">Phân bố điểm số</h3>
+                        <canvas id="gradesChart"></canvas>
+                    </div>
+
+                    <!-- Biểu đồ điểm danh -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold mb-4">Thống kê điểm danh</h3>
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+
+                    <!-- Lịch dạy gần nhất -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Lịch dạy sắp tới</h3>
+                            <a href="#schedule" class="text-sm text-primary-600 hover:text-primary-700">Xem tất cả</a>
+                        </div>
+                        <div class="space-y-4" id="upcomingSchedule">
+                            <!-- Lịch dạy sẽ được thêm vào đây -->
+                        </div>
+                    </div>
+
+                    <!-- Bài tập gần đây -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Bài tập gần đây</h3>
+                            <a href="#homework" class="text-sm text-primary-600 hover:text-primary-700">Xem tất cả</a>
+                        </div>
+                        <div class="space-y-4" id="recentHomework">
+                            <!-- Bài tập sẽ được thêm vào đây -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Đảm bảo các biểu đồ cũ được hủy trước khi tạo mới
+        this.destroyCharts();
+        
+        await this.loadStatistics();
+        this.initializeCharts();
+        this.updateRecentData();
+    }
+
+    async loadStatistics() {
+        try {
+            // Giả lập API call
+            const stats = {
+                totalClasses: 5,
+                totalStudents: 150,
+                averageGrade: 7.5,
+                newHomework: 3,
+                gradeDistribution: [10, 25, 45, 35, 20],
+                attendanceData: {
+                    present: 85,
+                    absent: 10,
+                    late: 5
+                }
+            };
+            this.updateDashboardStats(stats);
+        } catch (error) {
+            console.error('Lỗi khi tải thống kê:', error);
+            showToast('Không thể tải dữ liệu thống kê', 'error');
         }
     }
 
-    // Thêm phương thức để sử dụng dữ liệu mẫu khi có lỗi
-    useSampleData() {
-        console.log('Sử dụng dữ liệu mẫu từ mockData');
-        // Kiểm tra xem mockData có tồn tại không (được định nghĩa trong teacher-dashboard-content.html)
-        if (typeof mockData !== 'undefined') {
-            this.updateDashboardView({
-                teacher: mockData.teacher,
-                statistics: {
-                    totalStudents: mockData.stats.totalStudents,
-                    averageScore: '8.5',
-                    passRate: '85'
+    initializeCharts() {
+        const gradesCtx = document.getElementById('gradesChart')?.getContext('2d');
+        if (gradesCtx) {
+            this.charts.grades = new Chart(gradesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-2', '2-4', '4-6', '6-8', '8-10'],
+                    datasets: [{
+                        label: 'Số học sinh',
+                        data: [10, 25, 45, 35, 20],
+                        backgroundColor: '#4F46E5'
+                    }]
                 },
-                recentScores: [],
-                schedule: mockData.schedule ? mockData.schedule["2023-11-01"] : []
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Phân bố điểm số'
+                        }
+                    }
+                }
+            });
+        }
+
+        const attendanceCtx = document.getElementById('attendanceChart')?.getContext('2d');
+        if (attendanceCtx) {
+            this.charts.attendance = new Chart(attendanceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Có mặt', 'Vắng mặt', 'Đi muộn'],
+                    datasets: [{
+                        data: [85, 10, 5],
+                        backgroundColor: ['#10B981', '#EF4444', '#F59E0B']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
             });
         }
     }
+
+    updateDashboardStats(stats) {
+        const statCards = document.querySelectorAll('.stat-card p');
+        if (statCards.length >= 4) {
+            statCards[0].textContent = stats.totalClasses;
+            statCards[1].textContent = stats.totalStudents;
+            statCards[2].textContent = stats.averageGrade;
+            statCards[3].textContent = stats.newHomework;
+        }
+
+        if (this.charts.grades) {
+            this.charts.grades.data.datasets[0].data = stats.gradeDistribution;
+            this.charts.grades.update();
+        }
+
+        if (this.charts.attendance) {
+            this.charts.attendance.data.datasets[0].data = [
+                stats.attendanceData.present,
+                stats.attendanceData.absent,
+                stats.attendanceData.late
+            ];
+            this.charts.attendance.update();
+        }
+    }
+
+    updateRecentData() {
+        const upcomingSchedule = document.getElementById('upcomingSchedule');
+        if (upcomingSchedule) {
+            upcomingSchedule.innerHTML = `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold">Lớp 10A1 - Toán học</h4>
+                        <p class="text-sm text-gray-600">Tiết 1-2</p>
+                    </div>
+                    <span class="text-sm text-gray-500">Hôm nay</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold">Lớp 10A2 - Toán học</h4>
+                        <p class="text-sm text-gray-600">Tiết 3-4</p>
+                    </div>
+                    <span class="text-sm text-gray-500">Ngày mai</span>
+                </div>
+            `;
+        }
+
+        const recentHomework = document.getElementById('recentHomework');
+        if (recentHomework) {
+            recentHomework.innerHTML = `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold">Bài tập Đại số</h4>
+                        <p class="text-sm text-gray-600">Lớp 10A1</p>
+                    </div>
+                    <span class="text-sm text-gray-500">Hạn: 20/03/2024</span>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <h4 class="font-semibold">Bài tập Hình học</h4>
+                        <p class="text-sm text-gray-600">Lớp 10A2</p>
+                    </div>
+                    <span class="text-sm text-gray-500">Hạn: 22/03/2024</span>
+                </div>
+            `;
+        }
+    }
+
+    setupEventListeners() {
+        // Thêm các event listeners nếu cần
+    }
 }
 
-// Khởi tạo dashboard khi trang load
+// Khởi tạo dashboard khi trang được tải
 document.addEventListener('DOMContentLoaded', () => {
-    new TeacherDashboard();
+    window.teacherDashboard = new TeacherDashboard();
 }); 

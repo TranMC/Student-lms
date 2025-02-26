@@ -8,53 +8,144 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/students.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
 </head>
-<body>
-    <header class="header">
-        <div class="header-left">
-            <h1>Bảng tổng quan - Giáo Viên</h1>
-        </div>
-        <div class="header-right">
-            <span id="teacherName"></span>
-            <button class="btn btn-logout" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Đăng xuất
-            </button>
-        </div>
-    </header>
-
-    <div class="dashboard-container">
-        <nav class="sidebar">
-            <ul>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <nav class="w-64 bg-white shadow-lg">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-gray-800">Trang giáo viên</h2>
+                <!-- <p class="text-sm text-gray-600">Trang Giáo Viên</p> -->
+            </div>
+            <ul class="space-y-2 p-4">
                 <li data-page="dashboard">
-                    <a href="#dashboard"><i class="fas fa-home"></i> Tổng quan</a>
+                    <a href="#dashboard" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all">
+                        <i class="fas fa-home mr-3"></i> Tổng quan
+                    </a>
                 </li>
                 <li data-page="scores">
-                    <a href="#scores"><i class="fas fa-edit"></i> Nhập điểm</a>
+                    <a href="#scores" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all">
+                        <i class="fas fa-edit mr-3"></i> Quản lý điểm
+                        <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">Mới</span>
+                    </a>
                 </li>
                 <li data-page="schedule">
-                    <a href="#schedule"><i class="fas fa-calendar-alt"></i> Lịch giảng dạy</a>
+                    <a href="#schedule" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all">
+                        <i class="fas fa-calendar-alt mr-3"></i> Lịch giảng dạy
+                    </a>
                 </li>
                 <li data-page="students">
-                    <a href="#students"><i class="fas fa-user-graduate"></i> Học sinh</a>
+                    <a href="#students" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all">
+                        <i class="fas fa-user-graduate mr-3"></i> Học sinh
+                    </a>
                 </li>
+                <li data-page="attendance">
+                    <a href="#attendance" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all">
+                        <i class="fas fa-clipboard-check mr-3"></i> Điểm danh
+                        <span class="ml-auto bg-green-500 text-white text-xs px-2 py-1 rounded-full">Mới</span>
+                    </a>
+                </li>
+                <!-- <li data-page="homework">
+                    <a href="#homework" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all">
+                        <i class="fas fa-book mr-3"></i> Bài tập về nhà
+                    </a>
+                </li>
+                <li data-page="reports">
+                    <a href="#reports" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all">
+                        <i class="fas fa-chart-bar mr-3"></i> Báo cáo
+                    </a>
+                </li>
+                <li data-page="messages">
+                    <a href="#messages" class="flex items-center p-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-all">
+                        <i class="fas fa-comments mr-3"></i> Tin nhắn
+                        <span class="ml-auto bg-blue-500 text-white text-xs px-2 py-1 rounded-full">3</span>
+                    </a>
+                </li> -->
             </ul>
         </nav>
 
-        <main class="dashboard">
-            <div id="pageContent">
+        <!-- Main Content -->
+        <div class="flex-1 overflow-x-hidden overflow-y-auto">
+            <!-- Header -->
+            <header class="bg-white shadow-sm sticky top-0 z-50">
+                <div class="flex items-center justify-between px-8 py-4">
+                    <div class="flex items-center space-x-4">
+                        <h1 class="text-2xl font-semibold text-gray-800">Bảng điều khiển</h1>
+                        <span id="currentDateTime" class="text-sm text-gray-500"></span>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <!-- Search -->
+                        <div class="relative">
+                            <input type="text" placeholder="Tìm kiếm..." class="w-64 pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button class="notification-button p-2 text-gray-600 hover:text-gray-800 relative">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">3</span>
+                            </button>
+                            <!-- Notification Dropdown -->
+                            <div class="notification-dropdown hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                        </div>
+                        <!-- User Menu -->
+                        <div class="relative">
+                            <div class="flex items-center space-x-3 cursor-pointer" id="userMenuButton">
+                                <span id="teacherName" class="text-gray-700"></span>
+                                <img class="h-10 w-10 rounded-full border-2 border-blue-500" src="https://ui-avatars.com/api/?name=Teacher&background=0D8ABC&color=fff" alt="Profile">
+                                <i class="fas fa-chevron-down text-gray-500"></i>
+                            </div>
+                            <!-- User Dropdown -->
+                            <div class="user-dropdown hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50">
+                                <a href="#profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-user mr-2"></i> Hồ sơ
+                                </a>
+                                <a href="#settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-cog mr-2"></i> Cài đặt
+                                </a>
+                                <hr class="my-2">
+                                <button onclick="logout()" class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
+                                    <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
-            </div>
-        </main>
+            <!-- Main Dashboard -->
+            <main class="p-6">
+                <div id="pageContent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Content will be loaded dynamically -->
+                </div>
+            </main>
+
+            <!-- Toast Notifications -->
+            <div id="toastContainer" class="fixed bottom-4 right-4 z-50"></div>
+        </div>
     </div>
 
+    <!-- Modal Container -->
+    <div id="modalContainer" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <!-- Modal content will be loaded dynamically -->
+    </div>
 
+    <!-- Scripts -->
     <script src="js/auth.js"></script>
     <script src="js/data-service.js"></script>
-    <script src="js/students.js"></script>
-    <script src="js/scores.js"></script>
     <script src="js/teacher-dashboard.js"></script>
-    <script src="js/navigation.js"></script>
+    <script src="js/attendance.js"></script>
+    <script src="js/homework.js"></script>
+    <script src="js/messages.js"></script>
+    <script src="js/teacher-navigation.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -63,6 +154,25 @@
                 window.location.href = 'login.html';
             }
         });
+
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type} fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 mb-4 transition-all duration-300 transform translate-y-0`;
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-red-500'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.getElementById('toastContainer').appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
     </script>
 </body>
 </html> 
