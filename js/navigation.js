@@ -1,7 +1,18 @@
 class Navigation {
     constructor() {
+        this.userRole = window.location.href.includes('teacher') ? 'teacher' : 'student';
         this.currentPage = 'dashboard';
-        this.userRole = this.detectUserRole(); // Xác định vai trò người dùng
+        
+        // Thêm xử lý sự kiện hash change
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.replace('#', '') || 'dashboard';
+            this.loadPage(hash);
+        });
+
+        // Xử lý hash ban đầu
+        const initialHash = window.location.hash.replace('#', '') || 'dashboard';
+        this.loadPage(initialHash);
+
         this.initializeNavigation();
     }
 
@@ -43,38 +54,59 @@ class Navigation {
     }
 
     async loadPage(page) {
+        console.log('Đang tải trang:', page);
+        
+        // Cập nhật active link
+        this.updateActiveLink(page);
+        
+        // Nếu đang ở trang dashboard, không cần tải lại nội dung
+        if (page === 'dashboard') {
+            return;
+        }
+
         try {
-            console.log('Loading page:', page, 'for role:', this.userRole);
-            
-            // Xác định tiền tố dựa trên vai trò
-            const prefix = this.userRole === 'teacher' ? 'teacher' : 'student';
-            
-            // Tạo đường dẫn đến trang nội dung
-            const contentPath = `components/${prefix}-${page}-content.html`;
-            console.log('Fetching content from:', contentPath);
-            
-            const response = await fetch(contentPath);
-            
+            // Tải nội dung HTML từ file component
+            const response = await fetch(`components/student-${page}-content.html`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            
-            const content = await response.text();
-            const mainContent = document.querySelector('main.dashboard');
-            
-            if (mainContent) {
-                mainContent.innerHTML = content;
-                
-                // Kiểm tra và tải CSS nếu cần
-                this.loadRequiredCSS(prefix, page);
-                
-                this.initializeComponent(page);
-                this.updateActiveLink(page);
+            const html = await response.text();
+
+            // Tìm hoặc tạo phần tử pageContent
+            let pageContent = document.getElementById('pageContent');
+            if (!pageContent) {
+                const mainDashboard = document.querySelector('main.dashboard');
+                if (mainDashboard) {
+                    pageContent = document.createElement('div');
+                    pageContent.id = 'pageContent';
+                    mainDashboard.innerHTML = '';
+                    mainDashboard.appendChild(pageContent);
+                } else {
+                    throw new Error('Không tìm thấy main.dashboard');
+                }
+            }
+
+            // Cập nhật nội dung
+            pageContent.innerHTML = html;
+
+            // Khởi tạo component tương ứng
+            if (this.userRole === 'student') {
+                this.initializeStudentComponent(page);
             } else {
-                console.error('Main content container not found');
+                this.initializeTeacherComponent(page);
             }
         } catch (error) {
-            console.error('Error loading page:', error);
+            console.error('Lỗi khi tải trang:', error);
+            const mainContent = document.querySelector('main.dashboard');
+            if (mainContent) {
+                mainContent.innerHTML = `
+                    <div class="p-4 text-center">
+                        <p class="text-red-500">Có lỗi xảy ra khi tải trang.</p>
+                        <p>Vui lòng thử lại sau.</p>
+                        <p class="text-sm text-gray-500">${error.message}</p>
+                    </div>
+                `;
+            }
         }
     }
 
@@ -210,12 +242,78 @@ class Navigation {
                 }
                 break;
             case 'scores':
-                if (typeof StudentScores !== 'undefined') {
-                    console.log('Khởi tạo StudentScores');
-                    window.scoresInstance = new StudentScores();
-                } else {
-                    console.error('StudentScores class is not defined');
+                // Tải nội dung HTML trước
+                const pageContent = document.getElementById('pageContent');
+                if (!pageContent) {
+                    console.error('Không tìm thấy phần tử pageContent');
+                    const mainContent = document.querySelector('main.dashboard');
+                    if (mainContent) {
+                        const newPageContent = document.createElement('div');
+                        newPageContent.id = 'pageContent';
+                        mainContent.innerHTML = '';
+                        mainContent.appendChild(newPageContent);
+                    }
                 }
+
+                fetch('components/student-scores-content.html')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        const pageContent = document.getElementById('pageContent');
+                        if (pageContent) {
+                            pageContent.innerHTML = html;
+                            
+                            // Phát sự kiện khi nội dung HTML đã được tải
+                            window.dispatchEvent(new CustomEvent('studentScoresContentLoaded'));
+                            
+                            // Khởi tạo hoặc tải lại StudentScores
+                            if (typeof StudentScores !== 'undefined') {
+                                console.log('Khởi tạo StudentScores mới');
+                                if (window.scoresInstance) {
+                                    // Nếu đã có instance, chỉ cần tải lại điểm
+                                    window.scoresInstance.loadScores();
+                                } else {
+                                    // Tạo instance mới
+                                    window.scoresInstance = new StudentScores();
+                                }
+                            } else {
+                                console.error('StudentScores class is not defined');
+                                this.loadScript('js/student-scores.js')
+                                    .then(() => {
+                                        if (typeof StudentScores !== 'undefined') {
+                                            window.scoresInstance = new StudentScores();
+                                        } else {
+                                            throw new Error('Không thể tải StudentScores class');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Lỗi khi tải script student-scores.js:', error);
+                                        pageContent.innerHTML = `
+                                            <div class="p-4 text-center">
+                                                <p class="text-red-500">Có lỗi xảy ra khi tải dữ liệu điểm số.</p>
+                                                <p>Vui lòng thử lại sau.</p>
+                                            </div>
+                                        `;
+                                    });
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi tải nội dung điểm số:', error);
+                        const pageContent = document.getElementById('pageContent');
+                        if (pageContent) {
+                            pageContent.innerHTML = `
+                                <div class="p-4 text-center">
+                                    <p class="text-red-500">Có lỗi xảy ra khi tải dữ liệu điểm số.</p>
+                                    <p>Vui lòng thử lại sau.</p>
+                                </div>
+                            `;
+                        }
+                    });
                 break;
             case 'schedule':
                 if (typeof StudentSchedule !== 'undefined') {

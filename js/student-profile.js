@@ -39,12 +39,7 @@ class StudentProfile {
                 parent1Name: 'Nguyễn Văn B',
                 parent1Phone: '0987654321',
                 parent1Email: 'nguyenvanb@example.com',
-                parent1Relation: 'Cha',
-                gpa1: '8.5',
-                gpa2: '8.7',
-                gpaYear: '8.6',
-                academicRank: 'Giỏi',
-                conductRank: 'Tốt'
+                parent1Relation: 'Cha'
             };
             
             // Lưu dữ liệu mẫu vào localStorage
@@ -52,6 +47,20 @@ class StudentProfile {
             console.log('Đã tạo và lưu dữ liệu mẫu:', this.student);
         }
         
+        // Lắng nghe sự kiện cập nhật điểm số từ storage
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'scores') {
+                console.log('Điểm số đã được cập nhật từ tab khác, đang tải lại...');
+                this.loadProfileData();
+            }
+        });
+
+        // Lắng nghe sự kiện cập nhật điểm số từ cùng tab
+        window.addEventListener('scoresUpdated', () => {
+            console.log('Điểm số đã được cập nhật trong tab hiện tại, đang tải lại...');
+            this.loadProfileData();
+        });
+
         this.init();
     }
 
@@ -102,7 +111,13 @@ class StudentProfile {
     loadProfileData() {
         console.log('=== loadProfileData được gọi ===');
         console.log('Loading profile data:', this.student);
-        // Cập nhật thông tin học sinh trong giao diện
+        
+        if (!this.student || !this.student.studentId) {
+            console.error('Không có thông tin học sinh');
+            return;
+        }
+
+        // Cập nhật thông tin cơ bản
         const studentFullName = document.getElementById('studentFullName');
         const studentId = document.getElementById('studentId');
         const studentFullNameInfo = document.getElementById('studentFullNameInfo');
@@ -118,7 +133,6 @@ class StudentProfile {
         const parentPhone = document.getElementById('parentPhone');
         const parentEmail = document.getElementById('parentEmail');
         
-        // Cập nhật thông tin nếu các phần tử tồn tại
         if (studentFullName) studentFullName.textContent = this.student.fullName || 'Chưa cập nhật';
         if (studentId) studentId.textContent = this.student.studentId || '';
         if (studentFullNameInfo) studentFullNameInfo.textContent = this.student.fullName || 'Chưa cập nhật';
@@ -130,26 +144,94 @@ class StudentProfile {
         if (studentEmail) studentEmail.textContent = this.student.email || 'Chưa cập nhật';
         if (studentPhone) studentPhone.textContent = this.student.phone || 'Chưa cập nhật';
         if (studentAddress) studentAddress.textContent = this.student.address || 'Chưa cập nhật';
-        
-        // Cập nhật thông tin phụ huynh
         if (parentName) parentName.textContent = this.student.parent1Name || 'Chưa cập nhật';
         if (parentPhone) parentPhone.textContent = this.student.parent1Phone || 'Chưa cập nhật';
         if (parentEmail) parentEmail.textContent = this.student.parent1Email || 'Chưa cập nhật';
+
+        // Tính toán và cập nhật điểm số
+        const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+        const studentScores = scores.filter(score => score.studentId === this.student.studentId);
         
-        // Cập nhật thông tin học tập
-        const gpa1 = document.getElementById('gpa1');
-        const gpa2 = document.getElementById('gpa2');
-        const gpaYear = document.getElementById('gpaYear');
-        const academicRank = document.getElementById('academicRank');
-        const conductRank = document.getElementById('conductRank');
+        // Tổ chức điểm theo học kỳ và loại
+        const semester1Scores = {};
+        const semester2Scores = {};
         
-        if (gpa1) gpa1.textContent = this.student.gpa1 || '8.5';
-        if (gpa2) gpa2.textContent = this.student.gpa2 || '8.7';
-        if (gpaYear) gpaYear.textContent = this.student.gpaYear || '8.6';
-        if (academicRank) academicRank.textContent = this.student.academicRank || 'Giỏi';
-        if (conductRank) conductRank.textContent = this.student.conductRank || 'Tốt';
+        studentScores.forEach(score => {
+            const semesterScores = score.semester === '2' ? semester2Scores : semester1Scores;
+            if (!semesterScores[score.subject]) {
+                semesterScores[score.subject] = {
+                    'Kiểm tra miệng': [],
+                    'Kiểm tra 15 phút': [],
+                    'Kiểm tra 1 tiết': [],
+                    'Kiểm tra học kỳ': []
+                };
+            }
+            semesterScores[score.subject][score.type].push(score.score);
+        });
+
+        // Tính điểm trung bình từng học kỳ
+        const gpa1 = this.calculateSemesterGPA(semester1Scores);
+        const gpa2 = this.calculateSemesterGPA(semester2Scores);
+        const gpaYear = (gpa1 + gpa2) / 2;
+
+        // Cập nhật giao diện điểm số
+        const gpa1Element = document.getElementById('gpa1');
+        const gpa2Element = document.getElementById('gpa2');
+        const gpaYearElement = document.getElementById('gpaYear');
+        const academicRankElement = document.getElementById('academicRank');
+        const conductRankElement = document.getElementById('conductRank');
         
-        console.log('Đã tải dữ liệu hồ sơ:', this.student);
+        if (gpa1Element) gpa1Element.textContent = gpa1.toFixed(1);
+        if (gpa2Element) gpa2Element.textContent = gpa2.toFixed(1);
+        if (gpaYearElement) gpaYearElement.textContent = gpaYear.toFixed(1);
+        if (academicRankElement) academicRankElement.textContent = this.getAcademicRank(gpaYear);
+        if (conductRankElement) conductRankElement.textContent = this.student.conductRank || 'Tốt';
+        
+        console.log('Đã tải xong dữ liệu hồ sơ:', this.student);
+    }
+
+    calculateSemesterGPA(semesterScores) {
+        let totalScore = 0;
+        let totalWeight = 0;
+        
+        Object.values(semesterScores).forEach(subjectScores => {
+            let subjectTotal = 0;
+            let subjectWeight = 0;
+            
+            // Tính điểm trung bình môn học
+            Object.entries(subjectScores).forEach(([type, scores]) => {
+                if (scores.length > 0) {
+                    const weight = this.getScoreWeight(type);
+                    const average = scores.reduce((a, b) => a + b, 0) / scores.length;
+                    subjectTotal += average * weight;
+                    subjectWeight += weight;
+                }
+            });
+            
+            if (subjectWeight > 0) {
+                totalScore += subjectTotal / subjectWeight;
+                totalWeight++;
+            }
+        });
+        
+        return totalWeight > 0 ? totalScore / totalWeight : 0;
+    }
+
+    getScoreWeight(type) {
+        switch (type) {
+            case 'Kiểm tra học kỳ': return 3;
+            case 'Kiểm tra 1 tiết': return 2;
+            case 'Kiểm tra miệng':
+            case 'Kiểm tra 15 phút':
+            default: return 1;
+        }
+    }
+
+    getAcademicRank(average) {
+        if (average >= 8) return 'Giỏi';
+        if (average >= 6.5) return 'Khá';
+        if (average >= 5) return 'Trung bình';
+        return 'Yếu';
     }
 
     // Phương thức để tải avatar từ localStorage

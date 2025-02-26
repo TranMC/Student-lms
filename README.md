@@ -21,7 +21,7 @@ Chào mừng bạn đến với **LMS (Hệ thống Quản lý Học tập)**! D
 
 ## 14/02/2025 📅 
 
-- Thêm **Quản lý Học viên** *(cùng với một loạt lỗi 😅)*  
+- Thêm **Quản lý Học viên** *(cùng với một loạt bug)*  
 
 ## 15/02/2025 📅 
 
@@ -32,3 +32,10 @@ Chào mừng bạn đến với **LMS (Hệ thống Quản lý Học tập)**! D
 - Update Admin function + UI
 - Update Student Calendar + function cũ đang lỗi
 - Update student profile + bug không dùng các chức năng trong đấy được
+
+## 26/02/2025 📅 
+- Tiếp tục cải thiện UI
+- Sửa lỗi bug của student profile (in, gửi ảnh, cập nhật thông tin)
+- Upgrade UI từ trang của giáo viên
+- Sửa bug của Quản lí điểm số bên giáo viên (Không lưu được điểm, không đọc được điểm)
+- Thêm tính năng Điểm danh (chưa hoàn thiện)

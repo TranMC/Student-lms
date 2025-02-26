@@ -3,86 +3,132 @@ class StudentScores {
         this.student = JSON.parse(localStorage.getItem('currentStudent'));
         this.subjects = ['Toán', 'Văn', 'Anh', 'Lý', 'Hóa', 'Sinh'];
         this.scoreTypes = ['Kiểm tra miệng', 'Kiểm tra 15 phút', 'Kiểm tra 1 tiết', 'Kiểm tra học kỳ'];
-        this.init();
+        this.setupStorageListener();
+        
+        // Đợi DOM được tải xong
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.init());
+        } else {
+            this.init();
+        }
     }
 
     init() {
-        this.loadScores();
-        this.setupFilters();
+        console.log('Initializing StudentScores...');
+        console.log('Current student:', this.student);
+        
+        // Đợi một chút để đảm bảo HTML đã được tải
+        setTimeout(() => {
+            this.setupFilters();
+            this.loadScores();
+        }, 100);
     }
 
-    loadScores() {
-        const studentId = this.student.studentId;
-        const allScores = JSON.parse(localStorage.getItem('scores')) || [];
-        const studentScores = allScores.filter(score => score.studentId === studentId);
-
-        const scoreTableBody = document.getElementById('scoreTableBody');
-        if (!scoreTableBody) return;
-
-        // Tổ chức điểm theo môn học và loại điểm
-        const organizedScores = {};
-        this.subjects.forEach(subject => {
-            organizedScores[subject] = {
-                'Kiểm tra miệng': [],
-                'Kiểm tra 15 phút': [],
-                'Kiểm tra 1 tiết': [],
-                'Kiểm tra học kỳ': []
-            };
-        });
-
-        // Phân loại điểm
-        studentScores.forEach(score => {
-            if (organizedScores[score.subject] && organizedScores[score.subject][score.type]) {
-                organizedScores[score.subject][score.type].push(score.score);
+    setupStorageListener() {
+        // Lắng nghe sự kiện storage change
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'scores') {
+                console.log('Scores updated in storage, reloading...');
+                this.loadScores();
             }
         });
 
-        // Hiển thị điểm
-        scoreTableBody.innerHTML = this.subjects.map(subject => {
-            const subjectScores = organizedScores[subject];
-            
-            // Lấy điểm cho từng loại
-            const oralScores = subjectScores['Kiểm tra miệng'];
-            const fifteenMinScores = subjectScores['Kiểm tra 15 phút'];
-            const periodScores = subjectScores['Kiểm tra 1 tiết'];
-            const semesterScores = subjectScores['Kiểm tra học kỳ'];
+        // Lắng nghe sự kiện scoresUpdated
+        window.addEventListener('scoresUpdated', () => {
+            console.log('Scores updated event received, reloading...');
+            this.loadScores();
+        });
 
-            // Tính điểm trung bình
-            const average = this.calculateAverage({
-                'Kiểm tra miệng': oralScores,
-                'Kiểm tra 15 phút': fifteenMinScores,
-                'Kiểm tra 1 tiết': periodScores,
-                'Kiểm tra học kỳ': semesterScores
-            });
+        // Lắng nghe sự kiện khi nội dung HTML được tải
+        window.addEventListener('studentScoresContentLoaded', () => {
+            console.log('Student scores content loaded, initializing...');
+            this.setupFilters();
+            this.loadScores();
+        });
+    }
 
+    loadScores() {
+        console.log('Loading scores...');
+        if (!this.student || !this.student.studentId) {
+            console.error('No student information found');
+            return;
+        }
+
+        const studentId = this.student.studentId;
+        console.log('Loading scores for student ID:', studentId);
+        
+        const allScores = JSON.parse(localStorage.getItem('scores')) || [];
+        console.log('All scores from localStorage:', allScores);
+        
+        const studentScores = allScores.filter(score => score.studentId === studentId);
+        console.log('Filtered student scores:', studentScores);
+
+        // Kiểm tra xem các phần tử cần thiết đã tồn tại chưa
+        const scoreTableBody = document.getElementById('scoresTableBody');
+        const statsContainer = document.getElementById('scoreStats');
+        
+        if (!scoreTableBody) {
+            console.warn('Score table body not found, waiting for content to load...');
+            return;
+        }
+
+        this.updateScoreTable(studentScores);
+        this.updateScoreStatistics(studentScores);
+        this.updateAverageDisplay(studentScores);
+
+        // Phát sự kiện cập nhật điểm
+        window.dispatchEvent(new CustomEvent('studentScoresLoaded', { 
+            detail: { scores: studentScores }
+        }));
+    }
+
+    updateScoreTable(studentScores) {
+        const scoreTableBody = document.getElementById('scoresTableBody');
+        if (!scoreTableBody) {
+            console.error('Score table body element not found');
+            return;
+        }
+
+        scoreTableBody.innerHTML = studentScores.map(score => {
             return `
                 <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${subject}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(oralScores)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(fifteenMinScores)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(periodScores)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(semesterScores)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${this.getScoreClass(average)}">
-                            ${average.toFixed(1)}
+                    <td>${score.subject}</td>
+                    <td>Học kỳ ${score.semester || '1'}</td>
+                    <td>${score.type}</td>
+                    <td>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${this.getScoreClass(score.score)}">
+                            ${score.score.toFixed(1)}
                         </span>
                     </td>
+                    <td>${new Date(score.date).toLocaleDateString('vi-VN')}</td>
+                    <td>${score.comment || '-'}</td>
                 </tr>
             `;
         }).join('');
+    }
 
-        // Cập nhật thống kê điểm
-        this.updateScoreStatistics(studentScores);
+    updateAverageDisplay(studentScores) {
+        if (studentScores.length > 0) {
+            const avgScore = studentScores.reduce((sum, score) => sum + score.score, 0) / studentScores.length;
+            
+            // Cập nhật các phần tử hiển thị điểm trung bình
+            const averageElements = [
+                document.getElementById('averageGrade'),
+                document.getElementById('averageScore')
+            ];
+
+            averageElements.forEach(element => {
+                if (element) {
+                    element.textContent = avgScore.toFixed(1);
+                }
+            });
+
+            // Cập nhật xếp loại học lực
+            const rankingElement = document.getElementById('academicRanking');
+            if (rankingElement) {
+                rankingElement.textContent = this.getAcademicRanking(avgScore);
+            }
+        }
     }
 
     renderScores(scores) {
@@ -225,6 +271,13 @@ class StudentScores {
             case 'low': return score < 5;
             default: return true;
         }
+    }
+
+    getAcademicRanking(score) {
+        if (score >= 8) return 'Giỏi';
+        if (score >= 6.5) return 'Khá';
+        if (score >= 5) return 'Trung bình';
+        return 'Yếu';
     }
 }
 

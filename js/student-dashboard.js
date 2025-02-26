@@ -75,37 +75,41 @@ class StudentDashboard {
             return;
         }
         
-        const scores = JSON.parse(localStorage.getItem('scores')) || {};
-        const studentScores = scores[this.student.studentId] || {};
+        const allScores = JSON.parse(localStorage.getItem('scores')) || [];
+        const studentScores = allScores.filter(score => score.studentId === this.student.studentId);
         
+        // Tổ chức điểm theo môn học
+        const organizedScores = {};
+        studentScores.forEach(score => {
+            if (!organizedScores[score.subject]) {
+                organizedScores[score.subject] = [];
+            }
+            organizedScores[score.subject].push(score);
+        });
+
         // Tính toán thống kê
         let totalScore = 0;
-        let totalWeight = 0;
-        let totalSubjects = 0;
+        let totalSubjects = Object.keys(organizedScores).length;
         let completedSubjects = 0;
 
-        Object.entries(studentScores).forEach(([subject, subjectScores]) => {
+        Object.entries(organizedScores).forEach(([subject, scores]) => {
             let subjectTotal = 0;
             let subjectWeight = 0;
 
-            Object.entries(subjectScores).forEach(([type, scores]) => {
-                scores.forEach(score => {
-                    const weight = this.getScoreWeight(type);
-                    subjectTotal += score * weight;
-                    subjectWeight += weight;
-                });
+            scores.forEach(score => {
+                const weight = this.getScoreWeight(score.type);
+                subjectTotal += score.score * weight;
+                subjectWeight += weight;
             });
 
             if (subjectWeight > 0) {
                 const average = subjectTotal / subjectWeight;
                 totalScore += average;
-                totalWeight++;
-                totalSubjects++;
                 if (average >= 5) completedSubjects++;
             }
         });
 
-        const averageScore = totalWeight > 0 ? totalScore / totalWeight : 0;
+        const averageScore = totalSubjects > 0 ? totalScore / totalSubjects : 0;
         const completionRate = totalSubjects > 0 ? (completedSubjects / totalSubjects) * 100 : 0;
 
         // Cập nhật giao diện
@@ -143,26 +147,11 @@ class StudentDashboard {
             return;
         }
 
-        const scores = JSON.parse(localStorage.getItem('scores')) || {};
-        const studentScores = scores[this.student.studentId] || {};
+        const allScores = JSON.parse(localStorage.getItem('scores')) || [];
+        const studentScores = allScores.filter(score => score.studentId === this.student.studentId);
         
-        // Chuyển đổi cấu trúc điểm thành mảng để dễ sắp xếp
-        const recentScores = [];
-        Object.entries(studentScores).forEach(([subject, subjectScores]) => {
-            Object.entries(subjectScores).forEach(([type, scores]) => {
-                scores.forEach(score => {
-                    recentScores.push({
-                        subject,
-                        type,
-                        score,
-                        date: new Date().toISOString() // Sử dụng ngày hiện tại vì chưa có trường date
-                    });
-                });
-            });
-        });
-
         // Sắp xếp theo ngày mới nhất và lấy 5 điểm gần nhất
-        const latestScores = recentScores
+        const latestScores = studentScores
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 5);
 
