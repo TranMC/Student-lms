@@ -9,15 +9,32 @@ class TeacherNavigation {
         };
         this.initializeSampleData();
         this.initializeNavigation();
+        this.initializeUserDropdown();
+        this.initializeNotifications();
     }
 
     initializeSampleData() {
         // Thêm dữ liệu học sinh mẫu nếu chưa có
         if (!localStorage.getItem('students')) {
             const sampleStudents = [
-                { id: 'ST001', name: 'Nguyễn Văn A', class: '10A1', email: 'nguyenvana@example.com' },
-                { id: 'ST002', name: 'Trần Thị B', class: '10A1', email: 'tranthib@example.com' },
-                { id: 'ST003', name: 'Lê Văn C', class: '10A2', email: 'levanc@example.com' }
+                { 
+                    studentId: 'ST001', 
+                    fullName: 'Nguyễn Văn A', 
+                    class: '10A1', 
+                    email: 'nguyenvana@example.com' 
+                },
+                { 
+                    studentId: 'ST002', 
+                    fullName: 'Trần Thị B', 
+                    class: '10A1', 
+                    email: 'tranthib@example.com' 
+                },
+                { 
+                    studentId: 'ST003', 
+                    fullName: 'Lê Văn C', 
+                    class: '10A2', 
+                    email: 'levanc@example.com' 
+                }
             ];
             localStorage.setItem('students', JSON.stringify(sampleStudents));
         }
@@ -29,13 +46,13 @@ class TeacherNavigation {
                     'Toán': {
                         'Kiểm tra miệng': [8.0, 9.0],
                         'Kiểm tra 15 phút': [7.5, 8.5],
-                        'Kiểm tra 45 phút': [8.0],
+                        'Kiểm tra 1 tiết': [8.0],
                         'Kiểm tra học kỳ': [8.5]
                     },
                     'Văn': {
                         'Kiểm tra miệng': [7.0],
                         'Kiểm tra 15 phút': [7.5],
-                        'Kiểm tra 45 phút': [8.0],
+                        'Kiểm tra 1 tiết': [8.0],
                         'Kiểm tra học kỳ': [7.5]
                     }
                 },
@@ -43,7 +60,7 @@ class TeacherNavigation {
                     'Toán': {
                         'Kiểm tra miệng': [8.5],
                         'Kiểm tra 15 phút': [9.0],
-                        'Kiểm tra 45 phút': [8.5],
+                        'Kiểm tra 1 tiết': [8.5],
                         'Kiểm tra học kỳ': [9.0]
                     }
                 }
@@ -116,9 +133,6 @@ class TeacherNavigation {
         // Khởi tạo trạng thái ban đầu
         const hash = window.location.hash.replace('#', '') || 'dashboard';
         this.navigateToPage(hash);
-
-        this.initializeUserDropdown();
-        this.initializeNotifications();
     }
 
     async navigateToPage(page) {
@@ -353,12 +367,6 @@ class TeacherNavigation {
 
     async loadScoresInterface() {
         const pageContent = document.getElementById('pageContent');
-        if (!pageContent) return;
-
-        // Lấy dữ liệu từ localStorage
-        const students = JSON.parse(localStorage.getItem('students')) || [];
-        const scores = JSON.parse(localStorage.getItem('scores')) || {};
-
         pageContent.innerHTML = `
             <div class="col-span-3">
                 <div class="bg-white p-6 rounded-lg shadow-sm">
@@ -366,273 +374,322 @@ class TeacherNavigation {
                         <h2 class="text-xl font-semibold">Quản lý điểm số</h2>
                         <div class="flex space-x-4">
                             <select id="classFilter" class="form-input w-48">
-                                <option value="">Chọn lớp</option>
+                                <option value="">Tất cả lớp</option>
                                 <option value="10A1">Lớp 10A1</option>
                                 <option value="10A2">Lớp 10A2</option>
                             </select>
                             <select id="subjectFilter" class="form-input w-48">
-                                <option value="">Chọn môn học</option>
+                                <option value="">Tất cả môn</option>
                                 <option value="Toán">Toán</option>
                                 <option value="Văn">Văn</option>
-                                <option value="Anh">Tiếng Anh</option>
+                                <option value="Anh">Anh</option>
+                                <option value="Lý">Lý</option>
+                                <option value="Hóa">Hóa</option>
+                                <option value="Sinh">Sinh</option>
                             </select>
-                            <button onclick="window.teacherNavigation.openAddScoreModal()" class="btn-primary">
-                                <i class="fas fa-plus mr-2"></i>Thêm điểm
-                            </button>
                         </div>
                     </div>
+
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead>
                                 <tr>
                                     <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Mã học sinh
+                                        Học sinh
                                     </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Họ và tên
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Lớp
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Môn học
-                                    </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Điểm miệng
+                                        <button onclick="teacherNavigation.openAddScoreModal(null, 'Kiểm tra miệng')" class="ml-2 text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-plus-circle"></i>
+                                        </button>
                                     </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Điểm 15 phút
+                                        <button onclick="teacherNavigation.openAddScoreModal(null, 'Kiểm tra 15 phút')" class="ml-2 text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-plus-circle"></i>
+                                        </button>
                                     </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Điểm 45 phút
+                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Điểm 1 tiết
+                                        <button onclick="teacherNavigation.openAddScoreModal(null, 'Kiểm tra 1 tiết')" class="ml-2 text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-plus-circle"></i>
+                                        </button>
                                     </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Điểm học kỳ
+                                        <button onclick="teacherNavigation.openAddScoreModal(null, 'Kiểm tra học kỳ')" class="ml-2 text-blue-600 hover:text-blue-800">
+                                            <i class="fas fa-plus-circle"></i>
+                                        </button>
                                     </th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3 bg-gray-50 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Điểm TB
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="scoreTableBody">
-                                ${students.map(student => {
-                                    const studentScores = scores[student.id] || {};
-                                    const subjects = Object.keys(studentScores);
-                                    
-                                    return subjects.map(subject => {
-                                        const subjectScores = studentScores[subject] || {};
-                                        
-                                        // Tính điểm trung bình cho từng loại
-                                        const calcAverage = (scores) => {
-                                            if (!scores || scores.length === 0) return '-';
-                                            return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
-                                        };
-
-                                        const oralAvg = calcAverage(subjectScores['Kiểm tra miệng']);
-                                        const test15Avg = calcAverage(subjectScores['Kiểm tra 15 phút']);
-                                        const test45Avg = calcAverage(subjectScores['Kiểm tra 45 phút']);
-                                        const finalTest = subjectScores['Kiểm tra học kỳ']?.[0] || '-';
-                                        
-                                        // Tính điểm trung bình môn
-                                        let avgTotal = '-';
-                                        if (oralAvg !== '-' && test15Avg !== '-' && test45Avg !== '-' && finalTest !== '-') {
-                                            avgTotal = ((parseFloat(oralAvg) + parseFloat(test15Avg) * 2 + 
-                                                       parseFloat(test45Avg) * 3 + parseFloat(finalTest) * 4) / 10).toFixed(1);
-                                        }
-
-                                        return `
-                                            <tr>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    ${student.id}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="ml-4">
-                                                            <div class="text-sm font-medium text-gray-900">
-                                                                ${student.name}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    ${student.class}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    ${subject}
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    <div class="score-cell">
-                                                        ${subjectScores['Kiểm tra miệng']?.join(', ') || '-'}
-                                                        <button onclick="window.teacherNavigation.addScore('${student.id}', '${subject}', 'Kiểm tra miệng')" 
-                                                            class="text-blue-600 hover:text-blue-800 ml-2">
-                                                            <i class="fas fa-plus-circle"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    <div class="score-cell">
-                                                        ${subjectScores['Kiểm tra 15 phút']?.join(', ') || '-'}
-                                                        <button onclick="window.teacherNavigation.addScore('${student.id}', '${subject}', 'Kiểm tra 15 phút')" 
-                                                            class="text-blue-600 hover:text-blue-800 ml-2">
-                                                            <i class="fas fa-plus-circle"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    <div class="score-cell">
-                                                        ${subjectScores['Kiểm tra 45 phút']?.join(', ') || '-'}
-                                                        <button onclick="window.teacherNavigation.addScore('${student.id}', '${subject}', 'Kiểm tra 45 phút')" 
-                                                            class="text-blue-600 hover:text-blue-800 ml-2">
-                                                            <i class="fas fa-plus-circle"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    <div class="score-cell">
-                                                        ${subjectScores['Kiểm tra học kỳ']?.[0] || '-'}
-                                                        <button onclick="window.teacherNavigation.addScore('${student.id}', '${subject}', 'Kiểm tra học kỳ')" 
-                                                            class="text-blue-600 hover:text-blue-800 ml-2">
-                                                            <i class="fas fa-plus-circle"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                        ${avgTotal >= 8 ? 'bg-green-100 text-green-800' : 
-                                                        avgTotal >= 6.5 ? 'bg-blue-100 text-blue-800' :
-                                                        avgTotal >= 5 ? 'bg-yellow-100 text-yellow-800' :
-                                                        avgTotal !== '-' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}">
-                                                        ${avgTotal}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        `;
-                                    }).join('');
-                                }).join('')}
+                            <tbody class="bg-white divide-y divide-gray-200" id="scoresList">
+                                <!-- Danh sách điểm sẽ được thêm vào đây -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+        `;
 
-            <!-- Modal thêm điểm -->
-            <div id="addScoreModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
-                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                    <div class="mt-3">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900">Thêm điểm mới</h3>
-                        <div class="mt-2 px-7 py-3">
-                            <form id="addScoreForm">
-                                <input type="hidden" id="studentId">
-                                <input type="hidden" id="subject">
-                                <input type="hidden" id="scoreType">
-                                <div class="mb-4">
-                                    <label class="block text-gray-700 text-sm font-bold mb-2">
-                                        Điểm số
-                                    </label>
-                                    <input type="number" id="scoreValue" 
-                                        class="form-input w-full" 
-                                        min="0" max="10" step="0.1" required>
-                                </div>
-                                <div class="flex justify-end space-x-4">
-                                    <button type="button" 
-                                        onclick="document.getElementById('addScoreModal').classList.add('hidden')"
-                                        class="btn-secondary">
-                                        Hủy
-                                    </button>
-                                    <button type="submit" class="btn-primary">
-                                        Lưu điểm
-                                    </button>
-                                </div>
-                            </form>
+        // Thêm event listeners cho bộ lọc
+        document.getElementById('classFilter').addEventListener('change', () => this.filterScores());
+        document.getElementById('subjectFilter').addEventListener('change', () => this.filterScores());
+
+        // Load dữ liệu điểm
+        await this.loadScoresData();
+    }
+
+    async loadScoresData() {
+        const selectedClass = document.getElementById('classFilter')?.value;
+        const selectedSubject = document.getElementById('subjectFilter')?.value;
+        
+        // Lấy danh sách học sinh và điểm
+        const students = JSON.parse(localStorage.getItem('students')) || [];
+        const scores = JSON.parse(localStorage.getItem('scores')) || [];
+        
+        // Lọc học sinh theo lớp nếu có
+        const filteredStudents = selectedClass 
+            ? students.filter(student => student.class === selectedClass)
+            : students;
+
+        const scoresList = document.getElementById('scoresList');
+        if (!scoresList) return;
+
+        scoresList.innerHTML = filteredStudents.map(student => {
+            // Lọc điểm của học sinh
+            const studentScores = scores.filter(score => 
+                score.studentId === student.studentId &&
+                (!selectedSubject || score.subject === selectedSubject)
+            );
+
+            // Tổ chức điểm theo loại
+            const organizedScores = {
+                'Kiểm tra miệng': studentScores.filter(s => s.type === 'Kiểm tra miệng').map(s => s.score),
+                'Kiểm tra 15 phút': studentScores.filter(s => s.type === 'Kiểm tra 15 phút').map(s => s.score),
+                'Kiểm tra 1 tiết': studentScores.filter(s => s.type === 'Kiểm tra 1 tiết').map(s => s.score),
+                'Kiểm tra học kỳ': studentScores.filter(s => s.type === 'Kiểm tra học kỳ').map(s => s.score)
+            };
+
+            // Tính điểm trung bình
+            const average = this.calculateAverage(organizedScores);
+
+            return `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}" alt="">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${student.fullName}</div>
+                                <div class="text-sm text-gray-500">${student.class}</div>
+                            </div>
                         </div>
-                    </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        ${this.renderScores(organizedScores['Kiểm tra miệng'])}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        ${this.renderScores(organizedScores['Kiểm tra 15 phút'])}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        ${this.renderScores(organizedScores['Kiểm tra 1 tiết'])}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        ${this.renderScores(organizedScores['Kiểm tra học kỳ'])}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${this.getScoreClass(average)}">
+                            ${average.toFixed(1)}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    renderScores(scores) {
+        if (!scores || scores.length === 0) {
+            return '<span class="text-gray-400">-</span>';
+        }
+
+        return scores.map(score => `
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${this.getScoreClass(score)}">
+                ${score.toFixed(1)}
+            </span>
+        `).join(' ');
+    }
+
+    calculateAverage(scores) {
+        let totalScore = 0;
+        let totalWeight = 0;
+
+        Object.entries(scores).forEach(([type, scoreArray]) => {
+            if (scoreArray && scoreArray.length > 0) {
+                const weight = this.getScoreWeight(type);
+                const sum = scoreArray.reduce((a, b) => a + b, 0);
+                totalScore += sum * weight;
+                totalWeight += weight * scoreArray.length;
+            }
+        });
+
+        return totalWeight > 0 ? totalScore / totalWeight : 0;
+    }
+
+    getScoreClass(score) {
+        if (score >= 8) return 'bg-green-100 text-green-800';
+        if (score >= 6.5) return 'bg-blue-100 text-blue-800';
+        if (score >= 5) return 'bg-yellow-100 text-yellow-800';
+        return 'bg-red-100 text-red-800';
+    }
+
+    getScoreWeight(type) {
+        switch (type) {
+            case 'Kiểm tra miệng': return 1;
+            case 'Kiểm tra 15 phút': return 1;
+            case 'Kiểm tra 1 tiết': return 2;
+            case 'Kiểm tra học kỳ': return 3;
+            default: return 1;
+        }
+    }
+
+    openAddScoreModal(studentId = null, scoreType = null) {
+        const modalContent = `
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold mb-4">Thêm điểm mới</h3>
+                    <form id="addScoreForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Học sinh</label>
+                            <select id="studentSelect" class="form-input w-full" required>
+                                <option value="">Chọn học sinh</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Môn học</label>
+                            <select id="subjectSelect" class="form-input w-full" required>
+                                <option value="">Chọn môn học</option>
+                                <option value="Toán">Toán</option>
+                                <option value="Văn">Văn</option>
+                                <option value="Anh">Anh</option>
+                                <option value="Lý">Lý</option>
+                                <option value="Hóa">Hóa</option>
+                                <option value="Sinh">Sinh</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Loại điểm</label>
+                            <select id="scoreTypeSelect" class="form-input w-full" required>
+                                <option value="">Chọn loại điểm</option>
+                                <option value="Kiểm tra miệng">Kiểm tra miệng</option>
+                                <option value="Kiểm tra 15 phút">Kiểm tra 15 phút</option>
+                                <option value="Kiểm tra 1 tiết">Kiểm tra 1 tiết</option>
+                                <option value="Kiểm tra học kỳ">Kiểm tra học kỳ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Điểm số</label>
+                            <input type="number" id="scoreInput" class="form-input w-full" min="0" max="10" step="0.1" required>
+                        </div>
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('modalContainer').classList.add('hidden')">
+                                Hủy
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save mr-2"></i>Lưu điểm
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         `;
 
-        // Thêm event listeners
-        const classFilter = document.getElementById('classFilter');
-        const subjectFilter = document.getElementById('subjectFilter');
-        const addScoreForm = document.getElementById('addScoreForm');
+        const modalContainer = document.getElementById('modalContainer');
+        modalContainer.innerHTML = modalContent;
+        modalContainer.classList.remove('hidden');
 
-        if (classFilter) {
-            classFilter.addEventListener('change', this.filterScores.bind(this));
-        }
-        if (subjectFilter) {
-            subjectFilter.addEventListener('change', this.filterScores.bind(this));
-        }
-        if (addScoreForm) {
-            addScoreForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.saveScore();
-            });
-        }
-    }
-
-    filterScores() {
+        // Populate student select
+        const students = JSON.parse(localStorage.getItem('students')) || [];
         const selectedClass = document.getElementById('classFilter').value;
-        const selectedSubject = document.getElementById('subjectFilter').value;
-        const rows = document.querySelectorAll('#scoreTableBody tr');
+        const filteredStudents = selectedClass ? 
+            students.filter(student => student.class === selectedClass) : 
+            students;
 
-        rows.forEach(row => {
-            const classCell = row.querySelector('td:nth-child(3)').textContent.trim();
-            const subjectCell = row.querySelector('td:nth-child(4)').textContent.trim();
-            const matchesClass = !selectedClass || classCell === selectedClass;
-            const matchesSubject = !selectedSubject || subjectCell === selectedSubject;
+        const studentSelect = document.getElementById('studentSelect');
+        filteredStudents.forEach(student => {
+            const option = document.createElement('option');
+            option.value = student.studentId;
+            option.textContent = `${student.fullName} - ${student.class}`;
+            studentSelect.appendChild(option);
+        });
 
-            row.style.display = matchesClass && matchesSubject ? '' : 'none';
+        // Set pre-selected values if provided
+        if (studentId) {
+            document.getElementById('studentSelect').value = studentId;
+        }
+        if (scoreType) {
+            document.getElementById('scoreTypeSelect').value = scoreType;
+        }
+
+        // Add form submit handler
+        document.getElementById('addScoreForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveScore();
         });
     }
 
-    addScore(studentId, subject, scoreType) {
-        const modal = document.getElementById('addScoreModal');
-        document.getElementById('studentId').value = studentId;
-        document.getElementById('subject').value = subject;
-        document.getElementById('scoreType').value = scoreType;
-        document.getElementById('scoreValue').value = '';
-        modal.classList.remove('hidden');
+    filterScores() {
+        this.loadScoresData();
     }
 
-    saveScore() {
-        const studentId = document.getElementById('studentId').value;
-        const subject = document.getElementById('subject').value;
-        const scoreType = document.getElementById('scoreType').value;
-        const scoreValue = parseFloat(document.getElementById('scoreValue').value);
+    async saveScore() {
+        const studentId = document.getElementById('studentSelect').value;
+        const subject = document.getElementById('subjectSelect').value;
+        const scoreType = document.getElementById('scoreTypeSelect').value;
+        const scoreValue = parseFloat(document.getElementById('scoreInput').value);
 
-        if (isNaN(scoreValue) || scoreValue < 0 || scoreValue > 10) {
-            showToast('Điểm không hợp lệ. Vui lòng nhập điểm từ 0 đến 10', 'error');
+        if (!studentId || !subject || !scoreType || isNaN(scoreValue)) {
+            showToast('Vui lòng điền đầy đủ thông tin', 'error');
             return;
         }
 
-        // Lấy dữ liệu điểm hiện tại
-        const scores = JSON.parse(localStorage.getItem('scores')) || {};
-        
-        // Khởi tạo cấu trúc nếu chưa có
-        if (!scores[studentId]) {
-            scores[studentId] = {};
-        }
-        if (!scores[studentId][subject]) {
-            scores[studentId][subject] = {};
-        }
-        if (!scores[studentId][subject][scoreType]) {
-            scores[studentId][subject][scoreType] = [];
+        if (scoreValue < 0 || scoreValue > 10) {
+            showToast('Điểm số phải từ 0 đến 10', 'error');
+            return;
         }
 
-        // Thêm điểm mới
-        if (scoreType === 'Kiểm tra học kỳ') {
-            // Điểm học kỳ chỉ có 1 điểm
-            scores[studentId][subject][scoreType] = [scoreValue];
-        } else {
-            scores[studentId][subject][scoreType].push(scoreValue);
-        }
+        try {
+            // Lấy mảng điểm từ localStorage
+            let scores = JSON.parse(localStorage.getItem('scores')) || [];
+            
+            // Thêm điểm mới vào mảng
+            const newScore = {
+                id: Date.now().toString(),
+                studentId,
+                subject,
+                type: scoreType,
+                score: scoreValue,
+                date: new Date().toISOString()
+            };
+            
+            scores.push(newScore);
 
-        // Lưu vào localStorage
-        localStorage.setItem('scores', JSON.stringify(scores));
-        
-        // Đóng modal và cập nhật giao diện
-        document.getElementById('addScoreModal').classList.add('hidden');
-        this.loadScoresInterface();
-        showToast('Đã cập nhật điểm thành công', 'success');
+            // Lưu vào localStorage
+            localStorage.setItem('scores', JSON.stringify(scores));
+
+            // Đóng modal và cập nhật giao diện
+            document.getElementById('modalContainer').classList.add('hidden');
+            await this.loadScoresData();
+
+            showToast('Đã lưu điểm thành công', 'success');
+        } catch (error) {
+            console.error('Lỗi khi lưu điểm:', error);
+            showToast('Có lỗi xảy ra khi lưu điểm', 'error');
+        }
     }
 
     async loadScheduleInterface() {
@@ -739,7 +796,7 @@ class TeacherNavigation {
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 ${students.map(student => {
-                                    const studentScores = scores[student.id] || [];
+                                    const studentScores = scores[student.studentId] || [];
                                     const average = studentScores.length > 0 
                                         ? (studentScores.reduce((a, b) => a + b, 0) / studentScores.length).toFixed(1)
                                         : 'N/A';
@@ -747,18 +804,18 @@ class TeacherNavigation {
                                     return `
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                ${student.id}
+                                                ${student.studentId}
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="flex items-center">
                                                     <div class="h-10 w-10 flex-shrink-0">
                                                         <img class="h-10 w-10 rounded-full" 
-                                                            src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=random" 
-                                                            alt="${student.name}">
+                                                            src="https://ui-avatars.com/api/?name=${encodeURIComponent(student.fullName)}&background=random" 
+                                                            alt="${student.fullName}">
                                                     </div>
                                                     <div class="ml-4">
                                                         <div class="text-sm font-medium text-gray-900">
-                                                            ${student.name}
+                                                            ${student.fullName}
                                                         </div>
                                                         <div class="text-sm text-gray-500">
                                                             ${student.email || 'Chưa có email'}
@@ -779,15 +836,15 @@ class TeacherNavigation {
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <button onclick="viewStudentDetails('${student.id}')" 
+                                                <button onclick="viewStudentDetails('${student.studentId}')" 
                                                     class="text-blue-600 hover:text-blue-900 mr-3">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <button onclick="editStudent('${student.id}')" 
+                                                <button onclick="editStudent('${student.studentId}')" 
                                                     class="text-indigo-600 hover:text-indigo-900 mr-3">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button onclick="deleteStudent('${student.id}')" 
+                                                <button onclick="deleteStudent('${student.studentId}')" 
                                                     class="text-red-600 hover:text-red-900">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -906,11 +963,11 @@ class TeacherNavigation {
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <p class="text-gray-600">Mã học sinh</p>
-                        <p class="font-semibold">${student.id}</p>
+                        <p class="font-semibold">${student.studentId}</p>
                     </div>
                     <div>
                         <p class="text-gray-600">Họ và tên</p>
-                        <p class="font-semibold">${student.name}</p>
+                        <p class="font-semibold">${student.fullName}</p>
                     </div>
                     <div>
                         <p class="text-gray-600">Lớp</p>
@@ -924,7 +981,7 @@ class TeacherNavigation {
                 <div class="mt-6">
                     <h4 class="font-semibold mb-2">Điểm số</h4>
                     <div class="space-y-2">
-                        ${this.getStudentScores(student.id)}
+                        ${this.getStudentScores(student.studentId)}
                     </div>
                 </div>
             </div>
@@ -953,7 +1010,7 @@ class TeacherNavigation {
                 <form id="editStudentForm" class="space-y-4">
                     <div>
                         <label class="form-label">Họ và tên</label>
-                        <input type="text" class="form-input w-full" value="${student.name}" required>
+                        <input type="text" class="form-input w-full" value="${student.fullName}" required>
                     </div>
                     <div>
                         <label class="form-label">Lớp</label>
@@ -995,7 +1052,7 @@ class TeacherNavigation {
     deleteStudent(studentId) {
         if (confirm('Bạn có chắc chắn muốn xóa học sinh này?')) {
             const students = JSON.parse(localStorage.getItem('students')) || [];
-            const updatedStudents = students.filter(s => s.id !== studentId);
+            const updatedStudents = students.filter(s => s.studentId !== studentId);
             localStorage.setItem('students', JSON.stringify(updatedStudents));
             this.loadStudentsInterface();
             showToast('Đã xóa học sinh thành công', 'success');
@@ -1004,7 +1061,7 @@ class TeacherNavigation {
 
     getStudentById(studentId) {
         const students = JSON.parse(localStorage.getItem('students')) || [];
-        return students.find(s => s.id === studentId);
+        return students.find(s => s.studentId === studentId);
     }
 
     getStudentScores(studentId) {
@@ -1025,12 +1082,12 @@ class TeacherNavigation {
 
     saveStudentChanges(studentId, form) {
         const students = JSON.parse(localStorage.getItem('students')) || [];
-        const studentIndex = students.findIndex(s => s.id === studentId);
+        const studentIndex = students.findIndex(s => s.studentId === studentId);
         
         if (studentIndex !== -1) {
             students[studentIndex] = {
                 ...students[studentIndex],
-                name: form.elements[0].value,
+                fullName: form.elements[0].value,
                 class: form.elements[1].value,
                 email: form.elements[2].value
             };

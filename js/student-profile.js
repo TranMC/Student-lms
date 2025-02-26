@@ -321,11 +321,11 @@ class StudentProfile {
                     </div>
                     <div class="academic-info">
                         <h3>Thông tin học tập</h3>
-                        <p><strong>Điểm trung bình học kỳ 1:</strong> ${this.student.gpa1 || '8.5'}</p>
-                        <p><strong>Điểm trung bình học kỳ 2:</strong> ${this.student.gpa2 || '8.7'}</p>
-                        <p><strong>Điểm trung bình cả năm:</strong> ${this.student.gpaYear || '8.6'}</p>
-                        <p><strong>Xếp loại học lực:</strong> ${this.student.academicRank || 'Giỏi'}</p>
-                        <p><strong>Hạnh kiểm:</strong> ${this.student.conductRank || 'Tốt'}</p>
+                        <p><strong>Điểm trung bình học kỳ 1:</strong> ${this.student.gpa1 || 'Không có'}</p>
+                        <p><strong>Điểm trung bình học kỳ 2:</strong> ${this.student.gpa2 || 'Không có'}</p>
+                        <p><strong>Điểm trung bình cả năm:</strong> ${this.student.gpaYear || 'Không có'}</p>
+                        <p><strong>Xếp loại học lực:</strong> ${this.student.academicRank || 'Chưa xếp hạng'}</p>
+                        <p><strong>Hạnh kiểm:</strong> ${this.student.conductRank || 'Chưa xếp hạng'}</p>
                     </div>
                 </div>
             `;
