@@ -75,123 +75,75 @@ class StudentDashboard {
             return;
         }
         
-        const scores = JSON.parse(localStorage.getItem('scores')) || {};
-        const studentScores = scores[this.student.studentId] || {};
+        const dataService = new DataService();
+        const stats = dataService.getStudentStats(this.student.studentId);
         
-        // Tính toán thống kê
-        let totalScore = 0;
-        let totalWeight = 0;
-        let totalSubjects = 0;
-        let completedSubjects = 0;
+        if (stats) {
+            const averageScoreElement = document.getElementById('averageScore');
+            const scoreTrendElement = document.getElementById('scoreTrend');
+            const scoreTrendValueElement = document.getElementById('scoreTrendValue');
+            const completionRateElement = document.getElementById('completionRate');
+            const completionTrendElement = document.getElementById('completionTrend');
+            const completionTrendValueElement = document.getElementById('completionTrendValue');
+            const daysToExamElement = document.getElementById('daysToExam');
 
-        Object.entries(studentScores).forEach(([subject, subjectScores]) => {
-            let subjectTotal = 0;
-            let subjectWeight = 0;
-
-            Object.entries(subjectScores).forEach(([type, scores]) => {
-                scores.forEach(score => {
-                    const weight = this.getScoreWeight(type);
-                    subjectTotal += score * weight;
-                    subjectWeight += weight;
-                });
-            });
-
-            if (subjectWeight > 0) {
-                const average = subjectTotal / subjectWeight;
-                totalScore += average;
-                totalWeight++;
-                totalSubjects++;
-                if (average >= 5) completedSubjects++;
+            if (averageScoreElement) {
+                averageScoreElement.textContent = stats.averageScore.toFixed(1);
             }
-        });
-
-        const averageScore = totalWeight > 0 ? totalScore / totalWeight : 0;
-        const completionRate = totalSubjects > 0 ? (completedSubjects / totalSubjects) * 100 : 0;
-
-        // Cập nhật giao diện
-        const averageScoreElement = document.getElementById('averageScore');
-        const completionRateElement = document.getElementById('completionRate');
-        const daysToExamElement = document.getElementById('daysToExam');
-
-        if (averageScoreElement) {
-            averageScoreElement.textContent = averageScore.toFixed(1);
-        }
-
-        if (completionRateElement) {
-            completionRateElement.textContent = `${Math.round(completionRate)}%`;
-        }
-
-        if (daysToExamElement) {
-            // Giả lập ngày thi gần nhất (7 ngày tới)
-            daysToExamElement.textContent = '7';
-        }
-    }
-
-    getScoreWeight(type) {
-        switch (type) {
-            case 'Kiểm tra học kỳ': return 3;
-            case 'Kiểm tra 1 tiết': return 2;
-            case 'Kiểm tra miệng':
-            case 'Kiểm tra 15 phút':
-            default: return 1;
+            if (scoreTrendElement && scoreTrendValueElement && stats.scoreTrend) {
+                scoreTrendElement.className = `stats-trend ${stats.scoreTrend.direction}`;
+                scoreTrendElement.innerHTML = `
+                    <i class="fas fa-arrow-${stats.scoreTrend.direction}"></i>
+                    <span>${stats.scoreTrend.value.toFixed(1)}</span>
+                `;
+                scoreTrendValueElement.textContent = stats.scoreTrend.value.toFixed(1);
+            }
+            if (completionRateElement) {
+                completionRateElement.textContent = `${stats.completionRate}%`;
+            }
+            if (completionTrendElement && completionTrendValueElement && stats.completionTrend) {
+                completionTrendElement.className = `stats-trend ${stats.completionTrend.direction}`;
+                completionTrendElement.innerHTML = `
+                    <i class="fas fa-arrow-${stats.completionTrend.direction}"></i>
+                    <span>${stats.completionTrend.value}%</span>
+                `;
+                completionTrendValueElement.textContent = `${stats.completionTrend.value}%`;
+            }
+            if (daysToExamElement) {
+                daysToExamElement.textContent = stats.daysToExam;
+            }
         }
     }
 
     loadRecentScores() {
-        if (!this.student || !this.student.studentId) {
-            console.error('Không có thông tin ID học sinh');
-            return;
+        try {
+            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
+            const studentScores = scores
+                .filter(score => score.studentId === this.student.studentId)
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+
+            const tableBody = document.getElementById('recentScoresTable');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = studentScores.map(score => `
+                <tr>
+                    <td>${score.subject}</td>
+                    <td>${score.type}</td>
+                    <td class="score-value ${score.score >= 5 ? 'pass' : 'fail'}">${score.score.toFixed(1)}</td>
+                    <td>${new Date(score.date).toLocaleDateString('vi-VN')}</td>
+                    <td>${this.getScoreEvaluation(score.score)}</td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('Lỗi khi tải điểm gần đây:', error);
         }
-
-        const scores = JSON.parse(localStorage.getItem('scores')) || {};
-        const studentScores = scores[this.student.studentId] || {};
-        
-        // Chuyển đổi cấu trúc điểm thành mảng để dễ sắp xếp
-        const recentScores = [];
-        Object.entries(studentScores).forEach(([subject, subjectScores]) => {
-            Object.entries(subjectScores).forEach(([type, scores]) => {
-                scores.forEach(score => {
-                    recentScores.push({
-                        subject,
-                        type,
-                        score,
-                        date: new Date().toISOString() // Sử dụng ngày hiện tại vì chưa có trường date
-                    });
-                });
-            });
-        });
-
-        // Sắp xếp theo ngày mới nhất và lấy 5 điểm gần nhất
-        const latestScores = recentScores
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .slice(0, 5);
-
-        const container = document.getElementById('recentScores');
-        if (!container) return;
-
-        if (latestScores.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-center py-4">Chưa có điểm số nào</p>';
-            return;
-        }
-
-        container.innerHTML = latestScores.map(score => `
-            <div class="score-item flex items-center justify-between p-3 border-b border-gray-200">
-                <div class="score-info">
-                    <h4 class="font-semibold">${score.subject}</h4>
-                    <p class="text-sm text-gray-600">${score.type}</p>
-                </div>
-                <div class="score-value ${this.getScoreClass(score.score)}">
-                    ${score.score.toFixed(1)}
-                </div>
-            </div>
-        `).join('');
     }
 
-    getScoreClass(score) {
-        if (score >= 8) return 'text-green-600';
-        if (score >= 6.5) return 'text-blue-600';
-        if (score >= 5) return 'text-yellow-600';
-        return 'text-red-600';
+    getScoreEvaluation(score) {
+        if (score >= 8) return '<span class="badge success">Tốt</span>';
+        if (score >= 5) return '<span class="badge warning">Đạt</span>';
+        return '<span class="badge danger">Chưa đạt</span>';
     }
 
     loadUpcomingExams() {
