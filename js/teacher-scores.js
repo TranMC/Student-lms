@@ -185,7 +185,7 @@ class TeacherScores {
         const studentId = parseInt(document.getElementById('studentSelect').value);
         const subject = document.getElementById('subjectSelect').value;
         const type = document.getElementById('scoreType').value;
-        const score = parseFloat(document.getElementById('scoreValue').value);
+        const score = document.getElementById('scoreValue').value;
         const date = document.getElementById('scoreDate').value;
         
         if (!this.validateScoreData({ studentId, subject, type, score, date })) {
@@ -193,6 +193,7 @@ class TeacherScores {
         }
         
         try {
+            // Tạo đối tượng điểm số
             const scoreData = {
                 id: scoreId,
                 studentId,
@@ -200,34 +201,39 @@ class TeacherScores {
                 type,
                 score,
                 date,
-                semester: this.getCurrentSemester()
+                semester: this.getCurrentSemester() // Thêm thông tin học kỳ
             };
             
+            // Cập nhật hoặc thêm mới điểm số
             let scores = JSON.parse(localStorage.getItem('scores') || '[]');
             
-            if (this.editingScoreId) {
-                scores = scores.map(s => s.id === this.editingScoreId ? scoreData : s);
+            if (this.currentScoreId) {
+                // Cập nhật điểm số hiện có
+                scores = scores.map(s => s.id === this.currentScoreId ? scoreData : s);
             } else {
+                // Thêm điểm số mới
                 scores.push(scoreData);
             }
             
+            // Lưu vào localStorage
             localStorage.setItem('scores', JSON.stringify(scores));
-            this.scores = scores;
             
-            // Thêm animation cho điểm mới
-            const scoreElement = document.querySelector(`tr[data-score-id="${scoreId}"]`);
-            if (scoreElement) {
-                scoreElement.classList.add('score-success');
-            }
+            // Kích hoạt sự kiện cập nhật điểm
+            window.dispatchEvent(new CustomEvent('scoresUpdated'));
             
-            this.loadScoreTable();
-            this.closeModal();
-            this.showToast('Đã lưu điểm thành công', 'success');
+            // Cập nhật giao diện
+            this.loadScores();
             
-            this.editingScoreId = null;
+            // Đóng modal và hiển thị thông báo
+            this.closeModal('scoreModal');
+            this.showToast('success', 'Đã lưu điểm thành công!');
+            
+            // Reset form
+            this.currentScoreId = null;
+            document.getElementById('scoreForm').reset();
         } catch (error) {
             console.error('Lỗi khi lưu điểm:', error);
-            this.showToast('Có lỗi xảy ra khi lưu điểm', 'error');
+            this.showToast('error', 'Có lỗi xảy ra khi lưu điểm!');
         }
     }
 

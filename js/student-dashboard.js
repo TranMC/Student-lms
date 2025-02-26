@@ -75,17 +75,47 @@ class StudentDashboard {
             return;
         }
         
-        const dataService = new DataService();
-        const stats = dataService.getStudentStats(this.student.studentId);
+        const allScores = JSON.parse(localStorage.getItem('scores')) || [];
+        const studentScores = allScores.filter(score => score.studentId === this.student.studentId);
         
-        if (stats) {
-            const averageScoreElement = document.getElementById('averageScore');
-            const scoreTrendElement = document.getElementById('scoreTrend');
-            const scoreTrendValueElement = document.getElementById('scoreTrendValue');
-            const completionRateElement = document.getElementById('completionRate');
-            const completionTrendElement = document.getElementById('completionTrend');
-            const completionTrendValueElement = document.getElementById('completionTrendValue');
-            const daysToExamElement = document.getElementById('daysToExam');
+        // Tổ chức điểm theo môn học
+        const organizedScores = {};
+        studentScores.forEach(score => {
+            if (!organizedScores[score.subject]) {
+                organizedScores[score.subject] = [];
+            }
+            organizedScores[score.subject].push(score);
+        });
+
+        // Tính toán thống kê
+        let totalScore = 0;
+        let totalSubjects = Object.keys(organizedScores).length;
+        let completedSubjects = 0;
+
+        Object.entries(organizedScores).forEach(([subject, scores]) => {
+            let subjectTotal = 0;
+            let subjectWeight = 0;
+
+            scores.forEach(score => {
+                const weight = this.getScoreWeight(score.type);
+                subjectTotal += score.score * weight;
+                subjectWeight += weight;
+            });
+
+            if (subjectWeight > 0) {
+                const average = subjectTotal / subjectWeight;
+                totalScore += average;
+                if (average >= 5) completedSubjects++;
+            }
+        });
+
+        const averageScore = totalSubjects > 0 ? totalScore / totalSubjects : 0;
+        const completionRate = totalSubjects > 0 ? (completedSubjects / totalSubjects) * 100 : 0;
+
+        // Cập nhật giao diện
+        const averageScoreElement = document.getElementById('averageScore');
+        const completionRateElement = document.getElementById('completionRate');
+        const daysToExamElement = document.getElementById('daysToExam');
 
             if (averageScoreElement) {
                 averageScoreElement.textContent = stats.averageScore.toFixed(1);
@@ -116,12 +146,18 @@ class StudentDashboard {
     }
 
     loadRecentScores() {
-        try {
-            const scores = JSON.parse(localStorage.getItem('scores') || '[]');
-            const studentScores = scores
-                .filter(score => score.studentId === this.student.studentId)
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 5);
+        if (!this.student || !this.student.studentId) {
+            console.error('Không có thông tin ID học sinh');
+            return;
+        }
+
+        const allScores = JSON.parse(localStorage.getItem('scores')) || [];
+        const studentScores = allScores.filter(score => score.studentId === this.student.studentId);
+        
+        // Sắp xếp theo ngày mới nhất và lấy 5 điểm gần nhất
+        const latestScores = studentScores
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 5);
 
             const tableBody = document.getElementById('recentScoresTable');
             if (!tableBody) return;
