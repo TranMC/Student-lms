@@ -224,14 +224,13 @@ const checkAdminAuth = () => {
 
 // Hàm hiển thị thông báo lỗi đăng nhập
 const showLoginError = (message) => {
-    const errorPopup = document.getElementById('loginErrorPopup');
-    const errorMessage = document.getElementById('loginErrorMessage');
-    if (errorPopup && errorMessage) {
-        errorMessage.textContent = message;
-        errorPopup.style.display = 'block';
-    } else {
-        alert(message); // Fallback nếu không tìm thấy popup
-    }
+    const overlay = document.getElementById('loginErrorOverlay');
+    const popup = document.getElementById('loginErrorPopup');
+    const messageElement = document.getElementById('loginErrorMessage');
+    
+    messageElement.textContent = message;
+    overlay.style.display = 'block';
+    popup.style.display = 'block';
 };
 
 // Khởi tạo dữ liệu khi tải trang
@@ -274,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (loginSuccess) {
                 window.location.href = redirectUrl;
             } else {
-                alert('Tên đăng nhập hoặc mật khẩu không đúng!');
+                showLoginError('Tên đăng nhập hoặc mật khẩu không đúng!');
             }
         });
     }
@@ -290,3 +289,23 @@ document.addEventListener('DOMContentLoaded', () => {
         roleField.value = rememberedRole;
     }
 });
+
+function closeLoginError() {
+    document.getElementById('loginErrorOverlay').style.display = 'none';
+    document.getElementById('loginErrorPopup').style.display = 'none';
+}
+
+function togglePasswordVisibility(button) {
+    const input = button.parentElement.querySelector('input');
+    const icon = button.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
