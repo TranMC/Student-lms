@@ -165,19 +165,97 @@ class TeacherDashboard {
 
     async loadStatistics() {
         try {
-            // Giả lập API call
+            // Lấy dữ liệu từ localStorage
+            const students = JSON.parse(localStorage.getItem('students')) || [];
+            const classes = JSON.parse(localStorage.getItem('classes')) || [];
+            const scores = JSON.parse(localStorage.getItem('scores')) || {};
+            const attendance = JSON.parse(localStorage.getItem('attendance')) || {};
+
+            // Tính toán thống kê
+            const totalClasses = classes.length;
+            const totalStudents = students.length;
+
+            // Tính điểm trung bình và phân bố điểm số
+            let totalScore = 0;
+            let scoreCount = 0;
+            const gradeDistribution = [0, 0, 0, 0, 0]; // [0-2, 2-4, 4-6, 6-8, 8-10]
+
+            // Trọng số cho từng loại điểm
+            const weights = {
+                'Kiểm tra miệng': 1,
+                'Kiểm tra 15 phút': 1,
+                'Kiểm tra 1 tiết': 2,
+                'Kiểm tra học kỳ': 3
+            };
+
+            Object.values(scores).forEach(studentScores => {
+                if (studentScores && typeof studentScores === 'object') {
+                    let studentTotalScore = 0;
+                    let studentTotalWeight = 0;
+
+                    Object.entries(studentScores).forEach(([type, scoreArray]) => {
+                        if (Array.isArray(scoreArray) && scoreArray.length > 0) {
+                            const weight = weights[type] || 1;
+                            const validScores = scoreArray.filter(score => 
+                                typeof score === 'number' && !isNaN(score)
+                            );
+                            
+                            if (validScores.length > 0) {
+                                const typeAverage = validScores.reduce((a, b) => a + b, 0) / validScores.length;
+                                studentTotalScore += typeAverage * weight;
+                                studentTotalWeight += weight;
+                                
+                                // Thêm vào phân bố điểm
+                                validScores.forEach(score => {
+                                    const index = Math.min(Math.floor(score / 2), 4);
+                                    gradeDistribution[index]++;
+                                    totalScore += score;
+                                    scoreCount++;
+                                });
+                            }
+                        }
+                    });
+
+                    // Tính điểm trung bình cho học sinh
+                    if (studentTotalWeight > 0) {
+                        const studentAverage = studentTotalScore / studentTotalWeight;
+                    }
+                }
+            });
+
+            const averageGrade = scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : 0;
+
+            // Đếm số bài tập mới
+            const homework = JSON.parse(localStorage.getItem('homework')) || [];
+            const newHomework = homework.filter(hw => !hw.completed).length;
+
+            // Tính thống kê điểm danh
+            let present = 0, absent = 0, late = 0;
+            Object.values(attendance).forEach(records => {
+                if (Array.isArray(records)) {
+                    records.forEach(record => {
+                        if (record && typeof record === 'object') {
+                            if (record.status === 'present') present++;
+                            else if (record.status === 'absent') absent++;
+                            else if (record.status === 'late') late++;
+                        }
+                    });
+                }
+            });
+
             const stats = {
-                totalClasses: 5,
-                totalStudents: 150,
-                averageGrade: 7.5,
-                newHomework: 3,
-                gradeDistribution: [10, 25, 45, 35, 20],
+                totalClasses,
+                totalStudents,
+                averageGrade,
+                newHomework,
+                gradeDistribution,
                 attendanceData: {
-                    present: 85,
-                    absent: 10,
-                    late: 5
+                    present,
+                    absent,
+                    late
                 }
             };
+
             this.updateDashboardStats(stats);
         } catch (error) {
             console.error('Lỗi khi tải thống kê:', error);

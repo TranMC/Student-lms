@@ -893,69 +893,137 @@ function initializeAdminData() {
     // Khởi tạo dữ liệu lớp học nếu chưa có
     if (!localStorage.getItem('classes')) {
         const classes = [
-            {
-                classId: 'L001',
-                className: '12A1',
-                teacherId: 1,
-                status: 'active'
-            },
-            {
-                classId: 'L002',
-                className: '12A2',
-                teacherId: 1,
-                status: 'active'
-            },
-            {
-                classId: 'L003',
-                className: '12A3',
-                teacherId: 1,
-                status: 'active'
-            }
+            { id: 'L001', name: 'Lớp 10A1', teacher: '1' },
+            { id: 'L002', name: 'Lớp 10A2', teacher: '1' },
+            { id: 'L003', name: 'Lớp 10A3', teacher: '1' }
         ];
         localStorage.setItem('classes', JSON.stringify(classes));
     }
-    
-    // Đảm bảo có dữ liệu giáo viên
+
+    // Khởi tạo dữ liệu giáo viên nếu chưa có
     if (!localStorage.getItem('teachers')) {
-        const teachers = [{
-            id: 1,
-            username: 'teacher1',
-            password: '123456',
-            fullName: 'Nguyễn Văn A',
-            subject: 'Toán',
-            role: 'teacher',
-            status: 'active'
-        }];
+        const teachers = [
+            {
+                id: '1',
+                name: 'Nguyễn Văn A',
+                email: 'teacher@example.com',
+                phone: '0123456789',
+                subject: 'Toán học'
+            }
+        ];
         localStorage.setItem('teachers', JSON.stringify(teachers));
     }
-    
-    // Đảm bảo có dữ liệu học sinh
+
+    // Khởi tạo dữ liệu học sinh nếu chưa có
     if (!localStorage.getItem('students')) {
         const students = [
             {
-                studentId: 'HS001',
-                fullName: 'Trần Văn An',
-                class: '12A1',
-                username: 'student1',
-                password: '123456',
+                id: 'HS001',
+                name: 'Nguyễn Văn An',
+                class: 'L001',
                 email: 'an@example.com',
                 phone: '0123456789',
-                role: 'student',
-                status: 'active'
+                avatar: null
             },
             {
-                studentId: 'HS002',
-                fullName: 'Lê Thị Bình',
-                class: '12A1',
-                username: 'student2',
-                password: '123456',
+                id: 'HS002', 
+                name: 'Trần Thị Bình',
+                class: 'L001',
                 email: 'binh@example.com',
-                phone: '0123456790',
-                role: 'student',
-                status: 'active'
+                phone: '0123456788',
+                avatar: null
+            },
+            {
+                id: 'HS003',
+                name: 'Lê Văn Cường',
+                class: 'L002',
+                email: 'cuong@example.com',
+                phone: '0123456787',
+                avatar: null
+            },
+            {
+                id: 'HS004',
+                name: 'Phạm Thị Dung',
+                class: 'L002',
+                email: 'dung@example.com',
+                phone: '0123456786',
+                avatar: null
             }
         ];
         localStorage.setItem('students', JSON.stringify(students));
+    }
+
+    // Khởi tạo dữ liệu điểm số nếu chưa có
+    if (!localStorage.getItem('scores')) {
+        const scores = {
+            'HS001': {
+                'Kiểm tra miệng': [8, 7, 9],
+                'Kiểm tra 15 phút': [7, 8],
+                'Kiểm tra 1 tiết': [8],
+                'Kiểm tra học kỳ': [7.5]
+            },
+            'HS002': {
+                'Kiểm tra miệng': [6, 7, 8],
+                'Kiểm tra 15 phút': [8, 7],
+                'Kiểm tra 1 tiết': [7.5],
+                'Kiểm tra học kỳ': [8]
+            },
+            'HS003': {
+                'Kiểm tra miệng': [9, 8, 9],
+                'Kiểm tra 15 phút': [8, 9],
+                'Kiểm tra 1 tiết': [8.5],
+                'Kiểm tra học kỳ': [8.5]
+            },
+            'HS004': {
+                'Kiểm tra miệng': [7, 8, 8],
+                'Kiểm tra 15 phút': [7, 8],
+                'Kiểm tra 1 tiết': [7.5],
+                'Kiểm tra học kỳ': [7]
+            }
+        };
+        localStorage.setItem('scores', JSON.stringify(scores));
+    }
+
+    // Khởi tạo dữ liệu tài khoản nếu chưa có
+    if (!localStorage.getItem('accounts')) {
+        const accounts = [
+            {
+                username: 'student1',
+                password: '123456',
+                role: 'student',
+                studentId: 'HS001',
+                status: 'active'
+            },
+            {
+                username: 'student2',
+                password: '123456',
+                role: 'student',
+                studentId: 'HS002',
+                status: 'active'
+            },
+            {
+                username: 'student3',
+                password: '123456',
+                role: 'student',
+                studentId: 'HS003',
+                status: 'active'
+            },
+            {
+                username: 'student4',
+                password: '123456',
+                role: 'student',
+                studentId: 'HS004',
+                status: 'active'
+            },
+            {
+                username: 'teacher1',
+                password: '123456',
+                role: 'teacher',
+                teacherId: '1',
+                status: 'active'
+            }
+        ];
+        localStorage.setItem('accounts', JSON.stringify(accounts));
     }
 }
 

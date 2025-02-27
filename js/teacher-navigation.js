@@ -7,164 +7,46 @@ class TeacherNavigation {
             homework: null,
             messages: null
         };
-        this.initializeSampleData();
-        this.initializeNavigation();
-        this.initializeUserDropdown();
-        this.initializeNotifications();
-
-        // Thêm hàm logout vào window object
-        window.logout = () => {
-            localStorage.removeItem('currentUser');
-            localStorage.removeItem('currentTeacher');
-            window.location.href = 'login.html';
-        };
+        this.loadedScripts = new Set();
+        this.initialize();
     }
 
-    initializeSampleData() {
-        // Thêm dữ liệu học sinh mẫu nếu chưa có
-        if (!localStorage.getItem('students')) {
-            const sampleStudents = [
-                { 
-                    id: 'HS001', 
-                    name: 'Nguyễn Văn An', 
-                    class: '12A1', 
-                    email: 'an@example.com',
-                    avatar: 'https://ui-avatars.com/api/?name=Nguyen+Van+An&background=random'
-                },
-                { 
-                    id: 'HS002', 
-                    name: 'Trần Thị Bình', 
-                    class: '12A1', 
-                    email: 'binh@example.com',
-                    avatar: 'https://ui-avatars.com/api/?name=Tran+Thi+Binh&background=random'
-                },
-                { 
-                    id: 'HS003', 
-                    name: 'Lê Văn Cường', 
-                    class: '12A2', 
-                    email: 'cuong@example.com',
-                    avatar: 'https://ui-avatars.com/api/?name=Le+Van+Cuong&background=random'
-                },
-                {
-                    id: 'HS004',
-                    name: 'Phạm Thị Dung',
-                    class: 'Test',
-                    email: 'Test@example.com',
-                    avatar: 'https://ui-avatars.com/api/?name=Pham+Thi+Dung&background=random'
-                },
-                {
-                    id: 'HS005',
-                    name: 'Hoàng Văn Em',
-                    class: '12A1',
-                    email: 'admin@gmail.com',
-                    avatar: 'https://ui-avatars.com/api/?name=Hoang+Van+Em&background=random'
-                }
-            ];
-            localStorage.setItem('students', JSON.stringify(sampleStudents));
-        }
+    async initialize() {
+        try {
+            await this.initializeNavigation();
+            await this.initializeUserDropdown();
+            await this.initializeNotifications();
 
-        // Thêm dữ liệu điểm số mẫu với cấu trúc mới
-        if (!localStorage.getItem('scores')) {
-            const sampleScores = {
-                'HS001': {
-                    'Kiểm tra miệng': [8.0, 9.0],
-                    'Kiểm tra 15 phút': [7.5, 8.5],
-                    'Kiểm tra 1 tiết': [8.0],
-                    'Kiểm tra học kỳ': [8.5]
-                },
-                'HS002': {
-                    'Kiểm tra miệng': [7.0, 8.0],
-                    'Kiểm tra 15 phút': [7.5],
-                    'Kiểm tra 1 tiết': [8.0, 8.5],
-                    'Kiểm tra học kỳ': [7.5]
-                },
-                'HS003': {
-                    'Kiểm tra miệng': [9.0],
-                    'Kiểm tra 15 phút': [8.5, 9.0],
-                    'Kiểm tra 1 tiết': [8.5],
-                    'Kiểm tra học kỳ': [9.0]
-                },
-                'HS004': {
-                    'Kiểm tra miệng': [7.0],
-                    'Kiểm tra 15 phút': [7.5],
-                    'Kiểm tra 1 tiết': [8.0],
-                    'Kiểm tra học kỳ': [7.5]
-                },
-                'HS005': {
-                    'Kiểm tra miệng': [8.5],
-                    'Kiểm tra 15 phút': [9.0],
-                    'Kiểm tra 1 tiết': [8.5],
-                    'Kiểm tra học kỳ': [9.0]
-                }
+            // Thêm hàm logout vào window object
+            window.logout = () => {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentTeacher');
+                window.location.href = 'login.html';
             };
-            localStorage.setItem('scores', JSON.stringify(sampleScores));
-        }
-
-        // Thêm dữ liệu điểm danh mẫu
-        if (!localStorage.getItem('attendance')) {
-            const today = new Date();
-            const sampleAttendance = {
-                'ST001': [
-                    {
-                        date: today.toISOString().split('T')[0],
-                        status: 'present',
-                        note: 'Đi học đầy đủ'
-                    }
-                ],
-                'ST002': [
-                    {
-                        date: today.toISOString().split('T')[0],
-                        status: 'late',
-                        note: 'Đi trễ 15 phút'
-                    }
-                ],
-                'ST003': [
-                    {
-                        date: today.toISOString().split('T')[0],
-                        status: 'absent',
-                        note: 'Nghỉ có phép - Ốm'
-                    }
-                ]
-            };
-            localStorage.setItem('attendance', JSON.stringify(sampleAttendance));
-        }
-
-        // Thêm lịch giảng dạy mẫu nếu chưa có
-        if (!localStorage.getItem('teachingSchedule')) {
-            const today = new Date();
-            const sampleSchedule = [
-                {
-                    date: today.toLocaleDateString('vi-VN'),
-                    classes: [
-                        { className: '10A1', period: '1-2', subject: 'Toán học' },
-                        { className: '10A2', period: '3-4', subject: 'Toán học' }
-                    ]
-                },
-                {
-                    date: new Date(today.setDate(today.getDate() + 1)).toLocaleDateString('vi-VN'),
-                    classes: [
-                        { className: '10A1', period: '3-4', subject: 'Toán học' },
-                        { className: '10A2', period: '5-6', subject: 'Toán học' }
-                    ]
-                }
-            ];
-            localStorage.setItem('teachingSchedule', JSON.stringify(sampleSchedule));
+        } catch (error) {
+            console.error('Lỗi khởi tạo:', error);
+            showToast('Có lỗi xảy ra khi khởi tạo ứng dụng', 'error');
         }
     }
 
-    initializeNavigation() {
-        const sidebarLinks = document.querySelectorAll('.sidebar a, nav a');
-        sidebarLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const page = link.getAttribute('href').replace('#', '');
-                this.navigateToPage(page);
+    async initializeNavigation() {
+        try {
+            const sidebarLinks = document.querySelectorAll('.sidebar a, nav a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('href').replace('#', '');
+                    await this.navigateToPage(page);
+                });
             });
-        });
 
-        // Khởi tạo trạng thái ban đầu
-        const hash = window.location.hash.replace('#', '') || 'dashboard';
-        this.navigateToPage(hash);
+            // Khởi tạo trạng thái ban đầu
+            const hash = window.location.hash.replace('#', '') || 'dashboard';
+            await this.navigateToPage(hash);
+        } catch (error) {
+            console.error('Lỗi khởi tạo navigation:', error);
+            throw error;
+        }
     }
 
     async navigateToPage(page) {
@@ -552,44 +434,42 @@ class TeacherNavigation {
         if (!scoresList) return;
 
         scoresList.innerHTML = filteredStudents.map(student => {
-            // Lấy điểm của học sinh từ object scores
             const studentScores = scores[student.id] || {};
-
-            // Tổ chức điểm theo loại
-            const organizedScores = {
-                'Kiểm tra miệng': studentScores['Kiểm tra miệng'] || [],
-                'Kiểm tra 15 phút': studentScores['Kiểm tra 15 phút'] || [],
-                'Kiểm tra 1 tiết': studentScores['Kiểm tra 1 tiết'] || [],
-                'Kiểm tra học kỳ': studentScores['Kiểm tra học kỳ'] || []
-            };
-
-            // Tính điểm trung bình
             const average = this.calculateAverageScore(studentScores);
+            const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name || 'Student')}&background=random`;
+            const avatarUrl = student.avatar || defaultAvatar;
 
             return `
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10">
-                                <img class="h-10 w-10 rounded-full" src="${student.avatar}" alt="">
+                            <div class="h-10 w-10 flex-shrink-0">
+                                <img class="h-10 w-10 rounded-full" 
+                                    src="${avatarUrl}" 
+                                    alt="${student.name || 'Student'}"
+                                    onerror="this.src='${defaultAvatar}'">
                             </div>
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">${student.name}</div>
-                                <div class="text-sm text-gray-500">${student.class}</div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    ${student.name || 'N/A'}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    ${student.email || ''}
+                                </div>
                             </div>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(organizedScores['Kiểm tra miệng'])}
+                        ${this.renderScores(studentScores['Kiểm tra miệng'] || [])}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(organizedScores['Kiểm tra 15 phút'])}
+                        ${this.renderScores(studentScores['Kiểm tra 15 phút'] || [])}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(organizedScores['Kiểm tra 1 tiết'])}
+                        ${this.renderScores(studentScores['Kiểm tra 1 tiết'] || [])}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                        ${this.renderScores(organizedScores['Kiểm tra học kỳ'])}
+                        ${this.renderScores(studentScores['Kiểm tra học kỳ'] || [])}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -868,13 +748,6 @@ class TeacherNavigation {
         const pageContent = document.getElementById('pageContent');
         if (!pageContent) return;
 
-        // Xóa dữ liệu cũ trong localStorage
-        localStorage.removeItem('students');
-        localStorage.removeItem('scores');
-        
-        // Khởi tạo lại dữ liệu mẫu
-        this.initializeSampleData();
-
         // Lấy dữ liệu từ localStorage
         const students = JSON.parse(localStorage.getItem('students')) || [];
         const scores = JSON.parse(localStorage.getItem('scores')) || {};
@@ -931,7 +804,7 @@ class TeacherNavigation {
                                             <div class="flex items-center">
                                                 <div class="h-10 w-10 flex-shrink-0">
                                                     <img class="h-10 w-10 rounded-full" 
-                                                        src="${student.avatar}" 
+                                                        src="${student.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name)}&background=random`}" 
                                                         alt="${student.name}">
                                                 </div>
                                                 <div class="ml-4">
@@ -939,7 +812,7 @@ class TeacherNavigation {
                                                         ${student.name}
                                                     </div>
                                                     <div class="text-sm text-gray-500">
-                                                        ${student.email}
+                                                        ${student.email || ''}
                                                     </div>
                                                 </div>
                                             </div>
@@ -1073,7 +946,9 @@ class TeacherNavigation {
         });
     }
 
-    showErrorMessage(container) {
+    async showErrorMessage(container) {
+        if (!container) return;
+        
         container.innerHTML = `
             <div class="col-span-3">
                 <div class="bg-white p-6 rounded-lg shadow-sm">
@@ -1081,6 +956,9 @@ class TeacherNavigation {
                         <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
                         <h2 class="text-xl font-semibold mb-2">Đã xảy ra lỗi</h2>
                         <p>Không thể tải nội dung trang. Vui lòng thử lại sau.</p>
+                        <button onclick="window.location.reload()" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Tải lại trang
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1441,6 +1319,32 @@ class TeacherNavigation {
     handleLogout() {
         localStorage.removeItem('teacherData');
         window.location.href = 'login.html';
+    }
+
+    closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            // Thêm animation fade-out
+            modal.classList.add('fade-out');
+            // Đợi animation hoàn thành rồi mới ẩn modal
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('fade-out');
+            }, 300);
+        }
+    }
+
+    async openModal(modalId, content) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.innerHTML = content;
+            modal.classList.remove('hidden');
+            // Thêm animation fade-in
+            modal.classList.add('fade-in');
+            setTimeout(() => {
+                modal.classList.remove('fade-in');
+            }, 300);
+        }
     }
 }
 

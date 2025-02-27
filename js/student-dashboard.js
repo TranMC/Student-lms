@@ -23,35 +23,53 @@ class StudentDashboard {
     }
 
     loadStudentInfo() {
-        const welcomeName = document.getElementById('studentNameWelcome');
-        const studentName = document.getElementById('studentName');
-        
-        // Thử lấy thông tin từ nhiều nguồn
-        let studentInfo = this.student;
-        
-        if (!studentInfo) {
-            // Thử lấy từ currentUser
-            studentInfo = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            
-            // Nếu không có, thử lấy từ userInfo
-            if (!studentInfo || Object.keys(studentInfo).length === 0) {
-                studentInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+        try {
+            // Lấy thông tin tài khoản hiện tại
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser || !currentUser.studentId) {
+                console.error('Không tìm thấy thông tin đăng nhập');
+                return;
             }
+
+            // Lấy danh sách học sinh từ localStorage
+            const students = JSON.parse(localStorage.getItem('students')) || [];
             
-            // Nếu vẫn không có, tạo dữ liệu mẫu
-            if (!studentInfo || Object.keys(studentInfo).length === 0) {
-                studentInfo = { fullName: 'Học sinh', name: 'Học sinh' };
+            // Tìm thông tin học sinh dựa vào studentId
+            const studentInfo = students.find(student => student.id === currentUser.studentId);
+            
+            if (!studentInfo) {
+                console.error('Không tìm thấy thông tin học sinh');
+                return;
             }
+
+            // Cập nhật thông tin học sinh vào localStorage
+            this.student = studentInfo;
+            localStorage.setItem('currentStudent', JSON.stringify(studentInfo));
+
+            // Cập nhật giao diện
+            const welcomeName = document.getElementById('studentNameWelcome');
+            const studentName = document.getElementById('studentName');
+            const studentAvatar = document.querySelector('#userMenuButton img');
+            
+            if (welcomeName) {
+                welcomeName.textContent = studentInfo.name;
+            }
+            if (studentName) {
+                studentName.textContent = studentInfo.name;
+            }
+            if (studentAvatar) {
+                const avatarUrl = studentInfo.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(studentInfo.name)}&background=0D8ABC&color=fff`;
+                studentAvatar.src = avatarUrl;
+                studentAvatar.onerror = function() {
+                    this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(studentInfo.name)}&background=0D8ABC&color=fff`;
+                };
+            }
+
+            console.log('Đã tải thông tin học sinh:', studentInfo);
+        } catch (error) {
+            console.error('Lỗi khi tải thông tin học sinh:', error);
+            showToast('Không thể tải thông tin học sinh', 'error');
         }
-        
-        if (welcomeName) {
-            welcomeName.textContent = studentInfo.fullName || studentInfo.name || 'Học sinh';
-        }
-        if (studentName) {
-            studentName.textContent = studentInfo.fullName || studentInfo.name || 'Học sinh';
-        }
-        
-        console.log('Đã tải thông tin học sinh:', studentInfo);
     }
 
     updateDateTime() {
@@ -169,6 +187,21 @@ class StudentDashboard {
         if (score >= 8) return '<span class="badge success">Tốt</span>';
         if (score >= 5) return '<span class="badge warning">Đạt</span>';
         return '<span class="badge danger">Chưa đạt</span>';
+    }
+
+    getScoreWeight(type) {
+        const weights = {
+            'Kiểm tra miệng': 1,
+            'Kiểm tra 15 phút': 1,
+            'Kiểm tra 1 tiết': 2,
+            'Kiểm tra học kỳ': 3,
+            'Miệng': 1,
+            '15 phút': 1,
+            '1 tiết': 2,
+            'Giữa kỳ': 2,
+            'Cuối kỳ': 3
+        };
+        return weights[type] || 1;
     }
 
     loadUpcomingExams() {
